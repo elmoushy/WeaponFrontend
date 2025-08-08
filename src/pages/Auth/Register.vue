@@ -174,7 +174,7 @@ const handleMicrosoftSignup = async () => {
     
     await login()
   } catch (error) {
-    console.error('Microsoft signup error:', error)
+    // Logging removed for production
   }
 }
 
@@ -188,7 +188,7 @@ const handleMicrosoftSignupPopup = async () => {
       router.replace(redirectTo)
     }
   } catch (error) {
-    console.error('Microsoft popup signup error:', error)
+    // Logging removed for production
   }
 }
 

@@ -538,7 +538,7 @@ const addQuestionsToSurvey = async (surveyId: string) => {
     
     
   } catch (error) {
-    console.error('Failed to add questions to survey:', error)
+    // Logging removed for production
     throw new Error(`Failed to add questions: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
@@ -568,7 +568,7 @@ const updateSurveyQuestions = async (surveyId: string) => {
       }
     }
   } catch (error) {
-    console.error('Failed to update survey questions:', error)
+    // Logging removed for production
     throw error
   }
 }
@@ -633,7 +633,7 @@ const handleSubmit = async () => {
       showAccessModal.value = true
     }
   } catch (error: any) {
-    console.error('Failed to submit survey:', error)
+    // Logging removed for production
     // Show more specific error messages
     const errorMessage = error.message || 'Failed to create survey'
     alert(`Error: ${errorMessage}`)

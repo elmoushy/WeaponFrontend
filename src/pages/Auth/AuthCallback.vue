@@ -55,7 +55,7 @@ onMounted(async () => {
     //   }, 2000)
     // }
   } catch (error) {
-    console.error('Authentication callback error:', error)
+    // Logging removed for production
     message.value = 'Authentication error. Redirecting to login...'
     setTimeout(() => {
       router.replace('/login')

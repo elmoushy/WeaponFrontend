@@ -133,7 +133,7 @@ export function useFiles() {
       quota.value = await filesService.getUserQuota()
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load quota'
-      console.error('Error loading quota:', err)
+      // Logging removed for production
     } finally {
       loading.value = false
     }
@@ -163,7 +163,7 @@ export function useFiles() {
       lastOperation.value = 'loadFiles'
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load files'
-      console.error('Error loading files:', err)
+      // Logging removed for production
     } finally {
       loading.value = false
     }
@@ -249,7 +249,7 @@ export function useFiles() {
       lastOperation.value = 'uploadFiles'
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to upload files'
-      console.error('Error uploading files:', err)
+      // Logging removed for production
       uploadingFiles.value = []
     } finally {
       uploading.value = false
@@ -264,7 +264,7 @@ export function useFiles() {
       lastOperation.value = 'downloadFile'
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to download file'
-      console.error('Error downloading file:', err)
+      // Logging removed for production
     } finally {
       loading.value = false
     }
@@ -281,7 +281,7 @@ export function useFiles() {
       lastOperation.value = 'deleteFile'
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to delete file'
-      console.error('Error deleting file:', err)
+      // Logging removed for production
     } finally {
       loading.value = false
     }
@@ -313,7 +313,7 @@ export function useFiles() {
       lastOperation.value = 'toggleFileFavorite'
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to update favorite status'
-      console.error('Error toggling favorite:', err)
+      // Logging removed for production
     }
   }
 
@@ -339,7 +339,7 @@ export function useFiles() {
       lastOperation.value = 'loadFolders'
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load folders'
-      console.error('Error loading folders:', err)
+      // Logging removed for production
     } finally {
       loading.value = false
     }
@@ -361,7 +361,7 @@ export function useFiles() {
       lastOperation.value = 'createFolder'
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to create folder'
-      console.error('Error creating folder:', err)
+      // Logging removed for production
     } finally {
       loading.value = false
     }
@@ -378,7 +378,7 @@ export function useFiles() {
       lastOperation.value = 'deleteFolder'
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to delete folder'
-      console.error('Error deleting folder:', err)
+      // Logging removed for production
     } finally {
       loading.value = false
     }
@@ -392,7 +392,7 @@ export function useFiles() {
       lastOperation.value = 'downloadFolder'
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to download folder'
-      console.error('Error downloading folder:', err)
+      // Logging removed for production
     } finally {
       loading.value = false
     }
@@ -412,7 +412,7 @@ export function useFiles() {
     try {
       breadcrumbs.value = await filesService.getFolderBreadcrumbs(folderId)
     } catch (err) {
-      console.error('Error updating breadcrumbs:', err)
+      // Logging removed for production
       // Fallback to simple breadcrumbs
       breadcrumbs.value = [{ id: null, name: 'Root' }]
       if (folderId) {
@@ -435,7 +435,7 @@ export function useFiles() {
       availableUsers.value = dataTransformService.backendUsersToUsers(response.results)
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load users'
-      console.error('Error loading users:', err)
+      // Logging removed for production
     }
   }
 

@@ -83,11 +83,7 @@ apiClient.interceptors.response.use(
       }
     }
     
-    // Log API errors in development
-    if (import.meta.env.VITE_ENVIRONMENT === 'development') {
-      console.error(`❌ API Error: ${error.response?.status} ${error.config?.method?.toUpperCase()} ${error.config?.url}`)
-      console.error('Error details:', error.response?.data)
-    }
+    // Log API errors in development - removed for production
     
     return Promise.reject(error)
   }

@@ -648,7 +648,7 @@ const loadPublicLink = async () => {
       publicLink.value = response.data
       
     } catch (error: any) {
-      console.error('Failed to load public link:', error)
+      // Logging removed for production
       if (error.response?.status !== 404) {
         setStatusMessage('Failed to load public link', 'error')
       }
@@ -668,7 +668,7 @@ const generateLink = async () => {
     publicLink.value = response.data
     setStatusMessage('Public link generated successfully', 'success')
   } catch (error: any) {
-    console.error('Failed to generate link:', error)
+    // Logging removed for production
     const errorMessage = error.response?.data?.message || error.message || 'Failed to generate public link'
     setStatusMessage(errorMessage, 'error')
   } finally {
@@ -689,7 +689,7 @@ const revokeLink = async () => {
       publicLink.value = null
       setStatusMessage('Public link revoked successfully', 'success')
     } catch (error: any) {
-      console.error('Failed to revoke link:', error)
+      // Logging removed for production
       const errorMessage = error.response?.data?.message || error.message || 'Failed to revoke public link'
       setStatusMessage(errorMessage, 'error')
     }
@@ -701,7 +701,7 @@ const copyToClipboard = async (text: string) => {
     await navigator.clipboard.writeText(text)
     setStatusMessage('Link copied to clipboard', 'success')
   } catch (error) {
-    console.error('Failed to copy link:', error)
+    // Logging removed for production
     setStatusMessage('Failed to copy link', 'error')
   }
 }
@@ -718,7 +718,7 @@ const generateQRCode = async (text: string): Promise<void> => {
       errorCorrectionLevel: 'M'  // M = 15% error correction
     })
   } catch (error) {
-    console.error('Failed to generate QR code:', error)
+    // Logging removed for production
     setStatusMessage('Failed to generate QR code', 'error')
   }
 }
@@ -733,7 +733,7 @@ const downloadQRCode = () => {
     link.click()
     setStatusMessage('QR code downloaded successfully', 'success')
   } catch (error) {
-    console.error('Failed to download QR code:', error)
+    // Logging removed for production
     setStatusMessage('Failed to download QR code', 'error')
   }
 }
@@ -751,7 +751,7 @@ const copyQRToClipboard = async () => {
       }
     })
   } catch (error) {
-    console.error('Failed to copy QR code:', error)
+    // Logging removed for production
     setStatusMessage('Failed to copy QR code', 'error')
   }
 }
@@ -825,7 +825,7 @@ const shareByEmail = async () => {
       )
     }
   } catch (error) {
-    console.error('Failed to share by email:', error)
+    // Logging removed for production
     setStatusMessage(currentLanguage.value === 'ar' ? 'فشل في مشاركة عبر البريد الإلكتروني' : 'Failed to share by email', 'error')
   }
 }
@@ -855,7 +855,7 @@ const shareByWhatsApp = async () => {
       )
     }
   } catch (error) {
-    console.error('Failed to share by WhatsApp:', error)
+    // Logging removed for production
     setStatusMessage(currentLanguage.value === 'ar' ? 'فشل في مشاركة عبر واتساب' : 'Failed to share by WhatsApp', 'error')
   }
 }
@@ -887,7 +887,7 @@ const shareBySMS = async () => {
       )
     }
   } catch (error) {
-    console.error('Failed to share by SMS:', error)
+    // Logging removed for production
     setStatusMessage(currentLanguage.value === 'ar' ? 'فشل في مشاركة عبر الرسائل النصية' : 'Failed to share by SMS', 'error')
   }
 }
@@ -918,7 +918,7 @@ const shareBySMS = async () => {
     
 //     setStatusMessage(currentLanguage.value === 'ar' ? 'تم تحميل حزمة المشاركة' : 'Share package downloaded', 'success')
 //   } catch (error) {
-//     console.error('Failed to download share package:', error)
+//     // Logging removed for production
 //     setStatusMessage(currentLanguage.value === 'ar' ? 'فشل في تحميل حزمة المشاركة' : 'Failed to download share package', 'error')
 //   }
 // }
@@ -936,7 +936,7 @@ const handleUserSearch = async () => {
       !selectedUsers.value.some(selected => selected.id === user.id)
     )
   } catch (error) {
-    console.error('Failed to search users:', error)
+    // Logging removed for production
     setStatusMessage('Failed to search users', 'error')
   }
 }
@@ -965,11 +965,11 @@ const loadAdminGroups = async () => {
       if (availableGroups.value.length === 0) {
         setStatusMessage(currentLanguage.value === 'ar' ? 'لا توجد مجموعات متاحة' : 'No groups available', 'info')
       } else {
-        console.log(``) // Debug
+        // Logging removed for production // Debug
       }
     } catch (error: any) {
-      console.error('Failed to load admin groups:', error)
-      console.error('Error response:', error.response) // Debug
+      // Logging removed for production
+      // Logging removed for production // Debug
       const errorMessage = error.response?.data?.message || error.message || 'Failed to load groups'
       setStatusMessage(errorMessage, 'error')
       availableGroups.value = []
@@ -1055,7 +1055,7 @@ const handleSave = async () => {
     if (selectedAccess.value === 'GROUPS' && selectedGroups.value.length > 0) {
       // Note: Group sharing would require an additional API endpoint
       // For now, we just save the groups selection to the visibility
-      console.log('Groups selected for sharing:', selectedGroups.value.map(g => g.name))
+      // Logging removed for production)
     }
 
     setStatusMessage('Survey access updated successfully', 'success')
@@ -1074,7 +1074,7 @@ const handleSave = async () => {
       groups: selectedGroups.value
     })
   } catch (error: any) {
-    console.error('Failed to save access settings:', error)
+    // Logging removed for production
     
     // Enhanced error handling based on API response
     let errorMessage = 'Failed to save access settings'
@@ -1102,7 +1102,7 @@ const loadSharedUsers = async () => {
       selectedUsers.value = response.data.shared_users || []
       // Note: invited emails are not tracked separately in the current backend implementation
     } catch (error) {
-      console.error('Failed to load shared users:', error)
+      // Logging removed for production
       setStatusMessage('Failed to load shared users', 'error')
     }
   }

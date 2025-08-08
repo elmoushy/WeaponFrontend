@@ -222,7 +222,7 @@ onMounted(async () => {
       router.replace(redirectTo)
     }
   } catch (error) {
-    console.error('Login component initialization error:', error)
+    // Logging removed for production
   }
 })
 
@@ -238,7 +238,7 @@ const handleMicrosoftLogin = async () => {
     
     await login()
   } catch (error) {
-    console.error('Microsoft login error:', error)
+    // Logging removed for production
   }
 }
 
@@ -252,7 +252,7 @@ const handleMicrosoftLoginPopup = async () => {
       router.replace(redirectTo)
     }
   } catch (error) {
-    console.error('Microsoft popup login error:', error)
+    // Logging removed for production
   }
 }
 

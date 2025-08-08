@@ -169,7 +169,7 @@ const loadUsers = async () => {
     const response = await userManagementService.getUsers()
     allUsers.value = response.users
   } catch (error) {
-    console.error('Error loading users:', error)
+    // Logging removed for production
     // Could emit an error event or show a notification here
   } finally {
     loadingUsers.value = false
@@ -180,7 +180,7 @@ const handleSubmit = () => {
   // Validation for create mode - at least one admin required
   if (props.mode.type === 'create' && formData.value.admin_user_ids.length === 0) {
     // Could emit an error or show validation message
-    console.warn('At least one admin must be selected')
+    // Logging removed for production
     return
   }
   

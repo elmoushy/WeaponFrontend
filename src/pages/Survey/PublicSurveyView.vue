@@ -490,7 +490,7 @@ const loadSurvey = async () => {
       accessMessage.value = response.message || 'ليس لديك صلاحية للوصول إلى هذا الاستطلاع'
     }
   } catch (error: any) {
-    console.error('Failed to load survey:', error)
+    // Logging removed for production
     
     accessDenied.value = true
     
@@ -640,7 +640,7 @@ const submitSurvey = async () => {
     showThankYouModal.value = true
     
   } catch (error: any) {
-    console.error('Failed to submit survey:', error)
+    // Logging removed for production
     alert('فشل في إرسال الاستطلاع: ' + error.message)
   } finally {
     isSubmitting.value = false
@@ -674,7 +674,7 @@ const copyLink = async () => {
     await navigator.clipboard.writeText(currentUrl)
     alert('تم نسخ الرابط بنجاح!')
   } catch (error) {
-    console.error('Failed to copy link:', error)
+    // Logging removed for production
     alert('فشل في نسخ الرابط')
   }
 }
@@ -700,7 +700,7 @@ const getRatingRange = (options: string | undefined): string => {
     
     return `${min} إلى ${max}`
   } catch (error) {
-    console.error('Error parsing rating options:', error)
+    // Logging removed for production
     return '1 إلى 5'
   }
 }
@@ -724,7 +724,7 @@ const getRatingOptions = (options: string | undefined): any[] => {
     
     return numericOptions.length > 0 ? numericOptions : optionsArray
   } catch (error) {
-    console.error('Error parsing rating options:', error)
+    // Logging removed for production
     return [1, 2, 3, 4, 5]
   }
 }
@@ -742,7 +742,7 @@ const getQuestionOptions = (options: string | undefined): string[] => {
     
     return optionsArray.map((opt: any) => String(opt))
   } catch (error) {
-    console.error('Error parsing question options:', error)
+    // Logging removed for production
     return []
   }
 }
@@ -786,7 +786,7 @@ const getRatingLabel = (type: 'min' | 'max'): string => {
       return `الأعلى (${max})`
     }
   } catch (error) {
-    console.error('Error parsing rating options:', error)
+    // Logging removed for production
     return type === 'min' ? 'ضعيف' : 'ممتاز'
   }
 }

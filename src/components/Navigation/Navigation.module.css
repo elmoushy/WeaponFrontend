@@ -1008,6 +1008,16 @@
     display: none;
   }
   
+  .userInfo {
+    padding: 0.5rem;
+    border-radius: 12px;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
   /* Show mobile toggle on tablets */
   .mobileToggle {
     display: flex !important;
@@ -1022,10 +1032,6 @@
   }
   
   .navLinks {
-    display: none;
-  }
-  
-  .userInfo {
     display: none;
   }
   
@@ -1139,6 +1145,21 @@
     margin: 0.4rem 1rem;
   }
   
+  /* Adjust user dropdown for mobile - same as notifications */
+  .userInfo .userDropdown {
+    position: fixed !important;
+    top: 70px !important;
+    left: 1rem !important;
+    right: 1rem !important;
+    width: auto !important;
+    min-width: auto !important;
+    max-width: none !important;
+    transform: none !important;
+    border-radius: 20px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+  }
+
   /* Adjust notifications dropdown for mobile - same as settings */
   .notifications .dropdown {
     position: fixed !important;
@@ -1252,7 +1273,7 @@
   .dropdown,
   .notifications .dropdown,
   .settings .dropdown,
-  .userDropdown {
+  .userInfo .userDropdown {
     position: fixed !important;
     top: 60px !important;
     left: 0.5rem !important;
@@ -1358,7 +1379,8 @@
   
   /* Improve touch targets on mobile */
   .notifications,
-  .settings {
+  .settings,
+  .userInfo {
     min-width: 44px;
     min-height: 44px;
     display: flex;
@@ -1367,7 +1389,8 @@
   }
   
   .settingItem,
-  .notificationItem {
+  .notificationItem,
+  .userDropdownLink {
     min-height: 44px;
   }
 }
@@ -1380,7 +1403,7 @@
   [dir="rtl"] .dropdown,
   [dir="rtl"] .notifications .dropdown,
   [dir="rtl"] .settings .dropdown,
-  [dir="rtl"] .userDropdown {
+  [dir="rtl"] .userInfo .userDropdown {
     left: 1rem !important;   /* keep 1 rem margin on both sides   */
     right: 1rem !important;  /* restore the right edge we lost    */
   }
@@ -1388,7 +1411,8 @@
   /* Prevent hover issues on mobile dropdowns */
   .dropdown,
   .notifications .dropdown,
-  .settings .dropdown {
+  .settings .dropdown,
+  .userInfo .userDropdown {
     /* Disable hover effects that cause repositioning */
     pointer-events: auto !important;
     /* Ensure stable positioning during interactions */
@@ -1403,4 +1427,105 @@
     /* Reduce transition effects that cause lag on mobile */
     transition: none !important;
   }
+}
+
+/* ------------------------------------------------------------------
+   MOBILE NAVIGATION USER PROFILE STYLES
+   ------------------------------------------------------------------*/
+
+/* Mobile user profile in navigation menu */
+.mobileUserProfile {
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(153, 122, 81, 0.1), rgba(207, 163, 101, 0.1));
+  border-bottom: 1px solid rgba(153, 122, 81, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.header[data-theme="night"] .mobileUserProfile {
+  background: linear-gradient(135deg, rgba(94, 78, 63, 0.2), rgba(153, 122, 81, 0.2));
+  border-bottom: 1px solid rgba(94, 78, 63, 0.3);
+}
+
+.mobileUserInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.mobileUserInfo .userAvatar {
+  width: 40px;
+  height: 40px;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.mobileUserDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.mobileUserName {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #1e293b;
+  margin-bottom: 0.125rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header[data-theme="night"] .mobileUserName {
+  color: #F5F3EE;
+}
+
+.mobileUserEmail {
+  font-size: 0.75rem;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header[data-theme="night"] .mobileUserEmail {
+  color: #94a3b8;
+}
+
+.mobileLogoutBtn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.mobileLogoutBtn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: scale(1.05);
+}
+
+.mobileLogoutBtn:active {
+  transform: scale(0.95);
+}
+
+.mobileDivider {
+  height: 1px;
+  background: rgba(153, 122, 81, 0.2);
+  margin: 0;
+}
+
+.header[data-theme="night"] .mobileDivider {
+  background: rgba(94, 78, 63, 0.3);
 }

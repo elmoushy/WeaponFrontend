@@ -121,7 +121,7 @@ const onSearchChange = (event: Event) => {
 }
 
 const handleAddUsersClick = (group: Group) => {
-  console.log('Add Users button clicked for group:', group)
+  // Logging removed for production
   alert(`Add Users clicked for group: ${group.name}`)
   emit('group-action', 'add_users', group)
 }

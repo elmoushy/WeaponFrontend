@@ -422,7 +422,7 @@ const fetchResponses = async () => {
     const result = await apiClient.get(endpoint)
     responses.value = result.data || []
   } catch (err) {
-    console.error('Error fetching responses:', err)
+    // Logging removed for production
     error.value = true
   } finally {
     loading.value = false
@@ -441,7 +441,7 @@ const viewResponseDetails = async (response: SurveyResponse) => {
     
     showDetailsModal.value = true
   } catch (err) {
-    console.error('Error fetching response details:', err)
+    // Logging removed for production
   }
 }
 
@@ -468,7 +468,7 @@ const exportData = async (format: 'csv' | 'json') => {
     
     showExportModal.value = false
   } catch (err) {
-    console.error('Error exporting data:', err)
+    // Logging removed for production
   }
 }
 

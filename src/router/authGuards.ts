@@ -12,18 +12,47 @@ declare module 'vue-router' {
   }
 }
 
+// JWT Auth helper function
+const getJWTAuthState = () => {
+  const token = localStorage.getItem('access_token')
+  const user = localStorage.getItem('user')
+  
+  if (token && user) {
+    try {
+      return {
+        isAuthenticated: true,
+        user: JSON.parse(user),
+        token
+      }
+    } catch {
+      return {
+        isAuthenticated: false,
+        user: null,
+        token: null
+      }
+    }
+  }
+  
+  return {
+    isAuthenticated: false,
+    user: null,
+    token: null
+  }
+}
+
 // Enhanced authentication guard
 export const setupAuthGuards = (router: Router): void => {
   // Primary authentication guard
   router.beforeEach(async (to, from, next) => {
     const context = authService.getContext()
+    const jwtAuth = getJWTAuthState()
     
     // Wait for initialization if needed
     if (context.state === AuthState.UNINITIALIZED) {
       try {
         await authService.initialize()
-      } catch (error) {
-        console.error('Auth initialization failed during navigation:', error)
+      } catch {
+        // Logging removed for production
       }
     }
     
@@ -41,15 +70,47 @@ export const setupAuthGuards = (router: Router): void => {
     
     // Handle routes that require authentication
     if (requiresAuth) {
-      if (state === AuthState.AUTHENTICATED) {
+      // Check JWT authentication first
+      if (jwtAuth.isAuthenticated) {
         // Check admin requirement if specified
         if (requiresAdmin) {
-          // For now, we'll allow access - in production you would check user roles
-          // const userRoles = authService.getUserRoles()
-          // if (!userRoles.includes('admin')) {
-          //   next('/dashboard') // Redirect non-admin users
-          //   return
-          // }
+          const userRole = jwtAuth.user.role
+          
+          // Allow access for admin and super_admin roles
+          if (userRole !== 'admin' && userRole !== 'super_admin') {
+            next('/surveys') // Redirect non-admin users to surveys page
+            return
+          }
+        }
+        next()
+        return
+      }
+      // Fallback to Azure auth
+      else if (state === AuthState.AUTHENTICATED) {
+        // Check admin requirement if specified
+        if (requiresAdmin) {
+          // For JWT auth, check user role from localStorage
+          try {
+            const storedUser = localStorage.getItem('user')
+            if (storedUser) {
+              const user = JSON.parse(storedUser)
+              const userRole = user.role
+              
+              // Allow access for admin and super_admin roles
+              if (userRole !== 'admin' && userRole !== 'super_admin') {
+                next('/surveys') // Redirect non-admin users to surveys page
+                return
+              }
+            } else {
+              // No user data found, redirect to login
+              redirectToLogin(to, next)
+              return
+            }
+          } catch {
+            // Error parsing user data, redirect to login
+            redirectToLogin(to, next)
+            return
+          }
         }
         next()
       } else if ([AuthState.AUTHENTICATING, AuthState.BACKEND_SYNC, AuthState.TOKEN_REFRESH].includes(state)) {
@@ -64,7 +125,15 @@ export const setupAuthGuards = (router: Router): void => {
     
     // Handle routes that require guest (not authenticated)
     if (requiresGuest) {
-      if (state === AuthState.AUTHENTICATED) {
+      // Check JWT authentication first
+      if (jwtAuth.isAuthenticated) {
+        // Already authenticated, redirect to intended page or surveys
+        const redirectTo = getIntendedRedirect(from) || '/surveys'
+        next(redirectTo)
+        return
+      }
+      // Fallback to Azure auth
+      else if (state === AuthState.AUTHENTICATED) {
         // Already authenticated, redirect to intended page or surveys
         const redirectTo = getIntendedRedirect(from) || '/surveys'
         next(redirectTo)
@@ -114,7 +183,7 @@ function handleUnauthorizedAccess(
   next: NavigationGuardNext,
   currentState: AuthState
 ): void {
-  console.warn(`Access denied to ${to.path}. Current state: ${currentState}`)
+  // Logging removed for production
   
   switch (currentState) {
     case AuthState.FAILED:
@@ -155,7 +224,7 @@ function waitForAuthentication(
       }
     } else if (Date.now() - startTime > maxWaitTime) {
       // Timeout
-      console.warn('Authentication wait timeout')
+      // Logging removed for production
       if (fallbackRoute) {
         next(fallbackRoute)
       } else {

@@ -5,6 +5,7 @@ export interface UserProfile {
   first_name: string
   last_name: string
   full_name: string
+  role: string
   is_active: boolean
   date_joined: string
   last_login: string | null

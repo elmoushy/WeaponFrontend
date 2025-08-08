@@ -18,7 +18,7 @@ const initializeAuth = (): void => {
       user.value = JSON.parse(storedUser)
       isAuthenticated.value = true
     } catch (err) {
-      console.error('Failed to parse stored user data:', err)
+      // Logging removed for production
       localStorage.removeItem('user')
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
@@ -41,7 +41,7 @@ export const useJWTAuth = () => {
       
       return { success: true }
     } catch (err: any) {
-      console.error('Login error:', err)
+      // Logging removed for production
       error.value = handleApiError(err)
       return { success: false, errors: err }
     } finally {
@@ -57,7 +57,7 @@ export const useJWTAuth = () => {
       
       await authAPI.logout()
     } catch (err: any) {
-      console.error('Logout error:', err)
+      // Logging removed for production
       // Continue with logout even if API call fails
     } finally {
       // Always clear local state
@@ -83,7 +83,7 @@ export const useJWTAuth = () => {
       // Update localStorage
       localStorage.setItem('user', JSON.stringify(response.user))
     } catch (err: any) {
-      console.error('Get current user error:', err)
+      // Logging removed for production
       error.value = handleApiError(err)
       
       // If unauthorized, clear auth state
@@ -113,7 +113,7 @@ export const useJWTAuth = () => {
       
       return { success: true }
     } catch (err: any) {
-      console.error('Update profile error:', err)
+      // Logging removed for production
       error.value = handleApiError(err)
       return { success: false, errors: err }
     } finally {
@@ -135,7 +135,7 @@ export const useJWTAuth = () => {
       await getCurrentUser()
       return true
     } catch (err: any) {
-      console.error('Auth check failed:', err)
+      // Logging removed for production
       return false
     }
   }

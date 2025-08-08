@@ -173,7 +173,7 @@ export class AuthService {
         }
       }
     } catch (error) {
-      console.error('Auth initialization failed:', error)
+      // Logging removed for production
       this.updateContext({ 
         state: AuthState.FAILED, 
         isLoading: false, 
@@ -211,7 +211,7 @@ export class AuthService {
         // Note: Redirect will complete in handleRedirectPromise during next page load
       }
     } catch (error) {
-      console.error('Login failed:', error)
+      // Logging removed for production
       this.updateContext({ 
         state: AuthState.FAILED, 
         isLoading: false, 
@@ -264,7 +264,7 @@ export class AuthService {
       this.handlePostAuthRedirect()
 
     } catch (error) {
-      console.error('Backend sync failed:', error)
+      // Logging removed for production
       this.updateContext({ 
         state: AuthState.FAILED, 
         isLoading: false, 
@@ -296,11 +296,11 @@ export class AuthService {
           })
           return response.idToken
         } catch (popupError) {
-          console.error('Token refresh via popup failed:', popupError)
+          // Logging removed for production
           return null
         }
       }
-      console.error('Silent token acquisition failed:', error)
+      // Logging removed for production
       return null
     }
   }
@@ -322,7 +322,7 @@ export class AuthService {
       }, delay)
 
     } catch (error) {
-      console.error('Failed to schedule token refresh:', error)
+      // Logging removed for production
       // Fallback: refresh in 5 minutes
       this.refreshTimer = window.setTimeout(async () => {
         await this.refreshToken()
@@ -350,7 +350,7 @@ export class AuthService {
       })
 
     } catch (error) {
-      console.error('Token refresh failed:', error)
+      // Logging removed for production
       await this.logout('Session expired')
     }
   }
@@ -391,7 +391,7 @@ export class AuthService {
         try {
           await authAPI.logout()
         } catch (error) {
-          console.error('Backend logout failed:', error)
+          // Logging removed for production
         }
       }
 
@@ -418,7 +418,7 @@ export class AuthService {
       await this.msalInstance.logoutRedirect(logoutRequest)
 
     } catch (error) {
-      console.error('Logout failed:', error)
+      // Logging removed for production
       // Force reset even if logout fails
       this.updateContext({
         state: AuthState.UNAUTHENTICATED,

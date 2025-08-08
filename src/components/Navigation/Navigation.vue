@@ -151,6 +151,25 @@
     <!-- Mobile Navigation -->
     <Transition name="mobile-menu">
       <div v-if="showMobileMenu" :class="$style.mobileNav" data-dropdown @click.stop>
+        <!-- Mobile User Profile Section -->
+        <div :class="$style.mobileUserProfile">
+          <div :class="$style.mobileUserInfo">
+            <div :class="$style.userAvatar">
+              <img v-if="userDisplayName" :src="generateAvatarUrl(userEmail)" :alt="userDisplayName" />
+              <i v-else class="fas fa-user"></i>
+            </div>
+            <div :class="$style.mobileUserDetails">
+              <div :class="$style.mobileUserName">{{ userDisplayName || 'Guest User' }}</div>
+              <div :class="$style.mobileUserEmail">{{ userEmail || 'No email available' }}</div>
+            </div>
+          </div>
+          <button @click="handleLogout" :class="$style.mobileLogoutBtn">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+        
+        <div :class="$style.mobileDivider"></div>
+        
         <router-link 
           v-for="link in navigationLinks" 
           :key="link.name"
@@ -178,6 +197,16 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '../../stores/useAppStore'
 import { useJWTAuth } from '../../composables/useJWTAuth'
+
+// Navigation link interface
+interface NavigationLink {
+  name: string
+  path: string
+  icon: string
+  label: string
+  title: string
+  requiresRole?: string
+}
 
 // Store and router
 const store = useAppStore()
@@ -212,7 +241,7 @@ const currentTheme = computed(() => store.currentTheme)
 const t = computed(() => store.t)
 
 // Navigation links - Release One: Only Surveys and Control pages
-const navigationLinks = ref([
+const baseNavigationLinks = ref<NavigationLink[]>([
   // Commented out for Release One - not required in production
   // { 
   //   name: 'Welcome', 
@@ -249,9 +278,32 @@ const navigationLinks = ref([
     path: '/control', 
     icon: 'fas fa-cogs', 
     label: 'navigation.control',
-    title: 'Control Panel'
+    title: 'Control Panel',
+    requiresRole: 'admin' // Only show for admin users
   }
 ])
+
+// Computed navigation links based on user role
+const navigationLinks = computed(() => {
+  if (!user.value) {
+    return baseNavigationLinks.value
+  }
+  
+  return baseNavigationLinks.value.filter(link => {
+    // If link doesn't require a specific role, show it to everyone
+    if (!link.requiresRole) {
+      return true
+    }
+    
+    // Check if user has admin privileges (admin or super_admin roles)
+    if (link.requiresRole === 'admin') {
+      const userRole = user.value?.role
+      return userRole === 'admin' || userRole === 'super_admin'
+    }
+    
+    return true
+  })
+})
 
 // Notifications data (replace with actual notifications from store/API)
 const notifications = ref([
@@ -333,7 +385,7 @@ const handleLogout = async () => {
     await authLogout()
     // The authLogout function will handle redirecting to login page
   } catch (error) {
-    console.error('Logout error:', error)
+    // Logging removed for production
     // Fallback: redirect to login page
     router.push('/login')
   }

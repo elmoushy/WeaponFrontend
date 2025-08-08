@@ -350,7 +350,7 @@ const getSliderData = computed(() => {
       }
     ]
   } catch (error) {
-    console.error('Error in getSliderData computed:', error)
+    // Logging removed for production
     return []
   }
 })
@@ -370,7 +370,7 @@ const getAdditionalNewsCards = computed(() => {
     
     return cardsNews.value.slice(startIndex)
   } catch (error) {
-    console.error('Error in getAdditionalNewsCards computed:', error)
+    // Logging removed for production
     return []
   }
 })
@@ -386,21 +386,21 @@ const handleImageError = (event: Event) => {
 const initializeData = async () => {
   try {
     await Promise.all([
-      loadSliderNews({ is_active: true }).catch(err => {
-        console.warn('Failed to load slider news:', err)
+      loadSliderNews({ is_active: true }).catch(_err => {
+        // Logging removed for production
         return Promise.resolve()
       }),
-      loadCardsNews({ page_size: 20 }).catch(err => {
-        console.warn('Failed to load cards news:', err)
+      loadCardsNews({ page_size: 20 }).catch(_err => {
+        // Logging removed for production
         return Promise.resolve()
       }),
-      loadAchievements().catch(err => {
-        console.warn('Failed to load achievements:', err)
+      loadAchievements().catch(_err => {
+        // Logging removed for production
         return Promise.resolve()
       })
     ])
   } catch (error) {
-    console.error('Error initializing data:', error)
+    // Logging removed for production
   }
 }
 

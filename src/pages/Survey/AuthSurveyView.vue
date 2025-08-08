@@ -395,7 +395,7 @@ const loadSurvey = async () => {
       error.value = t('survey.auth.errors.surveyNotFound')
     }
   } catch (err: any) {
-    console.error('Failed to load survey:', err)
+    // Logging removed for production
     
     if (err.message?.includes('403') || err.message?.includes('Access denied')) {
       accessDenied.value = true
@@ -488,7 +488,7 @@ const submitSurvey = async () => {
     showThankYouModal.value = true
     
   } catch (err: any) {
-    console.error('Failed to submit survey:', err)
+    // Logging removed for production
     questionError.value = err.message || t('survey.auth.errors.submitFailed')
   } finally {
     isSubmitting.value = false

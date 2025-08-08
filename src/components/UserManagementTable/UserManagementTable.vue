@@ -90,10 +90,6 @@
               <i :class="getSortIcon('role')"></i>
             </th>
             <th>{{ t('userManagement.users.columns.status') }}</th>
-            <th :class="$style.sortableColumn" @click="onSortChange('last_login')">
-              {{ t('userManagement.users.columns.lastLogin') }}
-              <i :class="getSortIcon('last_login')"></i>
-            </th>
             <th>{{ t('userManagement.users.columns.actions') }}</th>
           </tr>
         </thead>
@@ -126,9 +122,6 @@
               <span :class="[$style.statusBadge, user.is_active ? $style.active : $style.inactive]">
                 {{ user.is_active ? t('userManagement.users.status.active') : t('userManagement.users.status.inactive') }}
               </span>
-            </td>
-            <td :class="$style.lastLoginColumn">
-              {{ formatDate(user.last_login) }}
             </td>
             <td :class="$style.actionsColumn">
               <div :class="$style.actionButtons">
@@ -276,19 +269,6 @@ const canEditUser = (user: User) => {
 const getRoleDisplay = (role: string) => {
   const roleObj = props.roles.find(r => r.value === role)
   return roleObj?.display || role
-}
-
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return t.value('common.never')
-  
-  const date = new Date(dateString)
-  return new Intl.DateTimeFormat(store.currentLanguage, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(date)
 }
 
 const getSortIcon = (field: string) => {

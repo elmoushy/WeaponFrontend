@@ -253,7 +253,7 @@ const handleLogin = async () => {
       }
     }
   } catch (error: any) {
-    console.error('Login error:', error)
+    // Logging removed for production
   }
 }
 
@@ -268,7 +268,7 @@ onMounted(async () => {
       router.replace(redirectTo)
     }
   } catch (error) {
-    console.error('Auth initialization error:', error)
+    // Logging removed for production
   }
 })
 </script>

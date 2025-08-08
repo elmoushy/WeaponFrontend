@@ -211,34 +211,34 @@ const hasChanges = computed(() => {
 // Methods
 const refreshData = async () => {
   // await refreshBackendData() // Method not available
-  console.log('Refresh data called')
+  // Logging removed for production
 }
 
 const loadDetailedProfile = async () => {
   try {
     // await fetchUserProfile() // Method not available
-    console.log('Load detailed profile called')
+    // Logging removed for production
   } catch (err) {
-    console.error('Failed to load detailed profile:', err)
+    // Logging removed for production
   }
 }
 
 const loadUserStats = async () => {
   try {
     // await fetchUserStats() // Method not available
-    console.log('Load user stats called')
+    // Logging removed for production
   } catch (err) {
-    console.error('Failed to load user stats:', err)
+    // Logging removed for production
   }
 }
 
 const testHealthCheck = async () => {
   try {
     // const health = await healthCheck() // Method not available
-    console.log('Health check called')
+    // Logging removed for production
     // alert(`Health Check: ${health.status} - ${health.message}`)
   } catch (err) {
-    console.error('Health check failed:', err)
+    // Logging removed for production
   }
 }
 
@@ -247,14 +247,11 @@ const handleUpdateProfile = async () => {
   
   try {
     updating.value = true
-    // await updateUserProfile({ // Method not available
+    // await updateUserProfile({
     //   first_name: updateForm.value.first_name.trim() || undefined,
     //   last_name: updateForm.value.last_name.trim() || undefined
     // })
-    console.log('Update profile called with:', {
-      first_name: updateForm.value.first_name.trim() || undefined,
-      last_name: updateForm.value.last_name.trim() || undefined
-    })
+    // Logging removed for production
     
     // Clear form
     updateForm.value.first_name = ''
@@ -262,7 +259,7 @@ const handleUpdateProfile = async () => {
     
     alert('Profile updated successfully!')
   } catch (err) {
-    console.error('Failed to update profile:', err)
+    // Logging removed for production
     alert('Failed to update profile. Please try again.')
   } finally {
     updating.value = false
@@ -274,7 +271,7 @@ const handleLogout = async () => {
     await logout()
     router.push('/login')
   } catch (err) {
-    console.error('Logout error:', err)
+    // Logging removed for production
   }
 }
 
@@ -296,7 +293,7 @@ onMounted(async () => {
         loadUserStats()
       ])
     } catch (err) {
-      console.error('Failed to load profile data:', err)
+      // Logging removed for production
     }
   }
 })

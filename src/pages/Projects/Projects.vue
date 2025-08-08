@@ -569,7 +569,7 @@ const deleteItem = async (file: FileItem | FolderItem) => {
       await deleteFile(file.id)
     }
   } catch (err) {
-    console.error('Error deleting item:', err)
+    // Logging removed for production
   }
 }
 
@@ -631,7 +631,7 @@ onMounted(async () => {
     await initialize()
     await loadUsersForSharing()
   } catch (err) {
-    console.error('Error initializing Projects page:', err)
+    // Logging removed for production
   }
 })
 </script>

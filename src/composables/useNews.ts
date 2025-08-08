@@ -44,7 +44,7 @@ export function usePublicNews() {
       sliderNews.value = Array.isArray(data) ? data : []
     } catch (err: any) {
       error.value = err.message || 'Failed to load slider news'
-      console.error('Error loading slider news:', err)
+      // Logging removed for production
       sliderNews.value = [] // Ensure it's always an array on error
     } finally {
       loading.value = false
@@ -69,7 +69,7 @@ export function usePublicNews() {
       pagination.value = response.pagination
     } catch (err: any) {
       error.value = err.message || 'Failed to load cards news'
-      console.error('Error loading cards news:', err)
+      // Logging removed for production
       cardsNews.value = [] // Ensure it's always an array on error
     } finally {
       loading.value = false
@@ -97,7 +97,7 @@ export function usePublicNews() {
       pagination.value = response.pagination
     } catch (err: any) {
       error.value = err.message || 'Failed to load more cards news'
-      console.error('Error loading more cards news:', err)
+      // Logging removed for production
     } finally {
       loading.value = false
     }
@@ -118,7 +118,7 @@ export function usePublicNews() {
       achievements.value = Array.isArray(data) ? data : []
     } catch (err: any) {
       error.value = err.message || 'Failed to load achievements'
-      console.error('Error loading achievements:', err)
+      // Logging removed for production
       achievements.value = [] // Ensure it's always an array on error
     } finally {
       loading.value = false
@@ -132,7 +132,7 @@ export function usePublicNews() {
       return newsItem
     } catch (err: any) {
       error.value = err.message || 'Failed to load news item'
-      console.error('Error loading news item:', err)
+      // Logging removed for production
       return null
     }
   }
@@ -207,7 +207,7 @@ export function useAdminNews() {
         sliderNews.value = Array.isArray(data) ? data : []
       } catch (err: any) {
         error.value = err.message || 'Failed to load slider news'
-        console.error('Error loading slider news:', err)
+        // Logging removed for production
         sliderNews.value = [] // Ensure it's always an array on error
       } finally {
         loading.value = false
@@ -226,7 +226,7 @@ export function useAdminNews() {
         return newItem
       } catch (err: any) {
         error.value = err.message || 'Failed to create slider news'
-        console.error('Error creating slider news:', err)
+        // Logging removed for production
         throw err
       } finally {
         saving.value = false
@@ -248,7 +248,7 @@ export function useAdminNews() {
         return updatedItem
       } catch (err: any) {
         error.value = err.message || 'Failed to update slider news'
-        console.error('Error updating slider news:', err)
+        // Logging removed for production
         throw err
       } finally {
         saving.value = false
@@ -265,7 +265,7 @@ export function useAdminNews() {
         successMessage.value = 'Slider news deleted successfully'
       } catch (err: any) {
         error.value = err.message || 'Failed to delete slider news'
-        console.error('Error deleting slider news:', err)
+        // Logging removed for production
         throw err
       } finally {
         saving.value = false
@@ -291,7 +291,7 @@ export function useAdminNews() {
         return updatedItem
       } catch (err: any) {
         error.value = err.message || 'Failed to update main image'
-        console.error('Error updating main image:', err)
+        // Logging removed for production
         throw err
       } finally {
         saving.value = false
@@ -322,7 +322,7 @@ export function useAdminNews() {
         return updatedItem
       } catch (err: any) {
         error.value = err.message || 'Failed to upload images'
-        console.error('Error uploading images:', err)
+        // Logging removed for production
         throw err
       } finally {
         saving.value = false
@@ -347,7 +347,7 @@ export function useAdminNews() {
         cardsNews.value = Array.isArray(response.results) ? response.results : []
       } catch (err: any) {
         error.value = err.message || 'Failed to load cards news'
-        console.error('Error loading cards news:', err)
+        // Logging removed for production
         cardsNews.value = [] // Ensure it's always an array on error
       } finally {
         loading.value = false
@@ -366,7 +366,7 @@ export function useAdminNews() {
         return newItem
       } catch (err: any) {
         error.value = err.message || 'Failed to create cards news'
-        console.error('Error creating cards news:', err)
+        // Logging removed for production
         throw err
       } finally {
         saving.value = false
@@ -388,7 +388,7 @@ export function useAdminNews() {
         return updatedItem
       } catch (err: any) {
         error.value = err.message || 'Failed to update cards news'
-        console.error('Error updating cards news:', err)
+        // Logging removed for production
         throw err
       } finally {
         saving.value = false
@@ -405,7 +405,7 @@ export function useAdminNews() {
         successMessage.value = 'Cards news deleted successfully'
       } catch (err: any) {
         error.value = err.message || 'Failed to delete cards news'
-        console.error('Error deleting cards news:', err)
+        // Logging removed for production
         throw err
       } finally {
         saving.value = false
@@ -431,7 +431,7 @@ export function useAdminNews() {
         return updatedItem
       } catch (err: any) {
         error.value = err.message || 'Failed to update main image'
-        console.error('Error updating main image:', err)
+        // Logging removed for production
         throw err
       } finally {
         saving.value = false
@@ -454,7 +454,7 @@ export function useAdminNews() {
         achievements.value = Array.isArray(data) ? data : []
       } catch (err: any) {
         error.value = err.message || 'Failed to load achievements'
-        console.error('Error loading achievements:', err)
+        // Logging removed for production
         achievements.value = [] // Ensure it's always an array on error
       } finally {
         loading.value = false
@@ -473,7 +473,7 @@ export function useAdminNews() {
         return newItem
       } catch (err: any) {
         error.value = err.message || 'Failed to create achievement'
-        console.error('Error creating achievement:', err)
+        // Logging removed for production
         throw err
       } finally {
         saving.value = false
@@ -495,7 +495,7 @@ export function useAdminNews() {
         return updatedItem
       } catch (err: any) {
         error.value = err.message || 'Failed to update achievement'
-        console.error('Error updating achievement:', err)
+        // Logging removed for production
         throw err
       } finally {
         saving.value = false
@@ -512,7 +512,7 @@ export function useAdminNews() {
         successMessage.value = 'Achievement deleted successfully'
       } catch (err: any) {
         error.value = err.message || 'Failed to delete achievement'
-        console.error('Error deleting achievement:', err)
+        // Logging removed for production
         throw err
       } finally {
         saving.value = false
@@ -538,7 +538,7 @@ export function useAdminNews() {
         return updatedItem
       } catch (err: any) {
         error.value = err.message || 'Failed to update main image'
-        console.error('Error updating main image:', err)
+        // Logging removed for production
         throw err
       } finally {
         saving.value = false

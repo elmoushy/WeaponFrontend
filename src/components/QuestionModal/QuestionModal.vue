@@ -459,9 +459,9 @@ const handleSubmit = async () => {
     
     emit('save', submitData)
   } catch (error) {
-    console.error('Failed to submit question:', error)
+    // Logging removed for production
     // store.showNotification?.(t.value('survey.errors.questionAddFailed'), 'error')
-    console.error(t.value('survey.errors.questionAddFailed'))
+    // Logging removed for production)
   } finally {
     isLoading.value = false
   }

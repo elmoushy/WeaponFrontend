@@ -402,7 +402,7 @@ const loadSurveys = async () => {
     
   } catch (err: any) {
     error.value = err.message || t('survey.shared.errors.loadFailed')
-    console.error('Error loading shared surveys:', err)
+    // Logging removed for production
   } finally {
     isLoading.value = false
   }

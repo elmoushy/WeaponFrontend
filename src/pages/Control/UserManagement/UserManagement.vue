@@ -377,12 +377,12 @@ const handleUserAction = async (action: string, user: User) => {
         break
     }
   } catch (err) {
-    console.error('User action error:', err)
+    // Logging removed for production
   }
 }
 
 const handleGroupAction = async (action: string, group: Group) => {
-  console.log('handleGroupAction called with:', { action, group })
+  // Logging removed for production
   try {
     switch (action) {
       case 'view':
@@ -397,7 +397,7 @@ const handleGroupAction = async (action: string, group: Group) => {
         }
         break
       case 'add_users':
-        console.log('Opening AddUsersToGroupModal for group:', group)
+        // Logging removed for production
         openAddUsersToGroupModal(group)
         break
       case 'view_members':
@@ -405,7 +405,7 @@ const handleGroupAction = async (action: string, group: Group) => {
         break
     }
   } catch (err) {
-    console.error('Group action error:', err)
+    // Logging removed for production
   }
 }
 
@@ -432,7 +432,7 @@ const handleUserSave = async (userData: any) => {
     }
     closeUserModal()
   } catch (err) {
-    console.error('User save error:', err)
+    // Logging removed for production
   }
 }
 
@@ -461,7 +461,7 @@ const handleGroupSave = async (groupData: any) => {
       }, 300) // Small delay to allow modal transition
     }
   } catch (err) {
-    console.error('Group save error:', err)
+    // Logging removed for production
   }
 }
 
@@ -481,14 +481,14 @@ const handleBulkActionApply = async (actionData: any) => {
     closeBulkActionModal()
     clearUserSelection()
   } catch (err) {
-    console.error('Bulk action error:', err)
+    // Logging removed for production
   }
 }
 
 // Add Users to Group Modal Functions
 const openAddUsersToGroupModal = async (group: Group) => {
   try {
-    console.log('openAddUsersToGroupModal called with group:', group)
+    // Logging removed for production
     
     // Fetch the detailed groups information with members and admins
     const detailedGroupsResponse = await userManagementService.getGroupsWithDetails()
@@ -496,15 +496,15 @@ const openAddUsersToGroupModal = async (group: Group) => {
     // Find the detailed group data with members
     const detailedGroup = detailedGroupsResponse.groups.find((g: Group) => g.id === group.id)
     if (!detailedGroup) {
-      console.error('Could not find detailed group data')
+      // Logging removed for production
       return
     }
     
-    console.log('Found detailed group with members:', detailedGroup)
+    // Logging removed for production
     selectedGroupForAddUsers.value = detailedGroup
     addUsersToGroupModalVisible.value = true
   } catch (error) {
-    console.error('Error fetching detailed group data for AddUsersToGroupModal:', error)
+    // Logging removed for production
     // Fallback to the original group if detailed fetch fails
     selectedGroupForAddUsers.value = group
     addUsersToGroupModalVisible.value = true
@@ -516,8 +516,8 @@ const closeAddUsersToGroupModal = () => {
   selectedGroupForAddUsers.value = null
 }
 
-const handleAddUsersToGroupSuccess = async (data: { group: Group; addedUsers: User[] }) => {
-  console.log('Users added to group successfully:', data)
+const handleAddUsersToGroupSuccess = async (_data: { group: Group; addedUsers: User[] }) => {
+  // Logging removed for production
   
   // Refresh the data
   await initialize()
@@ -540,8 +540,8 @@ const closeUserRoleModal = () => {
   selectedUserForRole.value = null
 }
 
-const handleUserRoleChangeSuccess = async (data: { user: User; oldRole: string; newRole: string }) => {
-  console.log('User role changed successfully:', data)
+const handleUserRoleChangeSuccess = async (_data: { user: User; oldRole: string; newRole: string }) => {
+  // Logging removed for production
   
   // Refresh the data
   await initialize()

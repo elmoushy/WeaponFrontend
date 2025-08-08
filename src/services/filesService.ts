@@ -529,7 +529,7 @@ class FilesService {
         breadcrumbs.push({ id: folder.id, name: folder.name })
         currentFolderId = folder.parent
       } catch (error) {
-        console.error('Error fetching folder for breadcrumbs:', error)
+        // Logging removed for production
         break
       }
     }
@@ -552,7 +552,7 @@ class FilesService {
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
     } catch (error) {
-      console.error('Error downloading file:', error)
+      // Logging removed for production
       throw error
     }
   }
@@ -572,7 +572,7 @@ class FilesService {
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
     } catch (error) {
-      console.error('Error downloading folder:', error)
+      // Logging removed for production
       throw error
     }
   }

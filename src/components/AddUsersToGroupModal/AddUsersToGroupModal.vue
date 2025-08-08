@@ -188,7 +188,7 @@ const loadUsers = async () => {
     const response = await userManagementService.getUsers()
     allUsers.value = response.users
   } catch (error) {
-    console.error('Error loading users:', error)
+    // Logging removed for production
     // You could emit an error event here
   } finally {
     loadingUsers.value = false
@@ -242,7 +242,7 @@ const handleAddUsers = async () => {
     searchQuery.value = ''
     
   } catch (error) {
-    console.error('Error adding users to group:', error)
+    // Logging removed for production
     // You could show an error notification here
   } finally {
     saving.value = false
@@ -251,7 +251,7 @@ const handleAddUsers = async () => {
 
 // Load users when modal opens
 watch(() => props.visible, (visible) => {
-  console.log('AddUsersToGroupModal visibility changed to:', visible)
+  // Logging removed for production
   if (visible) {
     loadUsers()
     // Reset form when modal opens

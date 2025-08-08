@@ -94,7 +94,7 @@ export const useBackendAuth = () => {
       return profile
 
     } catch (err: any) {
-      console.error('❌ Failed to fetch user profile:', err)
+      // Logging removed for production
       error.value = handleApiError(err)
       return null
     } finally {
@@ -153,7 +153,7 @@ export const useBackendAuth = () => {
         await authAPI.logout()
       }
     } catch (err: any) {
-      console.error('❌ Backend logout error:', err)
+      // Logging removed for production
     } finally {
       clearBackendData()
     }
@@ -171,6 +171,7 @@ export const useBackendAuth = () => {
       return popupToken
 
     } catch (err) {
+      
       error.value = 'Failed to acquire authentication token'
       return null
     }

@@ -23,25 +23,25 @@ const msalConfig: Configuration = {
   },
   system: {
     loggerOptions: {
-      loggerCallback: (level, message, containsPii) => {
+      loggerCallback: (level, _message, containsPii) => {
         if (containsPii) {
           return
         }
         switch (level) {
           case 1: // Error
-            console.error(message)
+            // Logging removed for production
             break
           case 2: // Warning
-            console.warn(message)
+            // Logging removed for production
             break
           case 3: // Info
             if (import.meta.env.VITE_ENVIRONMENT === 'development') {
-              console.info(message)
+              // Logging removed for production
             }
             break
           case 4: // Verbose
             if (import.meta.env.VITE_ENVIRONMENT === 'development') {
-              console.debug(message)
+              // Logging removed for production
             }
             break
         }
@@ -88,7 +88,7 @@ export const useAuth = () => {
         }
       }
     } catch (err) {
-      console.error('MSAL initialization error:', err)
+      // Logging removed for production
       error.value = 'Failed to initialize authentication'
     } finally {
       isLoading.value = false
@@ -110,7 +110,7 @@ export const useAuth = () => {
       
       await msalInstance.loginRedirect(loginRequest)
     } catch (err) {
-      console.error('Login error:', err)
+      // Logging removed for production
       error.value = 'Login failed'
       isLoading.value = false
     }
@@ -125,7 +125,7 @@ export const useAuth = () => {
       const response = await msalInstance.loginPopup(loginRequest)
       setActiveAccount(response.account)
     } catch (err) {
-      console.error('Login popup error:', err)
+      // Logging removed for production
       error.value = 'Login failed'
     } finally {
       isLoading.value = false
@@ -157,12 +157,12 @@ export const useAuth = () => {
           // After redirect, the token will be available in the next session
           return null
         } catch (redirectErr) {
-          console.error('Token acquisition redirect error:', redirectErr)
+          // Logging removed for production
           error.value = 'Failed to acquire token'
           return null
         }
       } else {
-        console.error('Token acquisition error:', err)
+        // Logging removed for production
         error.value = 'Failed to acquire token'
         return null
       }
@@ -195,7 +195,7 @@ export const useAuth = () => {
         throw silentErr
       }
     } catch (err) {
-      console.error('Token acquisition popup error:', err)
+      // Logging removed for production
       error.value = 'Failed to acquire token'
       return null
     }
@@ -226,12 +226,12 @@ export const useAuth = () => {
           // After redirect, the token will be available in the next session
           return null
         } catch (redirectErr) {
-          console.error('ID token acquisition redirect error:', redirectErr)
+          // Logging removed for production
           error.value = 'Failed to acquire ID token'
           return null
         }
       } else {
-        console.error('ID token acquisition error:', err)
+        // Logging removed for production
         error.value = 'Failed to acquire ID token'
         return null
       }
@@ -264,7 +264,7 @@ export const useAuth = () => {
         throw silentErr
       }
     } catch (err) {
-      console.error('ID token acquisition popup error:', err)
+      // Logging removed for production
       error.value = 'Failed to acquire ID token'
       return null
     }
@@ -284,7 +284,7 @@ export const useAuth = () => {
       setActiveAccount(null)
       await msalInstance.logoutRedirect(logoutRequest)
     } catch (err) {
-      console.error('Logout error:', err)
+      // Logging removed for production
       error.value = 'Logout failed'
       isLoading.value = false
     }
@@ -303,7 +303,7 @@ export const useAuth = () => {
       await msalInstance.logoutPopup(logoutRequest)
       setActiveAccount(null)
     } catch (err) {
-      console.error('Logout popup error:', err)
+      // Logging removed for production
       error.value = 'Logout failed'
     } finally {
       isLoading.value = false

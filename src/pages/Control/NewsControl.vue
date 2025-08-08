@@ -657,7 +657,7 @@ const submitForm = async () => {
     }
     
   } catch (err: any) {
-    console.error('Form submission error:', err)
+    // Logging removed for production
     error.value = err.message || t('control.errors.submitFailed') || 'Failed to submit form'
   }
 }
@@ -681,7 +681,7 @@ const deleteItem = async (type: 'slider' | 'cards' | 'achievements', id: number)
     
     successMessage.value = t(`control.success.${type}Deleted`) || `${itemName} deleted successfully`
   } catch (err: any) {
-    console.error('Delete error:', err)
+    // Logging removed for production
     error.value = err.message || t('control.errors.deleteFailed') || `Failed to delete ${itemName}`
   }
 }

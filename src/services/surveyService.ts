@@ -80,7 +80,7 @@ class SurveyService {
 
       return response.data
     } catch (error: any) {
-      console.error('API Call Error for', url, ':', error)
+      // Logging removed for production
       if (error.response?.data?.message) {
         throw new Error(error.response.data.message)
       }
@@ -109,7 +109,7 @@ class SurveyService {
       // Django returns paginated response directly
       return response.data as PaginatedApiResponse<Survey>
     } catch (error: any) {
-      console.error('Error in getAllSurveys:', error)
+      // Logging removed for production
       // Return a fallback structure if the API call fails
       return {
         count: 0,
@@ -166,7 +166,7 @@ class SurveyService {
         throw new Error(response.data.message || 'Failed to update survey')
       }
     } catch (error) {
-      console.error('Failed to update survey:', error)
+      // Logging removed for production
       throw error
     }
   }
@@ -249,7 +249,7 @@ class SurveyService {
         throw new Error(response.data.message || 'Failed to generate public link')
       }
     } catch (error) {
-      console.error('Failed to generate public link:', error)
+      // Logging removed for production
       throw error
     }
   }
@@ -287,7 +287,7 @@ class SurveyService {
           status: 'success'
         }
       }
-      console.error('Failed to get public link:', error)
+      // Logging removed for production
       throw error
     }
   }
@@ -306,7 +306,7 @@ class SurveyService {
         throw new Error(response.data.message || 'Failed to revoke public link')
       }
     } catch (error) {
-      console.error('Failed to revoke public link:', error)
+      // Logging removed for production
       throw error
     }
   }
@@ -342,7 +342,7 @@ class SurveyService {
         throw new Error(response.data.message || 'Failed to search users')
       }
     } catch (error) {
-      console.error('Failed to search users:', error)
+      // Logging removed for production
       throw error
     }
   }
@@ -363,7 +363,7 @@ class SurveyService {
         throw new Error(response.data.message || 'Failed to get admin groups')
       }
     } catch (error) {
-      console.error('Failed to get admin groups:', error)
+      // Logging removed for production
       throw error
     }
   }
@@ -396,7 +396,7 @@ class SurveyService {
         throw new Error(response.data.message || 'Failed to share survey')
       }
     } catch (error) {
-      console.error('Failed to share survey:', error)
+      // Logging removed for production
       throw error
     }
   }
@@ -436,7 +436,7 @@ class SurveyService {
         throw new Error(response.data.message || 'Failed to validate access')
       }
     } catch (error) {
-      console.error('Failed to validate access:', error)
+      // Logging removed for production
       throw error
     }
   }
@@ -466,7 +466,7 @@ class SurveyService {
         throw new Error(response.data.message || 'Failed to submit survey response')
       }
     } catch (error) {
-      console.error('Failed to submit survey response:', error)
+      // Logging removed for production
       
       if (error instanceof Error) {
         throw error
@@ -578,7 +578,7 @@ class SurveyService {
         data: analyticsData
       }
     } catch (error: any) {
-      console.error('Error in getAnalyticsDashboard:', error)
+      // Logging removed for production
       
       // Return a fallback analytics object if there's an error
       return {
@@ -746,7 +746,7 @@ class SurveyService {
 
       return response.data
     } catch (error: any) {
-      console.error('Token surveys API error:', error)
+      // Logging removed for production
       
       // Handle specific error cases from the API documentation
       if (error.response?.status === 401) {
@@ -797,7 +797,7 @@ class SurveyService {
         data: response.data
       } as ApiResponse<SharedSurveysResponse>
     } catch (error: any) {
-      console.error('Error in getMySharedSurveys:', error)
+      // Logging removed for production
       
       // Handle specific error cases
       if (error.response?.status === 401) {
@@ -821,7 +821,7 @@ class SurveyService {
         data: response.data.data
       } as AuthSurveyResponse
     } catch (error: any) {
-      console.error('Error in getAuthSurvey:', error)
+      // Logging removed for production
       
       if (error.response?.status === 401) {
         throw new Error('Authentication required to access this survey')
@@ -845,7 +845,7 @@ class SurveyService {
         data: response.data.data
       } as AuthResponseResult
     } catch (error: any) {
-      console.error('Error in submitAuthResponse:', error)
+      // Logging removed for production
       
       if (error.response?.status === 400) {
         throw new Error(error.response?.data?.message || 'Invalid request data')

@@ -114,7 +114,7 @@ const testGenerateLink = async () => {
   } catch (err: any) {
     error.value = `Failed to generate link: ${err.message}`
     resultText.value = '❌ Failed to generate public link'
-    console.error(err)
+    // Logging removed for production
   } finally {
     loading.value.generate = false
   }
@@ -139,7 +139,7 @@ const testGetLink = async () => {
   } catch (err: any) {
     error.value = `Failed to get link: ${err.message}`
     resultText.value = '❌ Failed to get existing link'
-    console.error(err)
+    // Logging removed for production
   } finally {
     loading.value.get = false
   }
@@ -158,7 +158,7 @@ const testValidateAccess = async () => {
   } catch (err: any) {
     error.value = `Failed to validate access: ${err.message}`
     resultText.value = '❌ Failed to validate access'
-    console.error(err)
+    // Logging removed for production
   } finally {
     loading.value.validate = false
   }
@@ -181,7 +181,7 @@ const testRevokeLink = async () => {
   } catch (err: any) {
     error.value = `Failed to revoke link: ${err.message}`
     resultText.value = '❌ Failed to revoke public link'
-    console.error(err)
+    // Logging removed for production
   } finally {
     loading.value.revoke = false
   }
@@ -203,7 +203,7 @@ const testSearchUsers = async () => {
   } catch (err: any) {
     error.value = `Failed to search users: ${err.message}`
     resultText.value = '❌ Failed to search users'
-    console.error(err)
+    // Logging removed for production
   } finally {
     loading.value.search = false
   }
@@ -215,7 +215,7 @@ const copyLink = async () => {
       await navigator.clipboard.writeText(generatedLink.value.link)
       alert('Link copied to clipboard!')
     } catch (err) {
-      console.error('Failed to copy link:', err)
+      // Logging removed for production
     }
   }
 }

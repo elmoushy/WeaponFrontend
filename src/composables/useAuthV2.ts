@@ -172,7 +172,7 @@ export const useBackendAPI = () => {
       operationError.value = null
       return await operation()
     } catch (err: any) {
-      console.error(errorMessage, err)
+      // Logging removed for production
       operationError.value = err.message || errorMessage
       return null
     } finally {

@@ -445,7 +445,7 @@ const loadSurveyResponses = async () => {
       throw new Error('Invalid response format')
     }
   } catch (error) {
-    console.error('Failed to load survey responses:', error)
+    // Logging removed for production
     
     // Fallback to empty state on error
     survey.value = {
@@ -523,7 +523,7 @@ const performExport = async () => {
       throw new Error('Export failed')
     }
   } catch (error) {
-    console.error('Export failed:', error)
+    // Logging removed for production
     alert(t.value('survey.responses.exportError'))
   } finally {
     isExporting.value = false

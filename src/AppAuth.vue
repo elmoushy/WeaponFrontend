@@ -243,7 +243,7 @@ onMounted(async () => {
     await initialize()
     setupSessionMonitoring()
   } catch (err) {
-    console.error('Failed to initialize auth:', err)
+    // Logging removed for production
   }
 })
 </script>

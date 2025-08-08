@@ -84,7 +84,7 @@ const refreshAccessToken = async (): Promise<string | null> => {
       return null
     }
   } catch (error) {
-    console.error('Token refresh failed:', error)
+    // Logging removed for production
     clearTokens()
     redirectToLogin()
     return null
@@ -116,7 +116,7 @@ apiClient.interceptors.request.use(
     
     // Log the request for debugging
     if (import.meta.env.VITE_ENVIRONMENT === 'development') {
-      console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`)
+      // Logging removed for production} ${config.url}`)
     }
     
     return config
@@ -131,7 +131,7 @@ apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
     // Log successful responses in development
     if (import.meta.env.VITE_ENVIRONMENT === 'development') {
-      console.log(`✅ API Response: ${response.status} ${response.config.method?.toUpperCase()} ${response.config.url}`)
+      // Logging removed for production} ${response.config.url}`)
     }
     return response
   },
@@ -154,8 +154,8 @@ apiClient.interceptors.response.use(
     
     // Log API errors in development
     if (import.meta.env.VITE_ENVIRONMENT === 'development') {
-      console.error(`❌ API Error: ${error.response?.status} ${error.config?.method?.toUpperCase()} ${error.config?.url}`)
-      console.error('Error details:', error.response?.data)
+      // Logging removed for production} ${error.config?.url}`)
+      // Logging removed for production
     }
     
     return Promise.reject(error)

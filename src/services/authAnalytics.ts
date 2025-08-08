@@ -134,10 +134,12 @@ class AuthAnalytics {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(metric)
-        }).catch(console.error)
+        }).catch(() => {
+          // Error handling removed for production
+        })
       }
     } catch (error) {
-      console.error('Failed to send analytics:', error)
+      // Logging removed for production
     }
   }
 

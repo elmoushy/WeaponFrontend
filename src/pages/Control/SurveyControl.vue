@@ -465,12 +465,12 @@ const loadSurveys = async () => {
     } else if (response && Array.isArray(response)) {
       surveys.value = response
     } else {
-      console.warn('Unexpected response structure:', response)
+      // Logging removed for production
       surveys.value = []
     }
     
   } catch (error) {
-    console.error('Failed to load surveys:', error)
+    // Logging removed for production
     
     // Provide demo data for UI showcase when API is not available
     surveys.value = [
@@ -539,7 +539,7 @@ const loadAnalytics = async () => {
     const response = await surveyService.getAnalyticsDashboard()
     analytics.value = response.data
   } catch (error) {
-    console.error('Failed to load analytics:', error)
+    // Logging removed for production
     // Provide fallback demo data for better UI presentation
     analytics.value = {
       total_surveys: 12,
@@ -614,7 +614,7 @@ const handleAccessSave = async (_data: any) => {
     selectedSurveyForAccess.value = null
     await loadSurveys() // Refresh the surveys list
   } catch (error) {
-    console.error('Failed to save access settings:', error)
+    // Logging removed for production
   }
 }
 
@@ -634,7 +634,7 @@ const cloneSurvey = async (surveyId: string) => {
     
     await loadSurveys()
   } catch (error) {
-    console.error('Failed to clone survey:', error)
+    // Logging removed for production
     alert('Failed to clone survey')
   }
 }
@@ -646,7 +646,7 @@ const deleteSurvey = async (surveyId: string) => {
       
       await loadSurveys()
     } catch (error) {
-      console.error('Failed to delete survey:', error)
+      // Logging removed for production
       alert('Failed to delete survey')
     }
   }
@@ -691,7 +691,7 @@ const handleSurveySave = async (surveyData: any, existingSurvey?: any) => {
               order: question.order
             })
           } catch (questionError) {
-            console.error('Failed to add question:', questionError)
+            // Logging removed for production
             // Continue adding other questions even if one fails
           }
         }
@@ -703,7 +703,7 @@ const handleSurveySave = async (surveyData: any, existingSurvey?: any) => {
     closeModal()
     await loadSurveys()
   } catch (error) {
-    console.error('Failed to save survey:', error)
+    // Logging removed for production
     alert(selectedSurveyForEdit.value 
       ? 'Failed to update survey' 
       : 'Failed to create survey')
@@ -745,7 +745,7 @@ const performBulkOperation = async (operation: string) => {
     selectedSurveys.value = []
     await loadSurveys()
   } catch (error) {
-    console.error('Bulk operation failed:', error)
+    // Logging removed for production
     alert('Bulk operation failed')
   } finally {
     bulkOperationLoading.value = false

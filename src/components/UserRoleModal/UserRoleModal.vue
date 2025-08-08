@@ -178,7 +178,7 @@ const handleRoleChange = async () => {
     selectedRole.value = ''
     
   } catch (error) {
-    console.error('Error changing user role:', error)
+    // Logging removed for production
     // You could show an error notification here
   } finally {
     saving.value = false
