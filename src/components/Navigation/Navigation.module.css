@@ -1035,6 +1035,10 @@
     display: none;
   }
   
+  .userInfo {
+    display: none !important;
+  }
+  
   .mobileToggle {
     display: flex !important;
     align-items: center;

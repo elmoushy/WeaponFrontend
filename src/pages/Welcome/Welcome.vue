@@ -386,15 +386,15 @@ const handleImageError = (event: Event) => {
 const initializeData = async () => {
   try {
     await Promise.all([
-      loadSliderNews({ is_active: true }).catch(_err => {
+      loadSliderNews({ is_active: true }).catch(() => {
         // Logging removed for production
         return Promise.resolve()
       }),
-      loadCardsNews({ page_size: 20 }).catch(_err => {
+      loadCardsNews({ page_size: 20 }).catch(() => {
         // Logging removed for production
         return Promise.resolve()
       }),
-      loadAchievements().catch(_err => {
+      loadAchievements().catch(() => {
         // Logging removed for production
         return Promise.resolve()
       })

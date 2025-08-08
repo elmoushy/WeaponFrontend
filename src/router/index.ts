@@ -203,48 +203,32 @@ const router = createRouter({
 
 // Authentication guard using JWT
 router.beforeEach(async (to, from, next) => {
-  // Import composables inside the guard to avoid circular dependency
   const { isAuthenticated, checkAuth, user } = useJWTAuth()
-  
   const requiresAuth = to.meta?.requiresAuth
   const requiresGuest = to.meta?.requiresGuest
   const requiresAdmin = to.meta?.requiresAdmin
-  
-  // Check authentication status
   let authenticated = isAuthenticated.value
-  
-  // If we don't have auth state, try to check from stored tokens
-  if (!authenticated && localStorage.getItem('access_token')) {
+  if (!authenticated) {
     try {
       authenticated = await checkAuth()
     } catch {
-      // Logging removed for production
+      authenticated = false
     }
   }
-  
   if (requiresAuth && !authenticated) {
-    // Route requires authentication but user is not authenticated
     const redirectPath = to.fullPath !== '/' ? to.fullPath : '/surveys'
-    next({
-      path: '/',
-      query: { redirect: redirectPath }
-    })
+    next({ path: '/', query: { redirect: redirectPath } })
   } else if (requiresGuest && authenticated) {
-    // Route requires guest (not authenticated) but user is authenticated
     const redirectTo = (from.query.redirect as string) || '/surveys'
     next(redirectTo)
   } else if (requiresAdmin && authenticated) {
-    // Route requires admin access - check user role
     const currentUser = user.value
     if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'super_admin')) {
-      // User is not admin or super_admin, redirect to surveys page
       next('/surveys')
     } else {
-      // User is admin or super_admin, allow access
       next()
     }
   } else {
-    // All good, proceed to route
     next()
   }
 })

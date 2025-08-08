@@ -516,7 +516,7 @@ const closeAddUsersToGroupModal = () => {
   selectedGroupForAddUsers.value = null
 }
 
-const handleAddUsersToGroupSuccess = async (_data: { group: Group; addedUsers: User[] }) => {
+const handleAddUsersToGroupSuccess = async () => {
   // Logging removed for production
   
   // Refresh the data
@@ -526,7 +526,7 @@ const handleAddUsersToGroupSuccess = async (_data: { group: Group; addedUsers: U
   closeAddUsersToGroupModal()
   
   // You could show a success notification here
-  // showNotification(`Added ${data.addedUsers.length} users to group successfully`)
+  // showNotification(`Added users to group successfully`)
 }
 
 // User Role Change Modal Functions
@@ -540,7 +540,7 @@ const closeUserRoleModal = () => {
   selectedUserForRole.value = null
 }
 
-const handleUserRoleChangeSuccess = async (_data: { user: User; oldRole: string; newRole: string }) => {
+const handleUserRoleChangeSuccess = async () => {
   // Logging removed for production
   
   // Refresh the data

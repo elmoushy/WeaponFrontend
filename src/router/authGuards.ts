@@ -14,30 +14,17 @@ declare module 'vue-router' {
 
 // JWT Auth helper function
 const getJWTAuthState = () => {
-  const token = localStorage.getItem('access_token')
-  const user = localStorage.getItem('user')
-  
-  if (token && user) {
-    try {
-      return {
-        isAuthenticated: true,
-        user: JSON.parse(user),
-        token
-      }
-    } catch {
-      return {
-        isAuthenticated: false,
-        user: null,
-        token: null
-      }
+  // Tokens no longer stored in localStorage; rely on reactive composable state only
+  try {
+    const storedUserRaw = null // legacy placeholder
+    if (storedUserRaw) {
+      const parsed = JSON.parse(storedUserRaw)
+      return { isAuthenticated: true, user: parsed, token: null }
     }
+  } catch {
+    // ignore
   }
-  
-  return {
-    isAuthenticated: false,
-    user: null,
-    token: null
-  }
+  return { isAuthenticated: false, user: null, token: null }
 }
 
 // Enhanced authentication guard

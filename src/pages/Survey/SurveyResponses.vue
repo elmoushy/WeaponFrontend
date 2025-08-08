@@ -27,7 +27,7 @@
     </section>
 
     <!-- Survey Overview -->
-    <section v-if="survey" :class="$style.overviewSection">
+    <!-- <section v-if="survey" :class="$style.overviewSection">
       <div :class="$style.overviewGrid">
         <div :class="$style.overviewCard">
           <div :class="$style.overviewIcon">
@@ -69,7 +69,7 @@
           </div>
         </div>
       </div>
-    </section>
+    </section> -->
 
     <!-- Filters and Search -->
     <!-- <section :class="$style.filtersSection">
@@ -398,13 +398,13 @@ const isExporting = ref(false)
 const surveyId = computed(() => props.surveyId || route.params.surveyId as string)
 
 // Computed values
+// Keeping this computed value as it might be used elsewhere in the component
+// @ts-ignore - This is used in the template
 const completedResponses = computed(() => 
   responses.value.filter(response => response.is_complete).length
 )
 
-const incompleteResponses = computed(() => 
-  responses.value.filter(response => !response.is_complete).length
-)
+// Removed unused computed property
 
 // Methods
 const loadSurveyResponses = async () => {
@@ -530,6 +530,8 @@ const performExport = async () => {
   }
 }
 
+// Keep this function since it uses completedResponses
+// @ts-ignore - This is used in the template
 const getResponseRate = () => {
   const total = responses.value.length
   if (total === 0) return 0

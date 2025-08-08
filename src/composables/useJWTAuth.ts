@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue'
-import { authAPI, handleApiError } from '../services/jwtAuthService'
+import { authAPI, handleApiError, silentRefreshAccessToken } from '../services/jwtAuthService'
 import type { UserProfile, LoginResponse } from '../types/auth.types'
 
 // Reactive state
@@ -8,21 +8,29 @@ const user = ref<UserProfile | null>(null)
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 
-// Initialize auth state from localStorage
-const initializeAuth = (): void => {
-  const storedUser = localStorage.getItem('user')
-  const accessToken = localStorage.getItem('access_token')
-  
-  if (storedUser && accessToken) {
-    try {
-      user.value = JSON.parse(storedUser)
-      isAuthenticated.value = true
-    } catch (err) {
-      // Logging removed for production
-      localStorage.removeItem('user')
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('refresh_token')
+// Initialize auth state (attempt silent refresh then load profile)
+const initializeAuth = async (): Promise<void> => {
+  try {
+    isLoading.value = true
+    // Attempt to obtain an access token if refresh cookie exists
+    const token = await silentRefreshAccessToken()
+    if (token) {
+      // Fetch user profile
+      try {
+        const profile = await authAPI.getCurrentUser()
+        user.value = profile.user
+        isAuthenticated.value = true
+      } catch {
+        // Failed to fetch profile – treat as unauthenticated
+        isAuthenticated.value = false
+        user.value = null
+      }
+    } else {
+      isAuthenticated.value = false
+      user.value = null
     }
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -32,16 +40,11 @@ export const useJWTAuth = () => {
     try {
       isLoading.value = true
       error.value = null
-      
       const response: LoginResponse = await authAPI.login(email, password)
-      
-      // Update reactive state
       user.value = response.user
       isAuthenticated.value = true
-      
       return { success: true }
     } catch (err: any) {
-      // Logging removed for production
       error.value = handleApiError(err)
       return { success: false, errors: err }
     } finally {
@@ -54,18 +57,13 @@ export const useJWTAuth = () => {
     try {
       isLoading.value = true
       error.value = null
-      
       await authAPI.logout()
-    } catch (err: any) {
-      // Logging removed for production
-      // Continue with logout even if API call fails
+    } catch {
+      // continue regardless
     } finally {
-      // Always clear local state
       user.value = null
       isAuthenticated.value = false
       isLoading.value = false
-      
-      // Redirect to login page
       window.location.href = '/login'
     }
   }
@@ -75,24 +73,14 @@ export const useJWTAuth = () => {
     try {
       isLoading.value = true
       error.value = null
-      
       const response = await authAPI.getCurrentUser()
       user.value = response.user
       isAuthenticated.value = true
-      
-      // Update localStorage
-      localStorage.setItem('user', JSON.stringify(response.user))
     } catch (err: any) {
-      // Logging removed for production
       error.value = handleApiError(err)
-      
-      // If unauthorized, clear auth state
       if (err.response?.status === 401) {
         user.value = null
         isAuthenticated.value = false
-        localStorage.removeItem('user')
-        localStorage.removeItem('access_token')
-        localStorage.removeItem('refresh_token')
       }
     } finally {
       isLoading.value = false
@@ -104,16 +92,10 @@ export const useJWTAuth = () => {
     try {
       isLoading.value = true
       error.value = null
-      
       const response = await authAPI.updateUserProfile(userData)
       user.value = response.user
-      
-      // Update localStorage
-      localStorage.setItem('user', JSON.stringify(response.user))
-      
       return { success: true }
     } catch (err: any) {
-      // Logging removed for production
       error.value = handleApiError(err)
       return { success: false, errors: err }
     } finally {
@@ -121,23 +103,12 @@ export const useJWTAuth = () => {
     }
   }
 
-  // Check if user is authenticated
+  // Check if user is authenticated (ensure access token present by trying profile fetch)
   const checkAuth = async (): Promise<boolean> => {
-    const accessToken = localStorage.getItem('access_token')
-    
-    if (!accessToken) {
-      user.value = null
-      isAuthenticated.value = false
-      return false
+    if (!isAuthenticated.value) {
+      await initializeAuth()
     }
-    
-    try {
-      await getCurrentUser()
-      return true
-    } catch (err: any) {
-      // Logging removed for production
-      return false
-    }
+    return isAuthenticated.value
   }
 
   // Clear error
@@ -160,9 +131,6 @@ export const useJWTAuth = () => {
     return (firstName + lastName).toUpperCase()
   })
 
-  // Initialize on composable creation
-  initializeAuth()
-
   return {
     // Reactive state
     isAuthenticated: isLoggedIn,
@@ -172,7 +140,7 @@ export const useJWTAuth = () => {
     hasError,
     userFullName,
     userInitials,
-    
+
     // Methods
     login,
     logout,
@@ -183,3 +151,6 @@ export const useJWTAuth = () => {
     initializeAuth
   }
 }
+
+// Kick off initial silent auth attempt (do not await)
+initializeAuth()

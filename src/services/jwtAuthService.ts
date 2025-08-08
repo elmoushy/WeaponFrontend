@@ -17,81 +17,71 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 15000,
+  withCredentials: true, // send/receive HttpOnly cookies (refresh token)
   headers: {
     'Content-Type': 'application/json',
   }
 })
 
-// JWT Token Management
+// JWT Token Management (in-memory only)
 let accessToken: string | null = null
-let refreshToken: string | null = null
+let refreshToken: string | null = null // kept for backward compatibility if backend still returns it
 
-// Set JWT tokens for API requests
+// Set JWT tokens for API requests (access token only in memory)
 export const setAuthTokens = (access: string | null, refresh: string | null = null): void => {
   accessToken = access
   if (refresh) {
+    // we do NOT persist refresh token – expect backend to store it in HttpOnly cookie
     refreshToken = refresh
   }
-  
   if (access) {
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${access}`
-    localStorage.setItem('access_token', access)
-    if (refresh) {
-      localStorage.setItem('refresh_token', refresh)
-    }
   } else {
     delete apiClient.defaults.headers.common['Authorization']
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
-    localStorage.removeItem('user')
   }
 }
 
-// Get stored JWT tokens on app initialization
-export const initializeAuthTokens = (): boolean => {
-  const storedAccessToken = localStorage.getItem('access_token')
-  const storedRefreshToken = localStorage.getItem('refresh_token')
-  
-  if (storedAccessToken) {
-    setAuthTokens(storedAccessToken, storedRefreshToken)
-    return true
-  }
-  return false
-}
-
-// Refresh access token using refresh token
-const refreshAccessToken = async (): Promise<string | null> => {
-  const currentRefreshToken = refreshToken || localStorage.getItem('refresh_token')
-  if (!currentRefreshToken) {
+// Attempt to silently obtain a new access token using refresh cookie
+export const silentRefreshAccessToken = async (): Promise<string | null> => {
+  try {
+    // Cookie-based refresh: backend should read refresh token from HttpOnly cookie
+    const response = await apiClient.post<TokenRefreshResponse>("/auth/token/refresh/", {})
+    if (response.status === 200 && response.data.access) {
+      setAuthTokens(response.data.access, response.data.refresh || null)
+      return response.data.access
+    }
+    return null
+  } catch {
+    clearTokens()
     return null
   }
-  
+}
+
+// Refresh access token using available method (cookie preferred)
+const refreshAccessToken = async (): Promise<string | null> => {
+  // Prefer cookie-based refresh path; fall back to legacy body-based if we still retained refreshToken
   try {
-    const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
-      refresh: currentRefreshToken
-    })
-    
-    const data = response.data
-    
-    if (response.status === 200) {
-      // Update stored tokens
-      setAuthTokens(data.access, data.refresh || currentRefreshToken)
-      return data.access
-    } else {
-      // Refresh token expired, clear tokens and redirect to login
-      clearTokens()
-      redirectToLogin()
-      return null
+    const token = await silentRefreshAccessToken()
+    if (token) return token
+
+    if (!refreshToken) return null
+    // Legacy fallback (if backend still expects token in body)
+    const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, { refresh: refreshToken }, { withCredentials: true })
+    if (response.status === 200 && response.data?.access) {
+      setAuthTokens(response.data.access, response.data.refresh || refreshToken)
+      return response.data.access
     }
-  } catch (error) {
-    // Logging removed for production
+    clearTokens()
+    redirectToLogin()
+    return null
+  } catch {
     clearTokens()
     redirectToLogin()
     return null
   }
 }
 
-// Clear all tokens
+// Clear all tokens (memory only)
 const clearTokens = (): void => {
   setAuthTokens(null, null)
   accessToken = null
@@ -108,56 +98,29 @@ const redirectToLogin = (): void => {
 // Request interceptor to ensure token is present
 apiClient.interceptors.request.use(
   (config) => {
-    // Ensure we have the latest access token
-    const token = accessToken || localStorage.getItem('access_token')
+    const token = accessToken
     if (token && !config.headers.Authorization) {
       config.headers.Authorization = `Bearer ${token}`
     }
-    
-    // Log the request for debugging
-    if (import.meta.env.VITE_ENVIRONMENT === 'development') {
-      // Logging removed for production} ${config.url}`)
-    }
-    
     return config
   },
-  (error) => {
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
 // Response interceptor to handle errors and token refresh
 apiClient.interceptors.response.use(
-  (response: AxiosResponse) => {
-    // Log successful responses in development
-    if (import.meta.env.VITE_ENVIRONMENT === 'development') {
-      // Logging removed for production} ${response.config.url}`)
-    }
-    return response
-  },
+  (response: AxiosResponse) => response,
   async (error: AxiosError<AuthError>) => {
     const originalRequest = error.config as any
-    
-    // Handle 401 errors (token expired)
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true
-      
-      // Try to refresh token
       const newToken = await refreshAccessToken()
       if (newToken) {
-        // Retry original request with new token
         originalRequest.headers = originalRequest.headers || {}
         originalRequest.headers.Authorization = `Bearer ${newToken}`
         return apiClient(originalRequest)
       }
     }
-    
-    // Log API errors in development
-    if (import.meta.env.VITE_ENVIRONMENT === 'development') {
-      // Logging removed for production} ${error.config?.url}`)
-      // Logging removed for production
-    }
-    
     return Promise.reject(error)
   }
 )
@@ -167,19 +130,14 @@ export const authAPI = {
   // Login with email and password
   login: async (email: string, password: string): Promise<LoginResponse> => {
     try {
-      const response = await apiClient.post<LoginResponse>('/auth/login/', {
-        email,
-        password
-      })
-      
+      const response = await apiClient.post<LoginResponse>('/auth/login/', { email, password })
       if (response.status === 200) {
         const { tokens, user } = response.data
-        // Store tokens and user data
-        setAuthTokens(tokens.access, tokens.refresh)
-        localStorage.setItem('user', JSON.stringify(user))
-        return response.data
+        // Store access in memory only
+        setAuthTokens(tokens.access || null, tokens.refresh || null)
+        // Refresh token assumed to be set as HttpOnly cookie by backend (ignore persisting)
+        return { ...response.data, user }
       }
-      
       throw new Error('Login failed')
     } catch (error: any) {
       if (error.response?.data?.errors) {
@@ -189,38 +147,22 @@ export const authAPI = {
     }
   },
 
-  // Refresh access token
+  // Refresh access token (cookie-based)
   refreshToken: async (): Promise<TokenRefreshResponse> => {
-    const currentRefreshToken = refreshToken || localStorage.getItem('refresh_token')
-    if (!currentRefreshToken) {
-      throw new Error('No refresh token available')
-    }
-
-    const response = await apiClient.post<TokenRefreshResponse>('/auth/token/refresh/', {
-      refresh: currentRefreshToken
-    })
-    
+    const response = await apiClient.post<TokenRefreshResponse>('/auth/token/refresh/', {})
     if (response.status === 200) {
-      setAuthTokens(response.data.access, response.data.refresh)
+      setAuthTokens(response.data.access || null, response.data.refresh || null)
     }
-    
     return response.data
   },
 
-  // Logout user and blacklist tokens
+  // Logout user and invalidate refresh cookie
   logout: async (): Promise<LogoutResponse> => {
     try {
-      const currentRefreshToken = refreshToken || localStorage.getItem('refresh_token')
-      const response = await apiClient.post<LogoutResponse>('/auth/logout/', {
-        refresh_token: currentRefreshToken
-      })
-      
-      // Always clear tokens regardless of response
-      clearTokens()
-      
+      const response = await apiClient.post<LogoutResponse>('/auth/logout/', {})
+      clearTokens() // always clear local state
       return response.data
     } catch (error) {
-      // Clear tokens even if logout request fails
       clearTokens()
       throw error
     }
@@ -266,19 +208,13 @@ export const handleApiError = (error: AxiosError<AuthError>): string => {
     }
     return 'An error occurred'
   }
-  
   if (error.response?.data?.detail) {
     return error.response.data.detail
   }
-  
   if (error.message) {
     return error.message
   }
-  
   return 'Network error occurred'
 }
-
-// Initialize auth tokens on service creation
-initializeAuthTokens()
 
 export { apiClient }

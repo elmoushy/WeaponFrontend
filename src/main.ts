@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
-import { initializeAuthTokens } from './services/jwtAuthService'
+import { silentRefreshAccessToken } from './services/jwtAuthService'
 import './styles/reset.module.css'
 import './styles/theme.css'
 import './styles/rtl-utils.css'
@@ -48,9 +48,13 @@ app.use(router)
 
 // Initialize JWT authentication
 const initializeAuth = async () => {
-  // Initialize JWT tokens from localStorage
-  initializeAuthTokens()
-  
+  // Attempt silent refresh (refresh cookie -> new access token)
+  try {
+    await silentRefreshAccessToken()
+  } catch {
+    // Ignore errors; user will be treated as unauthenticated
+  }
+
   // Mount the app
   app.mount('#app')
 }
