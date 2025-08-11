@@ -1,0 +1,3451 @@
+/* Public Survey View Styles */
+
+.publicSurveyContainer {
+  min-height: 100vh;
+  background: linear-gradient(135deg, 
+    rgba(74, 144, 226, 0.05) 0%,
+    rgba(80, 200, 120, 0.02) 100%);
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* Loading State */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 20px;
+}
+
+.loadingSpinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(74, 144, 226, 0.1);
+  border-top: 4px solid #997A51;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loadingText {
+  font-size: 1.1rem;
+  color: #262626;
+  opacity: 0.7;
+  margin: 0;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Access Denied */
+.accessDenied {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 71, 87, 0.2);
+  border-radius: 20px;
+  padding: 60px 40px;
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+.deniedIcon {
+  font-size: 4rem;
+  color: #FF4757;
+  margin-bottom: 24px;
+}
+
+.deniedTitle {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  color: #262626;
+}
+
+.deniedMessage {
+  font-size: 1.1rem;
+  opacity: 0.7;
+  margin: 0 0 24px 0;
+  line-height: 1.6;
+}
+
+.scheduleInfo {
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scheduleItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  color: #856404;
+  font-weight: 500;
+}
+
+.scheduleItem i {
+  font-size: 1.1rem;
+  width: 20px;
+  text-align: center;
+}
+
+/* Survey Content */
+.surveyContent {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  max-width: 800px;
+  width: 100%;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+/* Survey Header */
+.surveyHeader {
+  background: linear-gradient(135deg, 
+    rgba(74, 144, 226, 0.08) 0%,
+    rgba(80, 200, 120, 0.04) 100%);
+  padding: 40px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.surveyBranding {
+  margin-bottom: 24px;
+}
+
+.surveyTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  background: linear-gradient(135deg, #997A51 0%, #CFA365 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+}
+
+.surveyDescription {
+  font-size: 1.2rem;
+  opacity: 0.8;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.surveyMeta {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  color: #262626;
+  opacity: 0.7;
+}
+
+.metaItem i {
+  color: #997A51;
+  font-size: 1.1rem;
+}
+
+/* Public Link Info */
+.publicLinkInfo {
+  padding: 24px 40px;
+  background: rgba(74, 144, 226, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.linkBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #10b981;
+  margin-bottom: 12px;
+}
+
+.linkDescription {
+  font-size: 1rem;
+  opacity: 0.7;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Welcome Section */
+.welcomeSection {
+  padding: 48px 40px 40px;
+  background: linear-gradient(135deg, 
+    rgba(153, 122, 81, 0.06) 0%,
+    rgba(207, 163, 101, 0.03) 50%,
+    rgba(74, 144, 226, 0.04) 100%);
+  border-bottom: 1px solid rgba(153, 122, 81, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.welcomeSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(153, 122, 81, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(74, 144, 226, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.welcomeContent {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.welcomeTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+  background: linear-gradient(135deg, #997A51 0%, #CFA365 70%, #4A90E2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.3;
+  position: relative;
+}
+
+.welcomeTitle::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(135deg, #997A51, #CFA365);
+  border-radius: 2px;
+  animation: slideInUnderline 0.8s ease-out 0.5s both;
+}
+
+@keyframes slideInUnderline {
+  0% {
+    width: 0;
+    opacity: 0;
+  }
+  100% {
+    width: 60px;
+    opacity: 1;
+  }
+}
+
+.welcomeContent {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.welcomeText {
+  font-size: 1.15rem;
+  color: #262626;
+  opacity: 0.85;
+  margin: 0;
+  line-height: 1.7;
+  font-weight: 400;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.welcomeText::first-line {
+  font-weight: 500;
+}
+
+.welcomeIcon {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #997A51 0%, #CFA365 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  color: white;
+  font-size: 1.8rem;
+  box-shadow: 0 10px 30px rgba(153, 122, 81, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 10px 30px rgba(153, 122, 81, 0.3);
+  }
+  50% {
+    box-shadow: 0 15px 40px rgba(153, 122, 81, 0.4);
+    transform: translateY(-2px);
+  }
+  100% {
+    box-shadow: 0 10px 30px rgba(153, 122, 81, 0.3);
+  }
+}
+
+.welcomeFeatures {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+
+.feature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #997A51;
+  font-size: 0.95rem;
+  font-weight: 600;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.feature:hover {
+  opacity: 1;
+}
+
+.feature i {
+  font-size: 1.4rem;
+  margin-bottom: 4px;
+  color: #CFA365;
+}
+
+/* Questions Preview */
+.questionsPreview {
+  padding: 40px;
+}
+
+.previewTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 24px 0;
+  color: #262626;
+}
+
+.questionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.questionItem {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  background: rgba(74, 144, 226, 0.03);
+  border: 1px solid rgba(74, 144, 226, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.questionItem:hover {
+  background: rgba(74, 144, 226, 0.05);
+  border-color: rgba(74, 144, 226, 0.2);
+}
+
+.questionNumber {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #997A51, #CFA365);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.questionContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.questionText {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #262626;
+  line-height: 1.4;
+}
+
+.questionType {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  opacity: 0.6;
+}
+
+.questionType i {
+  color: #997A51;
+}
+
+.moreQuestions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  background: rgba(156, 163, 175, 0.05);
+  border: 2px dashed rgba(156, 163, 175, 0.2);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: #262626;
+  opacity: 0.7;
+}
+
+/* Action Buttons */
+.actionButtons {
+  padding: 40px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  background: rgba(248, 249, 250, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.startButton {
+  background: linear-gradient(135deg, #997A51, #CFA365);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 32px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 25px rgba(74, 144, 226, 0.3);
+  min-width: 200px;
+  justify-content: center;
+}
+
+.startButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(74, 144, 226, 0.4);
+}
+
+.secondaryActions {
+  display: flex;
+  gap: 16px;
+}
+
+.secondaryButton {
+  background: rgba(74, 144, 226, 0.1);
+  border: 1px solid rgba(74, 144, 226, 0.3);
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #997A51;
+}
+
+.secondaryButton:hover {
+  background: rgba(74, 144, 226, 0.15);
+  border-color: rgba(74, 144, 226, 0.4);
+}
+
+/* Error State */
+.errorState {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: 20px;
+  padding: 60px 40px;
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+.errorIcon {
+  font-size: 4rem;
+  color: #f59e0b;
+  margin-bottom: 24px;
+}
+
+.errorTitle {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  color: #262626;
+}
+
+.errorMessage {
+  font-size: 1.1rem;
+  opacity: 0.7;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Dark Theme */
+.publicSurveyContainer[data-theme="dark"] {
+  background: linear-gradient(135deg, 
+    rgba(30, 35, 48, 0.95) 0%,
+    rgba(20, 25, 38, 0.98) 100%);
+}
+
+.publicSurveyContainer[data-theme="dark"] .surveyContent,
+.publicSurveyContainer[data-theme="dark"] .accessDenied,
+.publicSurveyContainer[data-theme="dark"] .errorState {
+  background: rgba(30, 35, 48, 0.95);
+  border-color: rgba(74, 144, 226, 0.2);
+}
+
+.publicSurveyContainer[data-theme="dark"] .surveyHeader {
+  background: linear-gradient(135deg, 
+    rgba(74, 144, 226, 0.15) 0%,
+    rgba(80, 200, 120, 0.08) 100%);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.publicSurveyContainer[data-theme="dark"] .publicLinkInfo {
+  background: rgba(74, 144, 226, 0.1);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.publicSurveyContainer[data-theme="dark"] .welcomeSection {
+  background: linear-gradient(135deg, 
+    rgba(153, 122, 81, 0.12) 0%,
+    rgba(207, 163, 101, 0.08) 50%,
+    rgba(74, 144, 226, 0.1) 100%);
+  border-bottom-color: rgba(153, 122, 81, 0.15);
+}
+
+.publicSurveyContainer[data-theme="dark"] .welcomeSection::before {
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(153, 122, 81, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(74, 144, 226, 0.08) 0%, transparent 50%);
+}
+
+.publicSurveyContainer[data-theme="dark"] .welcomeTitle {
+  background: linear-gradient(135deg, #CFA365 0%, #F5F3EE 70%, #4A90E2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.publicSurveyContainer[data-theme="dark"] .welcomeTitle::after {
+  background: linear-gradient(135deg, #CFA365, #F5F3EE);
+}
+
+.publicSurveyContainer[data-theme="dark"] .welcomeText {
+  color: #F5F3EE;
+  opacity: 0.9;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.publicSurveyContainer[data-theme="dark"] .welcomeIcon {
+  background: linear-gradient(135deg, #CFA365 0%, #F5F3EE 100%);
+  box-shadow: 0 10px 30px rgba(207, 163, 101, 0.3);
+}
+
+.publicSurveyContainer[data-theme="dark"] .feature {
+  color: #CFA365;
+}
+
+.publicSurveyContainer[data-theme="dark"] .feature i {
+  color: #F5F3EE;
+}
+
+.publicSurveyContainer[data-theme="dark"] .questionItem {
+  background: rgba(74, 144, 226, 0.08);
+  border-color: rgba(74, 144, 226, 0.2);
+}
+
+.publicSurveyContainer[data-theme="dark"] .questionItem:hover {
+  background: rgba(74, 144, 226, 0.12);
+}
+
+.publicSurveyContainer[data-theme="dark"] .actionButtons {
+  background: rgba(20, 25, 38, 0.5);
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .publicSurveyContainer {
+    padding: 20px 16px;
+  }
+
+  .surveyHeader {
+    padding: 32px 24px;
+  }
+
+  .surveyTitle {
+    font-size: 2rem;
+  }
+
+  .surveyDescription {
+    font-size: 1.1rem;
+  }
+
+  .surveyMeta {
+    gap: 20px;
+  }
+
+  .publicLinkInfo,
+  .questionsPreview,
+  .actionButtons {
+    padding: 24px;
+  }
+
+  .welcomeSection {
+    padding: 32px 24px 28px;
+  }
+
+  .welcomeTitle {
+    font-size: 1.6rem;
+    margin-bottom: 16px;
+  }
+
+  .welcomeText {
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  .welcomeIcon {
+    width: 60px;
+    height: 60px;
+    font-size: 1.6rem;
+    margin-bottom: 20px;
+  }
+
+  .welcomeFeatures {
+    gap: 28px;
+    margin-top: 24px;
+  }
+
+  .feature {
+    font-size: 0.9rem;
+  }
+
+  .feature i {
+    font-size: 1.2rem;
+  }
+
+  .questionItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .questionNumber {
+    align-self: flex-start;
+  }
+
+  .startButton {
+    width: 100%;
+    padding: 16px;
+  }
+
+  .secondaryActions {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .surveyTitle {
+    font-size: 1.8rem;
+  }
+
+  .questionItem {
+    padding: 16px;
+  }
+
+  .actionButtons {
+    padding: 20px;
+  }
+
+  .metaItem {
+    font-size: 0.9rem;
+  }
+
+  .welcomeSection {
+    padding: 24px 20px;
+  }
+
+  .welcomeTitle {
+    font-size: 1.4rem;
+    margin-bottom: 14px;
+  }
+
+  .welcomeTitle::after {
+    width: 40px;
+    height: 2px;
+    bottom: -6px;
+  }
+
+  .welcomeText {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .welcomeIcon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.4rem;
+    margin-bottom: 16px;
+  }
+
+  .welcomeFeatures {
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .feature {
+    font-size: 0.85rem;
+  }
+
+  .feature i {
+    font-size: 1.1rem;
+  }
+
+  .yesNoWrapper {
+    padding: 16px;
+    gap: 20px;
+  }
+
+  .yesNoTitleIcon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+
+  .yesNoTitleText {
+    font-size: 1.1rem;
+  }
+
+  .yesNoSubtitle {
+    font-size: 0.9rem;
+  }
+
+  .yesNoButtons {
+    gap: 16px;
+  }
+
+  .yesNoButton {
+    padding: 20px 16px;
+    gap: 12px;
+  }
+
+  .yesNoButtonIcon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .yesNoButtonText {
+    font-size: 1rem;
+  }
+
+  .yesNoButtonBadge {
+    width: 20px;
+    height: 20px;
+    font-size: 0.8rem;
+    top: 6px;
+    right: 6px;
+  }
+}
+
+/* RTL Support */
+.publicSurveyContainer[dir="rtl"] .questionItem {
+  flex-direction: row-reverse;
+}
+
+.publicSurveyContainer[dir="rtl"] .metaItem {
+  flex-direction: row-reverse;
+}
+
+.publicSurveyContainer[dir="rtl"] .questionType {
+  flex-direction: row-reverse;
+}
+
+.publicSurveyContainer[dir="rtl"] .linkBadge {
+  flex-direction: row-reverse;
+}
+
+/* Survey Form Styles */
+.surveyForm {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  max-width: 800px;
+  width: 100%;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+.formHeader {
+  background: linear-gradient(135deg, 
+    rgba(74, 144, 226, 0.08) 0%,
+    rgba(80, 200, 120, 0.04) 100%);
+  padding: 40px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.formTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 24px 0;
+  color: #262626;
+  text-align: center;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background: rgba(156, 163, 175, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(135deg, #997A51 0%, #CFA365 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.questionContainer {
+  padding: 40px;
+}
+
+.currentQuestion {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.questionTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 32px 0;
+  color: #262626;
+  line-height: 1.4;
+}
+
+.questionIndex {
+  color: #997A51;
+  margin-right: 8px;
+}
+
+.required {
+  color: #FF4757;
+  margin-left: 4px;
+}
+
+.inputContainer {
+  flex: 1;
+}
+
+.textInput {
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid rgba(156, 163, 175, 0.2);
+  border-radius: 12px;
+  font-size: 1.1rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.textInput:focus {
+  outline: none;
+  border-color: #997A51;
+  box-shadow: 0 0 0 3px rgba(153, 122, 81, 0.1);
+}
+
+.textArea {
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid rgba(156, 163, 175, 0.2);
+  border-radius: 12px;
+  font-size: 1.1rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  resize: vertical;
+  min-height: 120px;
+  font-family: inherit;
+}
+
+.textArea:focus {
+  outline: none;
+  border-color: #997A51;
+  box-shadow: 0 0 0 3px rgba(153, 122, 81, 0.1);
+}
+
+.choicesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.choiceOption {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 2px solid rgba(156, 163, 175, 0.2);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.choiceOption:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(153, 122, 81, 0.3);
+}
+
+.choiceOption.selected {
+  background: rgba(153, 122, 81, 0.1);
+  border-color: #997A51;
+}
+
+.choiceRadio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(156, 163, 175, 0.4);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.choiceOption.selected .choiceRadio {
+  border-color: #997A51;
+}
+
+.radioSelected {
+  width: 10px;
+  height: 10px;
+  background: #997A51;
+  border-radius: 50%;
+}
+
+.choiceCheckbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(156, 163, 175, 0.4);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.choiceOption.selected .choiceCheckbox {
+  border-color: #997A51;
+  background: #997A51;
+  color: white;
+}
+
+.choiceText {
+  font-size: 1.1rem;
+  color: #262626;
+  flex: 1;
+}
+
+.ratingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  flex: 1;
+  justify-content: center;
+}
+
+.ratingScale {
+  display: flex;
+  gap: 12px;
+}
+
+.ratingButton {
+  width: 60px;
+  height: 60px;
+  border: 2px solid rgba(156, 163, 175, 0.3);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.ratingButton:hover {
+  border-color: #997A51;
+  color: #997A51;
+}
+
+.ratingButton.selected {
+  background: #997A51;
+  border-color: #997A51;
+  color: white;
+}
+
+.ratingLabels {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 400px;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+/* Yes/No Question Styles */
+.yesNoWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.yesNoTitle {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.yesNoTitleIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #4a90e2 0%, #50c878 100%);
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  color: white;
+  font-size: 1.5rem;
+  box-shadow: 0 8px 25px rgba(74, 144, 226, 0.3);
+}
+
+.yesNoTitleText {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #262626;
+  margin: 0 0 8px 0;
+  text-align: center;
+}
+
+.yesNoSubtitle {
+  font-size: 1rem;
+  color: #6b7280;
+  margin: 0;
+  opacity: 0.8;
+  text-align: center;
+}
+
+.yesNoContainer {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.yesNoButtons {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.yesNoButton {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 32px 40px;
+  min-width: 160px;
+  border: 3px solid rgba(156, 163, 175, 0.2);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(15px);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 600;
+  color: #6b7280;
+  overflow: hidden;
+}
+
+.yesNoButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 17px;
+}
+
+.yesNoButtonIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  transition: all 0.3s ease;
+  background: rgba(107, 114, 128, 0.1);
+}
+
+.yesNoButtonText {
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.yesNoButtonBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: white;
+  animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.yesNoButton:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.yesNoButton.yes:hover,
+.yesNoButton.yes.selected {
+  border-color: #10b981;
+  color: #059669;
+  background: rgba(16, 185, 129, 0.05);
+  box-shadow: 0 12px 40px rgba(16, 185, 129, 0.25);
+}
+
+.yesNoButton.yes:hover::before,
+.yesNoButton.yes.selected::before {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.02) 100%);
+  opacity: 1;
+}
+
+.yesNoButton.yes:hover .yesNoButtonIcon,
+.yesNoButton.yes.selected .yesNoButtonIcon {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+  transform: scale(1.1);
+}
+
+.yesNoButton.yes.selected .yesNoButtonBadge {
+  background: #10b981;
+}
+
+.yesNoButton.no:hover,
+.yesNoButton.no.selected {
+  border-color: #ef4444;
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.05);
+  box-shadow: 0 12px 40px rgba(239, 68, 68, 0.25);
+}
+
+.yesNoButton.no:hover::before,
+.yesNoButton.no.selected::before {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.02) 100%);
+  opacity: 1;
+}
+
+.yesNoButton.no:hover .yesNoButtonIcon,
+.yesNoButton.no.selected .yesNoButtonIcon {
+  background: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+  transform: scale(1.1);
+}
+
+.yesNoButton.no.selected .yesNoButtonBadge {
+  background: #ef4444;
+}
+
+.formNavigation {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 40px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  background: rgba(248, 249, 250, 0.5);
+  position: relative;
+  z-index: 5;
+}
+
+.navButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: 2px solid rgba(156, 163, 175, 0.3);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.navButton:hover:not(:disabled) {
+  border-color: #997A51;
+  color: #997A51;
+  background: rgba(153, 122, 81, 0.1);
+}
+
+.navButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.navButton.submit {
+  background: linear-gradient(135deg, #997A51 0%, #CFA365 100%);
+  border-color: #997A51;
+  color: white;
+}
+
+.navButton.submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(153, 122, 81, 0.3);
+}
+
+.navSpacer {
+  flex: 1;
+}
+
+.errorMessage {
+  background: rgba(255, 71, 87, 0.1);
+  color: #FF4757;
+  border: 1px solid rgba(255, 71, 87, 0.2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 16px;
+  font-size: 0.9rem;
+}
+
+/* Dark Theme for Form */
+.publicSurveyContainer[data-theme="dark"] .surveyForm {
+  background: rgba(30, 35, 48, 0.95);
+  border-color: rgba(74, 144, 226, 0.2);
+}
+
+.publicSurveyContainer[data-theme="dark"] .formHeader {
+  background: linear-gradient(135deg, 
+    rgba(74, 144, 226, 0.15) 0%,
+    rgba(80, 200, 120, 0.08) 100%);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.publicSurveyContainer[data-theme="dark"] .formTitle,
+.publicSurveyContainer[data-theme="dark"] .questionTitle {
+  color: #F5F3EE;
+}
+
+.publicSurveyContainer[data-theme="dark"] .textInput,
+.publicSurveyContainer[data-theme="dark"] .textArea,
+.publicSurveyContainer[data-theme="dark"] .choiceOption,
+.publicSurveyContainer[data-theme="dark"] .ratingButton,
+.publicSurveyContainer[data-theme="dark"] .navButton {
+  background: rgba(30, 35, 48, 0.8);
+  border-color: rgba(74, 144, 226, 0.2);
+  color: #F5F3EE;
+}
+
+/* Enhanced dark theme styles for Yes/No components */
+.publicSurveyContainer[data-theme="dark"] .yesNoWrapper {
+  background: rgba(30, 35, 48, 0.6);
+  border-color: rgba(74, 144, 226, 0.1);
+}
+
+.publicSurveyContainer[data-theme="dark"] .yesNoTitleText {
+  color: #F5F3EE;
+}
+
+.publicSurveyContainer[data-theme="dark"] .yesNoSubtitle {
+  color: rgba(245, 243, 238, 0.7);
+}
+
+.publicSurveyContainer[data-theme="dark"] .yesNoButton {
+  background: rgba(30, 35, 48, 0.9);
+  border-color: rgba(74, 144, 226, 0.2);
+  color: #F5F3EE;
+}
+
+.publicSurveyContainer[data-theme="dark"] .yesNoButtonIcon {
+  background: rgba(74, 144, 226, 0.1);
+}
+
+.publicSurveyContainer[data-theme="dark"] .yesNoButton.yes:hover,
+.publicSurveyContainer[data-theme="dark"] .yesNoButton.yes.selected {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: #10b981;
+  box-shadow: 0 12px 40px rgba(16, 185, 129, 0.15);
+}
+
+.publicSurveyContainer[data-theme="dark"] .yesNoButton.no:hover,
+.publicSurveyContainer[data-theme="dark"] .yesNoButton.no.selected {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  box-shadow: 0 12px 40px rgba(239, 68, 68, 0.15);
+}
+
+.publicSurveyContainer[data-theme="dark"] .formNavigation {
+  background: rgba(20, 25, 38, 0.5);
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive Form Design */
+@media (max-width: 768px) {
+  .formHeader {
+    padding: 24px;
+  }
+
+  .formTitle {
+    font-size: 1.5rem;
+  }
+
+  .questionContainer {
+    padding: 24px;
+  }
+
+  .questionTitle {
+    font-size: 1.3rem;
+  }
+
+  .formNavigation {
+    padding: 20px 24px;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .navButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .navSpacer {
+    display: none;
+  }
+
+  .yesNoWrapper {
+    padding: 20px;
+    gap: 24px;
+  }
+
+  .yesNoTitleIcon {
+    width: 48px;
+    height: 48px;
+    font-size: 1.3rem;
+  }
+
+  .yesNoTitleText {
+    font-size: 1.2rem;
+  }
+
+  .yesNoButtons {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .yesNoButton {
+    width: 100%;
+    min-width: unset;
+    padding: 24px 20px;
+  }
+
+  .yesNoButtonIcon {
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+  }
+
+  .yesNoButtonText {
+    font-size: 1.1rem;
+  }
+
+  .ratingScale {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .ratingButton {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+/* RTL Support for Form */
+.publicSurveyContainer[dir="rtl"] .questionIndex {
+  margin-right: 0;
+  margin-left: 8px;
+}
+
+.publicSurveyContainer[dir="rtl"] .required {
+  margin-left: 0;
+  margin-right: 4px;
+}
+
+.publicSurveyContainer[dir="rtl"] .choiceOption {
+  flex-direction: row-reverse;
+}
+
+.publicSurveyContainer[dir="rtl"] .formNavigation {
+  flex-direction: row-reverse;
+}
+
+/* Email Collection Section */
+.emailSection,
+.contactSection {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(153, 122, 81, 0.1);
+  border-radius: 20px;
+  padding: 32px;
+  margin: 24px 0;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+  position: relative;
+  z-index: 10;
+}
+
+.emailContainer,
+.contactContainer {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.emailHeader,
+.contactHeader {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.emailTitle,
+.contactTitle {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #262626;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.emailTitle i,
+.contactTitle i {
+  color: #997A51;
+  font-size: 1.2rem;
+}
+
+.emailDescription,
+.contactDescription {
+  font-size: 1rem;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.emailInputContainer,
+.contactInputContainer {
+  margin-bottom: 20px;
+}
+
+.emailInputWrapper,
+.contactInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.emailInput,
+.contactInput {
+  width: 100%;
+  padding: 16px 50px 16px 16px;
+  font-size: 1rem;
+  border: 2px solid rgba(153, 122, 81, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  color: #262626;
+}
+
+.emailInput:focus,
+.contactInput:focus {
+  outline: none;
+  border-color: #997A51;
+  box-shadow: 0 0 0 3px rgba(153, 122, 81, 0.1);
+}
+
+.emailInput.error,
+.contactInput.error {
+  border-color: #FF4757;
+  box-shadow: 0 0 0 3px rgba(255, 71, 87, 0.1);
+}
+
+.emailIcon,
+.contactIcon {
+  position: absolute;
+  right: 16px;
+  color: #997A51;
+  font-size: 1.1rem;
+}
+
+.emailError,
+.contactError {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 71, 87, 0.1);
+  border: 1px solid rgba(255, 71, 87, 0.2);
+  border-radius: 8px;
+  color: #FF4757;
+  font-size: 0.9rem;
+}
+
+.emailNote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(80, 200, 120, 0.1);
+  border: 1px solid rgba(80, 200, 120, 0.2);
+  border-radius: 8px;
+  color: #50C878;
+  font-size: 0.9rem;
+}
+
+.emailNote i {
+  color: #50C878;
+}
+
+/* Dark Theme for Email/Contact Section */
+.publicSurveyContainer[data-theme="dark"] .emailSection,
+.publicSurveyContainer[data-theme="dark"] .contactSection {
+  background: rgba(30, 35, 48, 0.95);
+  border-color: rgba(74, 144, 226, 0.2);
+}
+
+.publicSurveyContainer[data-theme="dark"] .emailTitle,
+.publicSurveyContainer[data-theme="dark"] .contactTitle {
+  color: #F5F3EE;
+}
+
+.publicSurveyContainer[data-theme="dark"] .emailDescription,
+.publicSurveyContainer[data-theme="dark"] .contactDescription {
+  color: #B8B8B8;
+}
+
+.publicSurveyContainer[data-theme="dark"] .emailInput,
+.publicSurveyContainer[data-theme="dark"] .contactInput {
+  background: rgba(20, 25, 38, 0.8);
+  border-color: rgba(74, 144, 226, 0.2);
+  color: #F5F3EE;
+}
+
+.publicSurveyContainer[data-theme="dark"] .emailInput:focus,
+.publicSurveyContainer[data-theme="dark"] .contactInput:focus {
+  border-color: #4A90E2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+/* Phone Input with Country Code Styles */
+.phoneInputWrapper {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.countrySelector {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.countryButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid rgba(151, 122, 81, 0.2);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  min-width: 120px;
+  justify-content: space-between;
+}
+
+.countryButton:hover {
+  border-color: #997A51;
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(151, 122, 81, 0.15);
+}
+
+.countryFlag {
+  font-size: 1.2rem;
+}
+
+.countryCode {
+  font-weight: 500;
+  color: #997A51;
+}
+
+.dropdownIcon {
+  font-size: 0.8rem;
+  color: #997A51;
+  transition: transform 0.3s ease;
+}
+
+.countryButton:hover .dropdownIcon {
+  transform: rotate(180deg);
+}
+
+.countryDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  min-width: 320px;
+  z-index: 9999;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(151, 122, 81, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(151, 122, 81, 0.15);
+  max-height: 200px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.dropdownSearch {
+  position: relative;
+  padding: 12px;
+  border-bottom: 1px solid rgba(151, 122, 81, 0.1);
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 12px 8px 40px;
+  border: 1px solid rgba(151, 122, 81, 0.2);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #997A51;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.searchIcon {
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #997A51;
+  font-size: 0.9rem;
+}
+
+.countriesList {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.countryOption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+.countryOption:hover {
+  background: rgba(151, 122, 81, 0.1);
+}
+
+.countryOption.selected {
+  background: rgba(151, 122, 81, 0.15);
+  color: #997A51;
+  font-weight: 500;
+}
+
+.optionFlag {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.optionName {
+  flex: 1;
+  text-align: right;
+}
+
+.optionCode {
+  font-weight: 500;
+  color: #997A51;
+  flex-shrink: 0;
+}
+
+.phoneInputContainer {
+  flex: 1;
+  position: relative;
+}
+
+.phoneInput {
+  width: 100%;
+  padding: 12px 50px 12px 16px;
+  border: 2px solid rgba(151, 122, 81, 0.2);
+  border-radius: 12px;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  transition: all 0.3s ease;
+  color: #262626;
+}
+
+.phoneInput:focus {
+  outline: none;
+  border-color: #997A51;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 0 0 3px rgba(151, 122, 81, 0.1);
+}
+
+.phoneInput.error {
+  border-color: #FF4757;
+  background: rgba(255, 71, 87, 0.05);
+}
+
+.phoneIcon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #997A51;
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+
+.phonePreview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(151, 122, 81, 0.1);
+  border: 1px solid rgba(151, 122, 81, 0.2);
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.previewLabel {
+  color: #997A51;
+  font-weight: 500;
+}
+
+.previewNumber {
+  color: #262626;
+  font-weight: 600;
+  direction: ltr;
+  text-align: left;
+}
+
+.contactNote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: rgba(74, 144, 226, 0.1);
+  border: 1px solid rgba(74, 144, 226, 0.2);
+  border-radius: 8px;
+  color: #4A90E2;
+  font-size: 0.85rem;
+}
+
+/* Dark theme styles for phone input */
+.publicSurveyContainer[data-theme="dark"] .countryButton {
+  background: rgba(20, 25, 38, 0.8);
+  border-color: rgba(74, 144, 226, 0.2);
+  color: #F5F3EE;
+}
+
+.publicSurveyContainer[data-theme="dark"] .countryButton:hover {
+  border-color: #4A90E2;
+  background: rgba(20, 25, 38, 0.95);
+}
+
+.publicSurveyContainer[data-theme="dark"] .countryCode {
+  color: #4A90E2;
+}
+
+.publicSurveyContainer[data-theme="dark"] .dropdownIcon {
+  color: #4A90E2;
+}
+
+.publicSurveyContainer[data-theme="dark"] .countryDropdown {
+  background: rgba(20, 25, 38, 0.95);
+  border-color: rgba(74, 144, 226, 0.2);
+}
+
+.publicSurveyContainer[data-theme="dark"] .searchInput {
+  background: rgba(20, 25, 38, 0.5);
+  border-color: rgba(74, 144, 226, 0.2);
+  color: #F5F3EE;
+}
+
+.publicSurveyContainer[data-theme="dark"] .searchInput:focus {
+  border-color: #4A90E2;
+  background: rgba(20, 25, 38, 0.8);
+}
+
+.publicSurveyContainer[data-theme="dark"] .countryOption:hover {
+  background: rgba(74, 144, 226, 0.1);
+}
+
+.publicSurveyContainer[data-theme="dark"] .countryOption.selected {
+  background: rgba(74, 144, 226, 0.15);
+  color: #4A90E2;
+}
+
+.publicSurveyContainer[data-theme="dark"] .optionCode {
+  color: #4A90E2;
+}
+
+.publicSurveyContainer[data-theme="dark"] .phoneInput {
+  background: rgba(20, 25, 38, 0.8);
+  border-color: rgba(74, 144, 226, 0.2);
+  color: #F5F3EE;
+}
+
+.publicSurveyContainer[data-theme="dark"] .phoneInput:focus {
+  border-color: #4A90E2;
+  background: rgba(20, 25, 38, 0.95);
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.publicSurveyContainer[data-theme="dark"] .phoneIcon {
+  color: #4A90E2;
+}
+
+.publicSurveyContainer[data-theme="dark"] .phonePreview {
+  background: rgba(74, 144, 226, 0.1);
+  border-color: rgba(74, 144, 226, 0.2);
+}
+
+.publicSurveyContainer[data-theme="dark"] .previewLabel {
+  color: #4A90E2;
+}
+
+.publicSurveyContainer[data-theme="dark"] .previewNumber {
+  color: #F5F3EE;
+}
+
+/* ===========================
+   PASSWORD PROTECTED SURVEY STYLES - MODERN GLASSMORPHISM
+   =========================== */
+
+.passwordSurveyContainer {
+  min-height: 100vh;
+  background: linear-gradient(135deg,
+    rgba(74, 144, 226, 0.08) 0%,
+    rgba(153, 122, 81, 0.06) 25%,
+    rgba(207, 163, 101, 0.04) 50%,
+    rgba(74, 144, 226, 0.08) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.passwordSurveyContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(153, 122, 81, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(74, 144, 226, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 40% 60%, rgba(207, 163, 101, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  animation: backgroundPulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes backgroundPulse {
+  0% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.passwordAccessForm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Survey Content Centering for Password Protected Survey */
+.passwordSurveyContainer .surveyContent {
+  margin: 0 auto;
+  display: block;
+}
+
+/* Center the entire survey content section */
+.passwordSurveyContainer > div:nth-child(2) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.surveyContentWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.accessCard {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 24px;
+  padding: 48px 40px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 
+    0 8px 32px rgba(31, 38, 135, 0.37),
+    0 0 60px rgba(153, 122, 81, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  animation: cardSlideUp 0.8s ease-out;
+}
+
+@keyframes cardSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.accessCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 24px;
+  background: linear-gradient(135deg, 
+    rgba(153, 122, 81, 0.05) 0%,
+    rgba(207, 163, 101, 0.03) 50%,
+    rgba(74, 144, 226, 0.04) 100%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.accessHeader {
+  text-align: center;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.lockIconContainer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.lockIcon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #997A51 0%, #CFA365 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: white;
+  box-shadow: 
+    0 8px 25px rgba(153, 122, 81, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  animation: iconFloat 3s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.lockIcon::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  background: linear-gradient(135deg, rgba(153, 122, 81, 0.4), rgba(207, 163, 101, 0.4));
+  border-radius: 50%;
+  padding: 4px;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: xor;
+  opacity: 0.6;
+  animation: iconPulse 2s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+.accessTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  background: linear-gradient(135deg, #997A51 0%, #CFA365 70%, #4A90E2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.3;
+  position: relative;
+}
+
+.accessTitle::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(135deg, #997A51, #CFA365);
+  border-radius: 2px;
+  animation: slideInUnderline 0.8s ease-out 0.5s both;
+}
+
+.accessDescription {
+  font-size: 1.1rem;
+  color: rgba(38, 38, 38, 0.8);
+  margin: 0;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+.accessForm {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+}
+
+.inputLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(38, 38, 38, 0.9);
+  margin-bottom: 4px;
+}
+
+.inputLabel i {
+  font-size: 1.1rem;
+  color: #997A51;
+  width: 18px;
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.textInput,
+.phoneInput {
+  width: 100%;
+  padding: 18px 24px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  font-size: 1.1rem;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #262626;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+  font-weight: 500;
+}
+
+.textInput::placeholder,
+.phoneInput::placeholder {
+  color: rgba(38, 38, 38, 0.5);
+  font-weight: 400;
+}
+
+.textInput:focus,
+.phoneInput:focus {
+  outline: none;
+  border-color: rgba(153, 122, 81, 0.6);
+  background: rgba(255, 255, 255, 0.35);
+  box-shadow: 
+    0 0 0 4px rgba(153, 122, 81, 0.1),
+    inset 0 2px 4px rgba(0, 0, 0, 0.06),
+    0 8px 25px rgba(153, 122, 81, 0.15);
+  transform: translateY(-2px);
+}
+
+.textInput:focus + .inputFocus,
+.phoneInput:focus + .inputFocus {
+  width: 100%;
+}
+
+.inputFocus {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(135deg, #997A51, #CFA365);
+  border-radius: 2px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(-50%);
+}
+
+.textInput.error,
+.phoneInput.error {
+  border-color: rgba(255, 71, 87, 0.6);
+  background: rgba(255, 71, 87, 0.05);
+  box-shadow: 
+    0 0 0 4px rgba(255, 71, 87, 0.1),
+    inset 0 2px 4px rgba(255, 71, 87, 0.1);
+}
+
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #FF4757;
+  font-weight: 500;
+  background: rgba(255, 71, 87, 0.08);
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 71, 87, 0.2);
+  animation: errorSlideIn 0.3s ease-out;
+}
+
+@keyframes errorSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.phoneInputContainer {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.countrySelector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 16px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  min-width: 120px;
+  justify-content: center;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.countrySelector:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(153, 122, 81, 0.4);
+  transform: translateY(-1px);
+}
+
+.countryFlag {
+  font-size: 1.2rem;
+}
+
+.countryCode {
+  font-weight: 600;
+  color: #262626;
+  font-size: 0.95rem;
+}
+
+.countryDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+  z-index: 1000;
+  max-height: 200px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.countrySearch {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+}
+
+.countryList {
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.countryItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.countryItem:hover {
+  background: rgba(153, 122, 81, 0.1);
+}
+
+.countryName {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.accessErrorMessage {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, 
+    rgba(255, 71, 87, 0.1) 0%, 
+    rgba(255, 107, 107, 0.08) 100%);
+  border: 1px solid rgba(255, 71, 87, 0.3);
+  border-radius: 16px;
+  padding: 16px 20px;
+  font-weight: 500;
+  color: #FF4757;
+  animation: errorSlideIn 0.3s ease-out;
+}
+
+.errorIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 71, 87, 0.2);
+  border-radius: 50%;
+  font-size: 0.9rem;
+}
+
+.accessButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 20px 32px;
+  background: linear-gradient(135deg, #997A51 0%, #CFA365 100%);
+  border: none;
+  border-radius: 16px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 8px 25px rgba(153, 122, 81, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  margin-top: 12px;
+}
+
+.accessButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.2), 
+    transparent);
+  transition: left 0.5s ease;
+}
+
+.accessButton:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 12px 35px rgba(153, 122, 81, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.accessButton:hover::before {
+  left: 100%;
+}
+
+.accessButton:active {
+  transform: translateY(-1px);
+}
+
+.accessButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.accessButton:disabled:hover {
+  transform: none;
+  box-shadow: 0 8px 25px rgba(153, 122, 81, 0.3);
+}
+
+.accessButton.loading {
+  pointer-events: none;
+}
+
+.loadingSpinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.rotated {
+  transform: rotate(180deg);
+}
+
+/* Dark Theme */
+.passwordSurveyContainer[data-theme="dark"] {
+  background: linear-gradient(135deg,
+    rgba(20, 25, 38, 0.95) 0%,
+    rgba(66, 64, 59, 0.9) 25%,
+    rgba(28, 35, 45, 0.95) 50%,
+    rgba(20, 25, 38, 0.95) 100%);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .accessCard {
+  background: rgba(20, 25, 38, 0.8);
+  border: 1px solid rgba(74, 144, 226, 0.2);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 60px rgba(74, 144, 226, 0.15),
+    inset 0 1px 0 rgba(74, 144, 226, 0.1);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .accessCard::before {
+  background: linear-gradient(135deg, 
+    rgba(74, 144, 226, 0.05) 0%,
+    rgba(28, 35, 45, 0.03) 50%,
+    rgba(74, 144, 226, 0.04) 100%);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .lockIcon {
+  background: linear-gradient(135deg, #4A90E2 0%, #74B9FF 100%);
+  box-shadow: 
+    0 8px 25px rgba(74, 144, 226, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .lockIcon::before {
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.4), rgba(116, 185, 255, 0.4));
+}
+
+.passwordSurveyContainer[data-theme="dark"] .accessTitle {
+  background: linear-gradient(135deg, #4A90E2 0%, #74B9FF 70%, #997A51 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .accessTitle::after {
+  background: linear-gradient(135deg, #4A90E2, #74B9FF);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .accessDescription {
+  color: rgba(245, 243, 238, 0.8);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .inputLabel {
+  color: rgba(245, 243, 238, 0.9);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .inputLabel i {
+  color: #4A90E2;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .textInput,
+.passwordSurveyContainer[data-theme="dark"] .phoneInput {
+  background: rgba(20, 25, 38, 0.6);
+  border-color: rgba(74, 144, 226, 0.3);
+  color: #F5F3EE;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .textInput::placeholder,
+.passwordSurveyContainer[data-theme="dark"] .phoneInput::placeholder {
+  color: rgba(245, 243, 238, 0.5);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .textInput:focus,
+.passwordSurveyContainer[data-theme="dark"] .phoneInput:focus {
+  border-color: rgba(74, 144, 226, 0.6);
+  background: rgba(20, 25, 38, 0.8);
+  box-shadow: 
+    0 0 0 4px rgba(74, 144, 226, 0.1),
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    0 8px 25px rgba(74, 144, 226, 0.15);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .inputFocus {
+  background: linear-gradient(135deg, #4A90E2, #74B9FF);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .countrySelector {
+  background: rgba(20, 25, 38, 0.6);
+  border-color: rgba(74, 144, 226, 0.3);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .countrySelector:hover {
+  background: rgba(20, 25, 38, 0.8);
+  border-color: rgba(74, 144, 226, 0.5);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .countryCode {
+  color: #F5F3EE;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .countryDropdown {
+  background: rgba(20, 25, 38, 0.95);
+  border-color: rgba(74, 144, 226, 0.3);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .searchInput {
+  background: rgba(20, 25, 38, 0.8);
+  border-color: rgba(74, 144, 226, 0.3);
+  color: #F5F3EE;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .countryItem:hover {
+  background: rgba(74, 144, 226, 0.1);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .countryName {
+  color: #F5F3EE;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .accessButton {
+  background: linear-gradient(135deg, #4A90E2 0%, #74B9FF 100%);
+  box-shadow: 
+    0 8px 25px rgba(74, 144, 226, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .accessButton:hover {
+  box-shadow: 
+    0 12px 35px rgba(74, 144, 226, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .passwordAccessForm {
+    padding: 20px 16px;
+  }
+  
+  .surveyContentWrapper {
+    padding: 20px 16px;
+  }
+  
+  .accessCard {
+    padding: 32px 24px;
+    border-radius: 20px;
+  }
+  
+  .lockIcon {
+    width: 64px;
+    height: 64px;
+    font-size: 1.6rem;
+  }
+  
+  .accessTitle {
+    font-size: 1.6rem;
+  }
+  
+  .accessDescription {
+    font-size: 1rem;
+  }
+  
+  .phoneInputContainer {
+    flex-direction: column;
+  }
+  
+  .countrySelector {
+    min-width: auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .surveyContentWrapper {
+    padding: 16px 12px;
+  }
+  
+  .accessCard {
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+  
+  .textInput,
+  .phoneInput {
+    padding: 16px 20px;
+    font-size: 1rem;
+  }
+  
+  .accessButton {
+    padding: 18px 28px;
+    font-size: 1.1rem;
+  }
+}
+
+/* ===========================
+   PASSWORD PROTECTED SURVEY FORM STYLES - MATCHING PublicSurveyView
+   =========================== */
+
+/* Survey Form Wrapper */
+.passwordSurveyContainer .surveyFormWrapper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Survey Form Container */
+.passwordSurveyContainer .surveyForm {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  max-width: 800px;
+  width: 100%;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  animation: cardSlideUp 0.8s ease-out;
+}
+
+/* Form Header */
+.passwordSurveyContainer .formHeader {
+  background: linear-gradient(135deg, 
+    rgba(153, 122, 81, 0.08) 0%,
+    rgba(207, 163, 101, 0.04) 100%);
+  padding: 40px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+.passwordSurveyContainer .formTitleSection {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.passwordSurveyContainer .formTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  background: linear-gradient(135deg, #997A51 0%, #CFA365 70%, #4A90E2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.3;
+}
+
+.passwordSurveyContainer .formSubtitle {
+  font-size: 1rem;
+  color: rgba(38, 38, 38, 0.7);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.passwordSurveyContainer .formSubtitle::before {
+  content: '🔒';
+  font-size: 0.9rem;
+}
+
+.passwordSurveyContainer .progressSection {
+  margin-top: 24px;
+}
+
+.passwordSurveyContainer .progressBar {
+  width: 100%;
+  height: 8px;
+  background: rgba(156, 163, 175, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.passwordSurveyContainer .progressFill {
+  height: 100%;
+  background: linear-gradient(135deg, #997A51 0%, #CFA365 100%);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+  box-shadow: 0 2px 4px rgba(153, 122, 81, 0.3);
+}
+
+.passwordSurveyContainer .progressText {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Question Container */
+.passwordSurveyContainer .questionContainer {
+  padding: 40px;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.passwordSurveyContainer .currentQuestion {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.passwordSurveyContainer .questionHeader {
+  margin-bottom: 32px;
+}
+
+.passwordSurveyContainer .questionText {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: #262626;
+  line-height: 1.4;
+}
+
+.passwordSurveyContainer .requiredIndicator {
+  color: #FF4757;
+  margin-left: 4px;
+  font-weight: 700;
+}
+
+.passwordSurveyContainer .questionError {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(255, 71, 87, 0.08);
+  border: 1px solid rgba(255, 71, 87, 0.2);
+  border-radius: 12px;
+  color: #FF4757;
+  font-weight: 500;
+  animation: errorSlideIn 0.3s ease-out;
+}
+
+.passwordSurveyContainer .questionInput {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Text Input & Textarea */
+.passwordSurveyContainer .questionInput .textInput {
+  width: 100%;
+  padding: 18px 24px;
+  border: 2px solid rgba(156, 163, 175, 0.2);
+  border-radius: 12px;
+  font-size: 1.1rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  color: #262626;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+  font-weight: 500;
+}
+
+.passwordSurveyContainer .questionInput .textInput:focus {
+  outline: none;
+  border-color: #997A51;
+  box-shadow: 0 0 0 3px rgba(153, 122, 81, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-1px);
+}
+
+.passwordSurveyContainer .textareaInput {
+  width: 100%;
+  padding: 18px 24px;
+  border: 2px solid rgba(156, 163, 175, 0.2);
+  border-radius: 12px;
+  font-size: 1.1rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  resize: vertical;
+  min-height: 120px;
+  font-family: inherit;
+  color: #262626;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+  font-weight: 500;
+}
+
+.passwordSurveyContainer .textareaInput:focus {
+  outline: none;
+  border-color: #997A51;
+  box-shadow: 0 0 0 3px rgba(153, 122, 81, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-1px);
+}
+
+/* Choice Options */
+.passwordSurveyContainer .choiceOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.passwordSurveyContainer .choiceOption {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 2px solid rgba(156, 163, 175, 0.2);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.passwordSurveyContainer .choiceOption:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(153, 122, 81, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.passwordSurveyContainer .choiceOption.selected {
+  background: rgba(153, 122, 81, 0.1);
+  border-color: #997A51;
+  box-shadow: 0 4px 12px rgba(153, 122, 81, 0.2);
+}
+
+.passwordSurveyContainer .optionRadio,
+.passwordSurveyContainer .optionCheckbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(156, 163, 175, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.passwordSurveyContainer .optionRadio {
+  border-radius: 50%;
+}
+
+.passwordSurveyContainer .optionCheckbox {
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.passwordSurveyContainer .choiceOption.selected .optionRadio,
+.passwordSurveyContainer .choiceOption.selected .optionCheckbox {
+  border-color: #997A51;
+}
+
+.passwordSurveyContainer .choiceOption.selected .optionCheckbox {
+  background: #997A51;
+  color: white;
+}
+
+.passwordSurveyContainer .radioSelected {
+  width: 10px;
+  height: 10px;
+  background: #997A51;
+  border-radius: 50%;
+}
+
+.passwordSurveyContainer .optionText {
+  font-size: 1.1rem;
+  color: #262626;
+  flex: 1;
+  font-weight: 500;
+}
+
+/* Yes/No Options */
+.passwordSurveyContainer .yesNoOptions {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex: 1;
+  align-items: center;
+}
+
+.passwordSurveyContainer .yesNoOption {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 32px 40px;
+  min-width: 160px;
+  border: 3px solid rgba(156, 163, 175, 0.2);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 600;
+  color: #6b7280;
+  overflow: hidden;
+}
+
+.passwordSurveyContainer .yesNoOption::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 17px;
+}
+
+.passwordSurveyContainer .yesNoOption:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.passwordSurveyContainer .yesNoOption.selected {
+  border-color: #997A51;
+  background: rgba(153, 122, 81, 0.1);
+  color: #997A51;
+  box-shadow: 0 12px 40px rgba(153, 122, 81, 0.25);
+}
+
+/* Rating Options */
+.passwordSurveyContainer .ratingOptions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  flex: 1;
+  justify-content: center;
+}
+
+.passwordSurveyContainer .ratingScale {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.passwordSurveyContainer .ratingButtons {
+  display: flex;
+  gap: 12px;
+}
+
+.passwordSurveyContainer .ratingButton {
+  width: 60px;
+  height: 60px;
+  border: 2px solid rgba(156, 163, 175, 0.3);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.passwordSurveyContainer .ratingButton:hover {
+  border-color: #997A51;
+  color: #997A51;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(153, 122, 81, 0.2);
+}
+
+.passwordSurveyContainer .ratingButton.selected {
+  background: #997A51;
+  border-color: #997A51;
+  color: white;
+  box-shadow: 0 4px 12px rgba(153, 122, 81, 0.3);
+}
+
+.passwordSurveyContainer .ratingLabel {
+  font-size: 0.9rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Contact Section */
+.passwordSurveyContainer .contactSection {
+  padding: 32px 40px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  background: rgba(248, 249, 250, 0.5);
+}
+
+.passwordSurveyContainer .contactContainer {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.passwordSurveyContainer .contactHeader {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.passwordSurveyContainer .contactTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #262626;
+}
+
+.passwordSurveyContainer .contactDescription {
+  font-size: 0.95rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.passwordSurveyContainer .contactInputGroup,
+.passwordSurveyContainer .phoneContactGroup {
+  margin-top: 16px;
+}
+
+.passwordSurveyContainer .contactInput {
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid rgba(156, 163, 175, 0.2);
+  border-radius: 12px;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  color: #262626;
+}
+
+.passwordSurveyContainer .contactInput:focus {
+  outline: none;
+  border-color: #997A51;
+  box-shadow: 0 0 0 3px rgba(153, 122, 81, 0.1);
+}
+
+.passwordSurveyContainer .contactInput.error {
+  border-color: #FF4757;
+  box-shadow: 0 0 0 3px rgba(255, 71, 87, 0.1);
+}
+
+.passwordSurveyContainer .contactErrorMessage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #FF4757;
+  font-weight: 500;
+}
+
+/* Form Navigation */
+.passwordSurveyContainer .formNavigation {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 40px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  background: rgba(248, 249, 250, 0.5);
+  position: relative;
+  z-index: 5;
+}
+
+.passwordSurveyContainer .navButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: 2px solid rgba(156, 163, 175, 0.3);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.passwordSurveyContainer .navButton:hover:not(:disabled) {
+  border-color: #997A51;
+  color: #997A51;
+  background: rgba(153, 122, 81, 0.1);
+  transform: translateY(-1px);
+}
+
+.passwordSurveyContainer .navButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.passwordSurveyContainer .prevButton {
+  margin-right: auto;
+}
+
+.passwordSurveyContainer .nextButton,
+.passwordSurveyContainer .submitButton {
+  background: linear-gradient(135deg, #997A51 0%, #CFA365 100%);
+  border-color: #997A51;
+  color: white;
+  margin-left: auto;
+}
+
+.passwordSurveyContainer .nextButton:hover:not(:disabled),
+.passwordSurveyContainer .submitButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #8A6D47 0%, #C09A5B 100%);
+  box-shadow: 0 4px 12px rgba(153, 122, 81, 0.3);
+  transform: translateY(-2px);
+}
+
+.passwordSurveyContainer .navSpacer {
+  flex: 1;
+}
+
+/* Dark Theme for Survey Form */
+.passwordSurveyContainer[data-theme="dark"] .surveyForm {
+  background: rgba(20, 25, 38, 0.9);
+  border: 1px solid rgba(74, 144, 226, 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .formHeader {
+  background: linear-gradient(135deg, 
+    rgba(74, 144, 226, 0.08) 0%,
+    rgba(28, 35, 45, 0.04) 100%);
+  border-bottom: 1px solid rgba(74, 144, 226, 0.1);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .formTitle {
+  background: linear-gradient(135deg, #4A90E2 0%, #74B9FF 70%, #997A51 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .formSubtitle {
+  color: rgba(245, 243, 238, 0.7);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .progressBar {
+  background: rgba(74, 144, 226, 0.2);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .progressFill {
+  background: linear-gradient(135deg, #4A90E2 0%, #74B9FF 100%);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .progressText {
+  color: rgba(245, 243, 238, 0.7);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .questionContainer {
+  background: rgba(20, 25, 38, 0.5);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .questionText {
+  color: #F5F3EE;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .questionInput .textInput,
+.passwordSurveyContainer[data-theme="dark"] .textareaInput {
+  background: rgba(20, 25, 38, 0.8);
+  border-color: rgba(74, 144, 226, 0.3);
+  color: #F5F3EE;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .questionInput .textInput:focus,
+.passwordSurveyContainer[data-theme="dark"] .textareaInput:focus {
+  border-color: #4A90E2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+  background: rgba(20, 25, 38, 0.95);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .choiceOption {
+  background: rgba(20, 25, 38, 0.7);
+  border-color: rgba(74, 144, 226, 0.3);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .choiceOption:hover {
+  background: rgba(20, 25, 38, 0.9);
+  border-color: rgba(74, 144, 226, 0.5);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .choiceOption.selected {
+  background: rgba(74, 144, 226, 0.1);
+  border-color: #4A90E2;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .optionText {
+  color: #F5F3EE;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .choiceOption.selected .optionRadio,
+.passwordSurveyContainer[data-theme="dark"] .choiceOption.selected .optionCheckbox {
+  border-color: #4A90E2;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .choiceOption.selected .optionCheckbox {
+  background: #4A90E2;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .radioSelected {
+  background: #4A90E2;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .yesNoOption {
+  background: rgba(20, 25, 38, 0.8);
+  border-color: rgba(74, 144, 226, 0.3);
+  color: rgba(245, 243, 238, 0.7);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .yesNoOption.selected {
+  border-color: #4A90E2;
+  background: rgba(74, 144, 226, 0.1);
+  color: #4A90E2;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .ratingButton {
+  background: rgba(20, 25, 38, 0.8);
+  border-color: rgba(74, 144, 226, 0.3);
+  color: rgba(245, 243, 238, 0.7);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .ratingButton:hover {
+  border-color: #4A90E2;
+  color: #4A90E2;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .ratingButton.selected {
+  background: #4A90E2;
+  border-color: #4A90E2;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .contactSection,
+.passwordSurveyContainer[data-theme="dark"] .formNavigation {
+  background: rgba(20, 25, 38, 0.5);
+  border-top: 1px solid rgba(74, 144, 226, 0.1);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .contactTitle {
+  color: #F5F3EE;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .contactDescription {
+  color: rgba(245, 243, 238, 0.7);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .contactInput {
+  background: rgba(20, 25, 38, 0.8);
+  border-color: rgba(74, 144, 226, 0.3);
+  color: #F5F3EE;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .contactInput:focus {
+  border-color: #4A90E2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .navButton {
+  background: rgba(20, 25, 38, 0.8);
+  border-color: rgba(74, 144, 226, 0.3);
+  color: rgba(245, 243, 238, 0.7);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .navButton:hover:not(:disabled) {
+  border-color: #4A90E2;
+  color: #4A90E2;
+  background: rgba(74, 144, 226, 0.1);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .nextButton,
+.passwordSurveyContainer[data-theme="dark"] .submitButton {
+  background: linear-gradient(135deg, #4A90E2 0%, #74B9FF 100%);
+  border-color: #4A90E2;
+  color: white;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .nextButton:hover:not(:disabled),
+.passwordSurveyContainer[data-theme="dark"] .submitButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #3A7BD5 0%, #6AA7F2 100%);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+/* Responsive Design for Survey Form */
+@media (max-width: 768px) {
+  .passwordSurveyContainer .surveyFormWrapper {
+    padding: 20px 16px;
+  }
+  
+  .passwordSurveyContainer .surveyForm {
+    border-radius: 16px;
+  }
+  
+  .passwordSurveyContainer .formHeader,
+  .passwordSurveyContainer .questionContainer,
+  .passwordSurveyContainer .contactSection,
+  .passwordSurveyContainer .formNavigation {
+    padding: 24px 20px;
+  }
+  
+  .passwordSurveyContainer .formTitle {
+    font-size: 1.6rem;
+  }
+  
+  .passwordSurveyContainer .questionText {
+    font-size: 1.3rem;
+  }
+  
+  .passwordSurveyContainer .yesNoOptions {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .passwordSurveyContainer .yesNoOption {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .passwordSurveyContainer .ratingButtons {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .passwordSurveyContainer .surveyFormWrapper {
+    padding: 16px 12px;
+  }
+  
+  .passwordSurveyContainer .formHeader,
+  .passwordSurveyContainer .questionContainer,
+  .passwordSurveyContainer .contactSection,
+  .passwordSurveyContainer .formNavigation {
+    padding: 20px 16px;
+  }
+  
+  .passwordSurveyContainer .formTitle {
+    font-size: 1.4rem;
+  }
+  
+  .passwordSurveyContainer .questionText {
+    font-size: 1.2rem;
+  }
+  
+  .passwordSurveyContainer .ratingButton {
+    width: 50px;
+    height: 50px;
+    font-size: 1rem;
+  }
+  
+  .passwordSurveyContainer .formNavigation {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .passwordSurveyContainer .navButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
