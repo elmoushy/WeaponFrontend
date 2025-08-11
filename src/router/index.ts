@@ -13,6 +13,7 @@ import SurveyControl from '../pages/Control/SurveyControl.vue'
 import UserManagement from '../pages/Control/UserManagement/UserManagement.vue'
 import SurveyResponses from '../pages/Survey/SurveyResponses.vue'
 import PublicSurveyView from '../pages/Survey/PublicSurveyView.vue'
+import PasswordProtectedSurveyView from '../pages/Survey/PasswordProtectedSurveyView.vue'
 import AuthSurveyView from '../pages/Survey/AuthSurveyView.vue'
 import Surveys from '../pages/Survey/Surveys.vue'
 import SurveyAccessTest from '../components/SurveyAccessTest.vue'
@@ -57,6 +58,15 @@ const routes: RouteRecordRaw[] = [
     meta: {
       title: 'Public Survey - WPC | WeaponpowerCloud App',
       requiresAuth: false // Public access, no authentication required
+    }
+  },
+  {
+    path: '/survey/password/:token',
+    name: 'PasswordProtectedSurvey',
+    component: PasswordProtectedSurveyView,
+    meta: {
+      title: 'Protected Survey - WPC | WeaponpowerCloud App',
+      requiresAuth: false // Public access with password
     }
   },
   {

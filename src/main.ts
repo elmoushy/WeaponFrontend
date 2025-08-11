@@ -2,7 +2,6 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
-import { silentRefreshAccessToken } from './services/jwtAuthService'
 import './styles/reset.module.css'
 import './styles/theme.css'
 import './styles/rtl-utils.css'
@@ -46,18 +45,5 @@ AOS.init({
 app.use(pinia)
 app.use(router)
 
-// Initialize JWT authentication
-const initializeAuth = async () => {
-  // Attempt silent refresh (refresh cookie -> new access token)
-  try {
-    await silentRefreshAccessToken()
-  } catch {
-    // Ignore errors; user will be treated as unauthenticated
-  }
-
-  // Mount the app
-  app.mount('#app')
-}
-
-// Start the application
-initializeAuth()
+// Mount immediately; JWT composable handles its own lazy init
+app.mount('#app')

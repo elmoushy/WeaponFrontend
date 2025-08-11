@@ -109,10 +109,10 @@
           <i class="fas fa-pause"></i>
           {{ t('survey.bulk.operations.deactivate') }}
         </button>
-        <button :class="$style.bulkButton" @click="bulkLock" :disabled="bulkOperationLoading">
+        <!-- <button :class="$style.bulkButton" @click="bulkLock" :disabled="bulkOperationLoading">
           <i class="fas fa-lock"></i>
           {{ t('survey.bulk.operations.lock') }}
-        </button>
+        </button> -->
         <button :class="[$style.bulkButton, $style.danger]" @click="bulkDelete" :disabled="bulkOperationLoading">
           <i class="fas fa-trash"></i>
           {{ t('survey.bulk.operations.delete') }}
@@ -183,6 +183,15 @@
             <button :class="$style.actionButton" @click.stop="manageSurveyAccess(survey)" :title="t('survey.card.manageAccess')">
               <i class="fas fa-share-alt"></i>
               <span :class="$style.actionButtonText">{{ t('survey.card.share') }}</span>
+            </button>
+            <button 
+              v-if="survey.visibility === 'PUBLIC'"
+              :class="[$style.actionButton, $style.publicShare]" 
+              @click.stop="openLinkSharingModal(survey)" 
+              :title="t('survey.card.shareLink')"
+            >
+              <i class="fas fa-link"></i>
+              <span :class="$style.actionButtonText">{{ t('survey.card.shareLink') }}</span>
             </button>
             <button :class="$style.actionButton" @click.stop="viewResponses(survey.id)" :title="t('survey.card.viewResponses')">
               <i class="fas fa-chart-bar"></i>
@@ -346,6 +355,17 @@
       @save="handleAccessSave"
       @cancel="closeAccessModal"
     />
+
+    <!-- Link Sharing Modal -->
+    <LinkSharingModal
+      v-if="showLinkSharingModal && selectedSurveyForLinkSharing"
+      :is-visible="showLinkSharingModal"
+      :survey="selectedSurveyForLinkSharing"
+      :public-link="publicLinkForSharing"
+      @close="closeLinkSharingModal"
+      @link-generated="handleLinkGenerated"
+      @status-update="handleStatusUpdate"
+    />
   </div>
 </template>
 
@@ -354,10 +374,11 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../../stores/useAppStore'
 import { surveyService } from '../../services/surveyService'
-import type { Survey, SurveyAnalytics, SurveyVisibility, QuestionType } from '../../types/survey.types'
+import type { Survey, SurveyAnalytics, SurveyVisibility, QuestionType, PublicContactMethod } from '../../types/survey.types'
 import SurveyModal from '../../components/SurveyModal/SurveyModal.vue'
 import AnalyticsModal from '../../components/AnalyticsModal/AnalyticsModal.vue'
 import SurveyAccessModal from '../../components/SurveyAccessModal/SurveyAccessModal.vue'
+import LinkSharingModal from '../../components/LinkSharingModal/LinkSharingModal.vue'
 
 // Router
 const router = useRouter()
@@ -386,8 +407,11 @@ const activeActionMenu = ref<string | null>(null)
 const showCreateModal = ref(false)
 const showAnalytics = ref(false)
 const showAccessModal = ref(false)
+const showLinkSharingModal = ref(false)
 const selectedSurveyForEdit = ref<Survey | null>(null)
 const selectedSurveyForAccess = ref<Survey | null>(null)
+const selectedSurveyForLinkSharing = ref<Survey | null>(null)
+const publicLinkForSharing = ref<any | null>(null)
 
 // Pagination
 const currentPage = ref(1)
@@ -479,14 +503,22 @@ const loadSurveys = async () => {
         title: 'Customer Satisfaction Survey 2024',
         description: 'Help us improve our services by sharing your feedback and experience with our products.',
         visibility: 'PUBLIC' as SurveyVisibility,
+        public_contact_method: 'email' as PublicContactMethod,
+        shared_with: [],
         creator: 1,
         creator_email: 'admin@weaponpowercloud.com',
         is_locked: false,
         is_active: true,
+        start_date: null,
+        end_date: null,
+        status: 'active',
+        is_currently_active: true,
         created_at: '2024-08-01T10:00:00Z',
         updated_at: '2024-08-02T15:30:00Z',
         response_count: 147,
         shared_with_emails: [],
+        can_submit: true,
+        has_submitted: false,
         questions: [
           { id: '1', text: 'How satisfied are you with our service?', question_type: 'rating' as QuestionType, is_required: true, order: 1, options: '', created_at: '', updated_at: '' },
           { id: '2', text: 'What can we improve?', question_type: 'textarea' as QuestionType, is_required: false, order: 2, options: '', created_at: '', updated_at: '' }
@@ -497,14 +529,21 @@ const loadSurveys = async () => {
         title: 'Product Feature Feedback',
         description: 'Your input on our latest features helps us create better experiences for all users.',
         visibility: 'AUTH' as SurveyVisibility,
+        shared_with: [1],
         creator: 2,
         creator_email: 'product@weaponpowercloud.com',
         is_locked: false,
         is_active: true,
+        start_date: null,
+        end_date: null,
+        status: 'active',
+        is_currently_active: true,
         created_at: '2024-07-25T14:20:00Z',
         updated_at: '2024-08-01T09:45:00Z',
         response_count: 89,
         shared_with_emails: ['team@weaponpowercloud.com'],
+        can_submit: true,
+        has_submitted: false,
         questions: [
           { id: '3', text: 'Which features do you use most?', question_type: 'multiple_choice' as QuestionType, is_required: true, order: 1, options: '["Analytics", "Reports", "Dashboards", "Surveys"]', created_at: '', updated_at: '' }
         ]
@@ -514,14 +553,21 @@ const loadSurveys = async () => {
         title: 'Employee Engagement Survey',
         description: 'Internal survey to measure team satisfaction and identify areas for workplace improvement.',
         visibility: 'PRIVATE' as SurveyVisibility,
+        shared_with: [1, 3],
         creator: 3,
         creator_email: 'hr@weaponpowercloud.com',
         is_locked: true,
         is_active: false,
+        start_date: null,
+        end_date: null,
+        status: 'inactive',
+        is_currently_active: false,
         created_at: '2024-07-20T08:15:00Z',
         updated_at: '2024-07-22T16:00:00Z',
         response_count: 23,
         shared_with_emails: ['hr@weaponpowercloud.com', 'management@weaponpowercloud.com'],
+        can_submit: false,
+        has_submitted: false,
         questions: [
           { id: '4', text: 'How would you rate your work-life balance?', question_type: 'rating' as QuestionType, is_required: true, order: 1, options: '', created_at: '', updated_at: '' },
           { id: '5', text: 'Do you feel valued at work?', question_type: 'yes_no' as QuestionType, is_required: true, order: 2, options: '', created_at: '', updated_at: '' }
@@ -607,6 +653,21 @@ const manageSurveyAccess = (survey: Survey) => {
   showAccessModal.value = true
 }
 
+const openLinkSharingModal = async (survey: Survey) => {
+  selectedSurveyForLinkSharing.value = survey
+  
+  try {
+    // Try to get existing public link for the survey
+    const linkResponse = await surveyService.getPublicLink(survey.id)
+    publicLinkForSharing.value = linkResponse.data
+  } catch (error) {
+    // If no public link exists, that's okay - the modal can generate one
+    publicLinkForSharing.value = null
+  }
+  
+  showLinkSharingModal.value = true
+}
+
 const handleAccessSave = async (_data: any) => {
   try {
     
@@ -621,6 +682,21 @@ const handleAccessSave = async (_data: any) => {
 const closeAccessModal = () => {
   showAccessModal.value = false
   selectedSurveyForAccess.value = null
+}
+
+const closeLinkSharingModal = () => {
+  showLinkSharingModal.value = false
+  selectedSurveyForLinkSharing.value = null
+  publicLinkForSharing.value = null
+}
+
+const handleLinkGenerated = (link: any) => {
+  publicLinkForSharing.value = link
+}
+
+const handleStatusUpdate = (message: string, type: string) => {
+  // You can add toast notifications or other status handling here
+  console.log(`${type}: ${message}`)
 }
 
 const viewResponses = (surveyId: string) => {
@@ -722,10 +798,6 @@ const bulkActivate = async () => {
 
 const bulkDeactivate = async () => {
   await performBulkOperation('deactivate')
-}
-
-const bulkLock = async () => {
-  await performBulkOperation('lock')
 }
 
 const bulkDelete = async () => {

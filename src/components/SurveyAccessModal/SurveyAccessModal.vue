@@ -43,121 +43,254 @@
                   </div>
                 </div>
                 <div :class="$style.optionRadio">
-                  <div :class="$style.radioButton"></div>
                 </div>
               </div>
               
               <!-- Compact Public Link Management -->
               <div v-if="selectedAccess === 'PUBLIC'" :class="$style.publicLinkSection">
-                <div v-if="publicLink" :class="$style.linkContainer">
-                  <!-- Link Display -->
-                  <div :class="$style.linkDisplay">
-                    <input 
-                      type="text" 
-                      :value="publicLink.link" 
-                      :class="$style.linkInput"
-                      readonly
-                    />
-                    <button 
-                      :class="$style.copyButton"
-                      @click="copyToClipboard(publicLink.link)"
-                      :title="getText('common.copy')"
-                    >
-                      <i class="fas fa-copy"></i>
-                    </button>
+                <!-- Contact Method Selection - Hidden when password protection is enabled with specific email/phone -->
+                <div 
+                  v-if="!passwordProtectionEnabled || passwordAccessMode === 'anyone'"
+                  :class="$style.contactMethodSection"
+                >
+                  <div :class="$style.contactMethodHeader">
+                    <h4 :class="$style.contactMethodTitle">
+                      <i class="fas fa-address-book"></i>
+                      {{ getText('survey.access.contactMethod') }}
+                    </h4>
+                    <p :class="$style.contactMethodDescription">
+                      {{ getText('survey.access.contactMethodDescription') }}
+                    </p>
                   </div>
-
-                  <!-- QR Code Display -->
-                  <div :class="$style.qrDisplay">
-                    <div :class="$style.qrCodeContainer">
-                      <canvas 
-                        ref="qrCanvas" 
-                        :class="$style.qrCanvas"
-                        width="200" 
-                        height="200"
-                      ></canvas>
-                      <div :class="$style.qrLabel">
-                        {{ getText('survey.access.scanToAccess') }}
+                  
+                  <div :class="$style.contactMethodOptions">
+                    <div 
+                      :class="[$style.contactMethodOption, { [$style.selected]: selectedContactMethod === 'email' }]"
+                      @click="selectedContactMethod = 'email'"
+                    >
+                      <div :class="$style.contactMethodRadio">
+                        <div v-if="selectedContactMethod === 'email'" :class="$style.radioSelected"></div>
+                      </div>
+                      <div :class="$style.contactMethodInfo">
+                        <i class="fas fa-envelope" :class="$style.contactMethodIcon"></i>
+                        <div>
+                          <span :class="$style.contactMethodName">{{ getText('survey.access.emailContact') }}</span>
+                          <small :class="$style.contactMethodDesc">{{ getText('survey.access.emailDescription') }}</small>
+                        </div>
                       </div>
                     </div>
-                    <div :class="$style.qrActions">
-                      <button 
-                        :class="$style.qrActionButton"
-                        @click="downloadQRCode"
-                        :title="getText('survey.access.downloadQR')"
-                      >
-                        <i class="fas fa-download"></i>
-                        {{ getText('survey.access.download') }}
-                      </button>
-                      <button 
-                        :class="$style.qrActionButton"
-                        @click="copyQRToClipboard"
-                        :title="getText('survey.access.copyQR')"
-                      >
-                        <i class="fas fa-copy"></i>
-                        {{ getText('survey.access.copy') }}
-                      </button>
-                      <!-- <button 
-                        :class="$style.qrActionButton"
-                        @click="downloadSharePackage"
-                        :title="getText('survey.access.downloadPackage')"
-                      >
-                        <i class="fas fa-file-archive"></i>
-                        {{ getText('survey.access.package') }}
-                      </button> -->
+                    
+                    <div 
+                      :class="[$style.contactMethodOption, { [$style.selected]: selectedContactMethod === 'phone' }]"
+                      @click="selectedContactMethod = 'phone'"
+                    >
+                      <div :class="$style.contactMethodRadio">
+                        <div v-if="selectedContactMethod === 'phone'" :class="$style.radioSelected"></div>
+                      </div>
+                      <div :class="$style.contactMethodInfo">
+                        <i class="fas fa-phone" :class="$style.contactMethodIcon"></i>
+                        <div>
+                          <span :class="$style.contactMethodName">{{ getText('survey.access.phoneContact') }}</span>
+                          <small :class="$style.contactMethodDesc">{{ getText('survey.access.phoneDescription') }}</small>
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  <!-- Share Actions -->
-                  <div :class="$style.shareActions">
-                    <button 
-                      :class="[$style.shareButton, { [$style.disabled]: !publicLink }]"
-                      @click="shareByEmail"
-                      :disabled="!publicLink"
-                      :title="getText('survey.access.shareByEmail')"
-                    >
-                      <i class="fas fa-envelope"></i>
-                      {{ getText('survey.access.email') }}
-                    </button>
-                    <button 
-                      :class="[$style.shareButton, { [$style.disabled]: !publicLink }]"
-                      @click="shareByWhatsApp"
-                      :disabled="!publicLink"
-                      :title="getText('survey.access.shareByWhatsApp')"
-                    >
-                      <i class="fab fa-whatsapp"></i>
-                      {{ getText('survey.access.whatsapp') }}
-                    </button>
-                    <button 
-                      :class="[$style.shareButton, { [$style.disabled]: !publicLink }]"
-                      @click="shareBySMS"
-                      :disabled="!publicLink"
-                      :title="getText('survey.access.shareBySMS')"
-                    >
-                      <i class="fas fa-sms"></i>
-                      {{ getText('survey.access.sms') }}
-                    </button>
-                  </div>
-
-                  <!-- Common Actions -->
-                  <div :class="$style.linkActions">
-                    <button :class="$style.actionButton" @click="regenerateLink">
-                      <i class="fas fa-sync-alt"></i>
-                      {{ getText('survey.access.regenerate') }}
-                    </button>
-                    <button :class="[$style.actionButton, $style.danger]" @click="revokeLink">
-                      <i class="fas fa-ban"></i>
-                      {{ getText('survey.access.revoke') }}
-                    </button>
-                  </div>
                 </div>
-                
-                <div v-else :class="$style.generateLinkSection">
-                  <button :class="$style.generateButton" @click="generateLink" :disabled="isGeneratingLink">
-                    <div v-if="isGeneratingLink" :class="$style.loadingSpinner"></div>
-                    <i v-else class="fas fa-link"></i>
-                    {{ getText('survey.access.generateLink') }}
-                  </button>
+
+                <!-- Password Protection Section -->
+                <div :class="$style.passwordProtectionSection">
+                  <div :class="$style.passwordProtectionHeader">
+                    <h4 :class="$style.passwordProtectionTitle">
+                      <i class="fas fa-shield-alt"></i>
+                      {{ getText('survey.access.passwordProtection') }}
+                    </h4>
+                    <div :class="$style.passwordToggleContainer">
+                      <label :class="$style.toggleSwitch">
+                        <input 
+                          type="checkbox" 
+                          v-model="passwordProtectionEnabled"
+                          :class="$style.toggleInput"
+                        />
+                        <span :class="$style.toggleSlider"></span>
+                      </label>
+                      <span :class="$style.toggleLabel">
+                        {{ getText('survey.access.enablePasswordProtection') }}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <!-- Password Protection Options -->
+                  <div v-if="passwordProtectionEnabled" :class="$style.passwordOptions">
+                    <p :class="$style.passwordDescription">
+                      {{ getText('survey.access.passwordDescription') }}
+                    </p>
+                    
+                    <!-- Access Control Options -->
+                    <div :class="$style.accessControlSection">
+                      <h5 :class="$style.accessControlTitle">
+                        {{ getText('survey.access.whoCanAccess') }}
+                      </h5>
+                      
+                      <div :class="$style.accessControlOptions">
+                        <!-- Anyone with password -->
+                        <div 
+                          :class="[$style.accessControlOption, { [$style.selected]: passwordAccessMode === 'anyone' }]"
+                          @click="passwordAccessMode = 'anyone'"
+                        >
+                          <div :class="$style.accessControlRadio">
+                            <div v-if="passwordAccessMode === 'anyone'" :class="$style.radioSelected"></div>
+                          </div>
+                          <div :class="$style.accessControlInfo">
+                            <i class="fas fa-users" :class="$style.accessControlIcon"></i>
+                            <div>
+                              <span :class="$style.accessControlName">{{ getText('survey.access.anyoneWithPassword') }}</span>
+                              <small :class="$style.accessControlDesc">{{ getText('survey.access.anyoneWithPasswordDesc') }}</small>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <!-- Specific email with password -->
+                        <div 
+                          :class="[$style.accessControlOption, { [$style.selected]: passwordAccessMode === 'email' }]"
+                          @click="passwordAccessMode = 'email'"
+                        >
+                          <div :class="$style.accessControlRadio">
+                            <div v-if="passwordAccessMode === 'email'" :class="$style.radioSelected"></div>
+                          </div>
+                          <div :class="$style.accessControlInfo">
+                            <i class="fas fa-envelope-open" :class="$style.accessControlIcon"></i>
+                            <div>
+                              <span :class="$style.accessControlName">{{ getText('survey.access.specificEmail') }}</span>
+                              <small :class="$style.accessControlDesc">{{ getText('survey.access.specificEmailDesc') }}</small>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <!-- Specific phone with password -->
+                        <div 
+                          :class="[$style.accessControlOption, { [$style.selected]: passwordAccessMode === 'phone' }]"
+                          @click="passwordAccessMode = 'phone'"
+                        >
+                          <div :class="$style.accessControlRadio">
+                            <div v-if="passwordAccessMode === 'phone'" :class="$style.radioSelected"></div>
+                          </div>
+                          <div :class="$style.accessControlInfo">
+                            <i class="fas fa-phone-alt" :class="$style.accessControlIcon"></i>
+                            <div>
+                              <span :class="$style.accessControlName">{{ getText('survey.access.specificPhone') }}</span>
+                              <small :class="$style.accessControlDesc">{{ getText('survey.access.specificPhoneDesc') }}</small>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- Email/Phone Multi-Input -->
+                      <div v-if="passwordAccessMode === 'email'" :class="$style.contactInput">
+                        <label :class="$style.inputLabel">
+                          <i class="fas fa-envelope"></i>
+                          {{ getText('survey.access.restrictToEmails') }}
+                        </label>
+                        <div :class="$style.multiInputContainer">
+                          <!-- Email Tags -->
+                          <div v-if="restrictedEmails.length > 0" :class="$style.contactTags">
+                            <div 
+                              v-for="(email, index) in restrictedEmails" 
+                              :key="index"
+                              :class="$style.contactTag"
+                            >
+                              <span :class="$style.tagText">{{ email }}</span>
+                              <button 
+                                type="button"
+                                :class="$style.tagRemove"
+                                @click="removeEmail(index)"
+                                :title="getText('common.remove')"
+                              >
+                                <i class="fas fa-times"></i>
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <!-- Email Input -->
+                          <div :class="$style.inputRow">
+                            <input 
+                              type="email" 
+                              v-model="currentEmailInput"
+                              :class="$style.textInput"
+                              :placeholder="getText('survey.access.enterEmailPlaceholder')"
+                              @keydown.enter.prevent="addEmail"
+                              @keydown.comma.prevent="addEmail"
+                            />
+                            <button 
+                              type="button"
+                              :class="$style.addButton"
+                              @click="addEmail"
+                              :disabled="!currentEmailInput.trim()"
+                              :title="getText('survey.access.addEmail')"
+                            >
+                              <i class="fas fa-plus"></i>
+                            </button>
+                          </div>
+                          
+                          <small :class="$style.inputHint">
+                            {{ getText('survey.access.emailInputHint') }}
+                          </small>
+                        </div>
+                      </div>
+                      
+                      <div v-if="passwordAccessMode === 'phone'" :class="$style.contactInput">
+                        <label :class="$style.inputLabel">
+                          <i class="fas fa-phone"></i>
+                          {{ getText('survey.access.restrictToPhones') }}
+                        </label>
+                        <div :class="$style.multiInputContainer">
+                          <!-- Phone Tags -->
+                          <div v-if="restrictedPhones.length > 0" :class="$style.contactTags">
+                            <div 
+                              v-for="(phone, index) in restrictedPhones" 
+                              :key="index"
+                              :class="$style.contactTag"
+                            >
+                              <span :class="$style.tagText">{{ phone }}</span>
+                              <button 
+                                type="button"
+                                :class="$style.tagRemove"
+                                @click="removePhone(index)"
+                                :title="getText('common.remove')"
+                              >
+                                <i class="fas fa-times"></i>
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <!-- Phone Input -->
+                          <div :class="$style.inputRow">
+                            <input 
+                              type="tel" 
+                              v-model="currentPhoneInput"
+                              :class="$style.textInput"
+                              :placeholder="getText('survey.access.enterPhonePlaceholder')"
+                              @keydown.enter.prevent="addPhone"
+                              @keydown.comma.prevent="addPhone"
+                            />
+                            <button 
+                              type="button"
+                              :class="$style.addButton"
+                              @click="addPhone"
+                              :disabled="!currentPhoneInput.trim()"
+                              :title="getText('survey.access.addPhone')"
+                            >
+                              <i class="fas fa-plus"></i>
+                            </button>
+                          </div>
+                          
+                          <small :class="$style.inputHint">
+                            {{ getText('survey.access.phoneInputHint') }}
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -176,7 +309,6 @@
                   </div>
                 </div>
                 <div :class="$style.optionRadio">
-                  <div :class="$style.radioButton"></div>
                 </div>
               </div>
             </div>
@@ -195,7 +327,6 @@
                   </div>
                 </div>
                 <div :class="$style.optionRadio">
-                  <div :class="$style.radioButton"></div>
                 </div>
               </div>
               
@@ -308,7 +439,6 @@
                   </div>
                 </div>
                 <div :class="$style.optionRadio">
-                  <div :class="$style.radioButton"></div>
                 </div>
               </div>
               
@@ -382,20 +512,34 @@
       </div>
     </div>
   </div>
+
+  <!-- Link Sharing Modal -->
+  <LinkSharingModal
+    :is-visible="isLinkSharingModalVisible"
+    :survey="survey"
+    :public-link="publicLink"
+    :password-protected-link="passwordProtectedLink"
+    @close="closeLinkSharingModal"
+    @link-generated="handleLinkGenerated"
+    @status-update="handleStatusUpdate"
+  />
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useAppStore } from '../../stores/useAppStore'
 import { surveyService } from '../../services/surveyService'
-import QRCode from 'qrcode'
+import LinkSharingModal from '../LinkSharingModal/LinkSharingModal.vue'
 import type { 
   Survey, 
   SurveyVisibility, 
   PublicLinkResponse,
+  PasswordProtectedLinkResponse,
+  PasswordProtectedLinkRequest,
   User,
   ShareRequest,
-  AdminGroup
+  AdminGroup,
+  PublicContactMethod
 } from '../../types/survey.types'
 
 // Props
@@ -407,7 +551,7 @@ const props = defineProps<Props>()
 
 // Emits
 const emit = defineEmits<{
-  save: [data: { visibility: SurveyVisibility; users: User[]; emails: string[]; groups?: AdminGroup[] }]
+  save: [data: { visibility: SurveyVisibility; publicContactMethod?: PublicContactMethod; users: User[]; emails: string[]; groups?: AdminGroup[] }]
   cancel: []
 }>()
 
@@ -456,6 +600,34 @@ const translations = computed(() => {
     // Public Access
     'survey.access.public.title': 'عام',
     'survey.access.public.description': 'أي شخص لديه الرابط',
+    'survey.access.contactMethod': 'طريقة التواصل',
+    'survey.access.contactMethodDescription': 'اختر الطريقة المطلوبة للمشاركة المجهولة',
+    'survey.access.emailContact': 'بريد إلكتروني',
+    'survey.access.emailDescription': 'المشاركون يحتاجون بريد إلكتروني',
+    'survey.access.phoneContact': 'هاتف',
+    'survey.access.phoneDescription': 'المشاركون يحتاجون رقم هاتف',
+    
+    // Password Protection
+    'survey.access.passwordProtection': 'الحماية بكلمة مرور',
+    'survey.access.enablePasswordProtection': 'تفعيل الحماية بكلمة مرور',
+    'survey.access.passwordDescription': 'سيتم إنشاء كلمة مرور تلقائياً لحماية الاستطلاع',
+    'survey.access.whoCanAccess': 'من يمكنه الوصول؟',
+    'survey.access.anyoneWithPassword': 'أي شخص لديه كلمة المرور',
+    'survey.access.anyoneWithPasswordDesc': 'أي شخص يملك الرابط وكلمة المرور يمكنه الوصول',
+    'survey.access.specificEmail': 'بريد إلكتروني محدد',
+    'survey.access.specificEmailDesc': 'بريد إلكتروني محدد فقط + كلمة المرور',
+    'survey.access.specificPhone': 'هاتف محدد',
+    'survey.access.specificPhoneDesc': 'رقم هاتف محدد فقط + كلمة المرور',
+    'survey.access.restrictToEmails': 'قصر الوصول على عناوين البريد الإلكتروني',
+    'survey.access.restrictToPhones': 'قصر الوصول على أرقام الهاتف',
+    'survey.access.enterEmailPlaceholder': 'أدخل البريد الإلكتروني',
+    'survey.access.enterPhonePlaceholder': 'أدخل رقم الهاتف',
+    'survey.access.addEmail': 'إضافة بريد إلكتروني',
+    'survey.access.addPhone': 'إضافة رقم هاتف',
+    'survey.access.emailInputHint': 'اضغط Enter أو الفاصلة لإضافة البريد الإلكتروني',
+    'survey.access.phoneInputHint': 'اضغط Enter أو الفاصلة لإضافة رقم الهاتف',
+    'common.remove': 'حذف',
+    
     'survey.access.linkMode': 'رابط',
     'survey.access.qrMode': 'رمز QR',
     'survey.access.scanToAccess': 'امسح للوصول إلى الاستطلاع',
@@ -514,6 +686,34 @@ const translations = computed(() => {
     // Public Access
     'survey.access.public.title': 'Public',
     'survey.access.public.description': 'Anyone with link',
+    'survey.access.contactMethod': 'Contact Method',
+    'survey.access.contactMethodDescription': 'Choose required method for anonymous submissions',
+    'survey.access.emailContact': 'Email',
+    'survey.access.emailDescription': 'Participants need email address',
+    'survey.access.phoneContact': 'Phone',
+    'survey.access.phoneDescription': 'Participants need phone number',
+    
+    // Password Protection
+    'survey.access.passwordProtection': 'Password Protection',
+    'survey.access.enablePasswordProtection': 'Enable password protection',
+    'survey.access.passwordDescription': 'A password will be automatically generated to protect the survey',
+    'survey.access.whoCanAccess': 'Who can access?',
+    'survey.access.anyoneWithPassword': 'Anyone with password',
+    'survey.access.anyoneWithPasswordDesc': 'Anyone with the link and password can access',
+    'survey.access.specificEmail': 'Specific email',
+    'survey.access.specificEmailDesc': 'Specific email only + password',
+    'survey.access.specificPhone': 'Specific phone',
+    'survey.access.specificPhoneDesc': 'Specific phone number only + password',
+    'survey.access.restrictToEmails': 'Restrict to email addresses',
+    'survey.access.restrictToPhones': 'Restrict to phone numbers',
+    'survey.access.enterEmailPlaceholder': 'Enter email address',
+    'survey.access.enterPhonePlaceholder': 'Enter phone number',
+    'survey.access.addEmail': 'Add email',
+    'survey.access.addPhone': 'Add phone',
+    'survey.access.emailInputHint': 'Press Enter or comma to add email',
+    'survey.access.phoneInputHint': 'Press Enter or comma to add phone',
+    'common.remove': 'Remove',
+    
     'survey.access.linkMode': 'Link',
     'survey.access.qrMode': 'QR Code',
     'survey.access.scanToAccess': 'Scan to access survey',
@@ -575,12 +775,12 @@ const getText = (key: string, fallback?: string) => {
 
 // State
 const selectedAccess = ref<SurveyVisibility>(props.survey.visibility)
+const selectedContactMethod = ref<PublicContactMethod>(props.survey.public_contact_method || 'email')
 const publicLink = ref<PublicLinkResponse | null>(null)
-const isGeneratingLink = ref(false)
 const isSaving = ref(false)
 
-// QR Code State
-const qrCanvas = ref<HTMLCanvasElement | null>(null)
+// Link Sharing Modal State
+const isLinkSharingModalVisible = ref(false)
 
 // Status message for user feedback
 const statusMessage = ref<{
@@ -601,6 +801,15 @@ const selectedUsers = ref<User[]>([])
 const availableGroups = ref<AdminGroup[]>([])
 const selectedGroups = ref<AdminGroup[]>([])
 const isLoadingGroups = ref(false)
+
+// Password protection
+const passwordProtectionEnabled = ref(false)
+const passwordAccessMode = ref<'anyone' | 'email' | 'phone'>('anyone')
+const restrictedEmails = ref<string[]>([])
+const restrictedPhones = ref<string[]>([])
+const currentEmailInput = ref('')
+const currentPhoneInput = ref('')
+const passwordProtectedLink = ref<PasswordProtectedLinkResponse | null>(null)
 
 // Methods
 const handleOverlayClick = () => {
@@ -640,6 +849,32 @@ const clearStatusMessage = () => {
   statusMessage.value = null
 }
 
+// LinkSharingModal Methods
+const closeLinkSharingModal = () => {
+  isLinkSharingModalVisible.value = false
+  
+  // Emit save when LinkSharingModal closes for PUBLIC access
+  if (selectedAccess.value === 'PUBLIC') {
+    const saveData = {
+      visibility: selectedAccess.value,
+      publicContactMethod: selectedContactMethod.value,
+      users: selectedUsers.value,
+      emails: [] as string[], // Email invitations removed from compact UI
+      groups: selectedGroups.value
+    }
+    emit('save', saveData)
+  }
+}
+
+const handleLinkGenerated = (link: PublicLinkResponse) => {
+  publicLink.value = link
+  setStatusMessage('Public link generated successfully', 'success')
+}
+
+const handleStatusUpdate = (message: string, type: 'success' | 'error' | 'warning' | 'info') => {
+  setStatusMessage(message, type)
+}
+
 // Public Link Management
 const loadPublicLink = async () => {
   if (selectedAccess.value === 'PUBLIC') {
@@ -655,273 +890,6 @@ const loadPublicLink = async () => {
     }
   }
 }
-
-const generateLink = async () => {
-  try {
-    isGeneratingLink.value = true
-    clearStatusMessage()
-    
-    const response = await surveyService.generatePublicLink(props.survey.id, {
-      days_to_expire: 30
-    })
-    
-    publicLink.value = response.data
-    setStatusMessage('Public link generated successfully', 'success')
-  } catch (error: any) {
-    // Logging removed for production
-    const errorMessage = error.response?.data?.message || error.message || 'Failed to generate public link'
-    setStatusMessage(errorMessage, 'error')
-  } finally {
-    isGeneratingLink.value = false
-  }
-}
-
-const regenerateLink = async () => {
-  if (confirm(getText('survey.access.confirmRegenerateLink'))) {
-    await generateLink()
-  }
-}
-
-const revokeLink = async () => {
-  if (confirm(getText('survey.access.confirmRevokeLink'))) {
-    try {
-      await surveyService.revokePublicLink(props.survey.id)
-      publicLink.value = null
-      setStatusMessage('Public link revoked successfully', 'success')
-    } catch (error: any) {
-      // Logging removed for production
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to revoke public link'
-      setStatusMessage(errorMessage, 'error')
-    }
-  }
-}
-
-const copyToClipboard = async (text: string) => {
-  try {
-    await navigator.clipboard.writeText(text)
-    setStatusMessage('Link copied to clipboard', 'success')
-  } catch (error) {
-    // Logging removed for production
-    setStatusMessage('Failed to copy link', 'error')
-  }
-}
-
-// QR Code Functions
-const generateQRCode = async (text: string): Promise<void> => {
-  if (!qrCanvas.value) return
-
-  try {
-    // Use the proper QRCode library to generate a scannable QR code
-    await QRCode.toCanvas(qrCanvas.value, text, {
-      width: 200,
-      margin: 1,
-      errorCorrectionLevel: 'M'  // M = 15% error correction
-    })
-  } catch (error) {
-    // Logging removed for production
-    setStatusMessage('Failed to generate QR code', 'error')
-  }
-}
-
-const downloadQRCode = () => {
-  if (!qrCanvas.value) return
-
-  try {
-    const link = document.createElement('a')
-    link.download = `survey-qr-${props.survey.id}.png`
-    link.href = qrCanvas.value.toDataURL()
-    link.click()
-    setStatusMessage('QR code downloaded successfully', 'success')
-  } catch (error) {
-    // Logging removed for production
-    setStatusMessage('Failed to download QR code', 'error')
-  }
-}
-
-const copyQRToClipboard = async () => {
-  if (!qrCanvas.value) return
-
-  try {
-    const canvas = qrCanvas.value
-    canvas.toBlob(async (blob) => {
-      if (blob) {
-        const item = new ClipboardItem({ 'image/png': blob })
-        await navigator.clipboard.write([item])
-        setStatusMessage('QR code copied to clipboard', 'success')
-      }
-    })
-  } catch (error) {
-    // Logging removed for production
-    setStatusMessage('Failed to copy QR code', 'error')
-  }
-}
-
-// Share Functions
-/**
- * Share functionality for survey public links
- * Includes three sharing methods: Email, WhatsApp, and SMS
- * - Email: Opens default email client with subject, message, and QR code data
- * - WhatsApp: Opens WhatsApp web/app with pre-filled message
- * - SMS: Opens default SMS app with pre-filled message
- * All methods include the survey link and QR code reference
- */
-const getShareMessage = (platform: 'email' | 'whatsapp' | 'sms' = 'email') => {
-  const surveyTitle = props.survey.title
-  const link = publicLink.value?.link || ''
-  
-  // Different formatting for different platforms to ensure link clickability
-  if (currentLanguage.value === 'ar') {
-    if (platform === 'email') {
-      return `مرحباً!\n\nأدعوك للمشاركة في استطلاع: "${surveyTitle}"\n\nيمكنك الوصول إليه من خلال النقر على الرابط:\n\n${link}\n\nأو نسخ الرابط ولصقه في المتصفح.\n\nشكراً لمشاركتك! 🙏`
-    } else if (platform === 'whatsapp') {
-      return `🔗 مرحباً!\n\nأدعوك للمشاركة في استطلاع:\n*${surveyTitle}*\n\nالرابط:\n${link}\n\nشكراً لمشاركتك! 🙏`
-    } else { // SMS
-      return `استطلاع: ${surveyTitle}\n\nالرابط:\n${link}\n\nشكراً لك!`
-    }
-  } else {
-    if (platform === 'email') {
-      return `Hello!\n\nYou're invited to participate in the survey: "${surveyTitle}"\n\nAccess it by clicking this link:\n\n${link}\n\nOr copy and paste the link into your browser.\n\nThank you for your participation! 🙏`
-    } else if (platform === 'whatsapp') {
-      return `🔗 Hello!\n\nYou're invited to participate in the survey:\n*${surveyTitle}*\n\nLink:\n${link}\n\nThank you for your participation! 🙏`
-    } else { // SMS
-      return `Survey: ${surveyTitle}\n\nLink:\n${link}\n\nThank you!`
-    }
-  }
-}
-
-const shareByEmail = async () => {
-  if (!publicLink.value) {
-    setStatusMessage(currentLanguage.value === 'ar' ? 'يجب إنشاء رابط عام أولاً' : 'Please generate a public link first', 'warning')
-    return
-  }
-  
-  try {
-    const message = getShareMessage('email')
-    const subject = currentLanguage.value === 'ar' 
-      ? `دعوة للمشاركة في استطلاع: ${props.survey.title}`
-      : `Survey Invitation: ${props.survey.title}`
-    
-    // Create email body with better formatting for clickable links
-    const emailBody = currentLanguage.value === 'ar' 
-      ? `${message}\n\n💡 تلميح: يمكنك أيضاً تحميل رمز QR من صفحة مشاركة الاستطلاع لسهولة المشاركة مع الآخرين.`
-      : `${message}\n\n💡 Tip: You can also download the QR code from the survey sharing page for easy sharing with others.`
-    
-    // Create and open mailto link
-    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`
-    
-    // Try to open email client, fallback to copying
-    try {
-      window.location.href = mailtoLink
-      setStatusMessage(currentLanguage.value === 'ar' ? 'تم فتح تطبيق البريد الإلكتروني' : 'Email client opened', 'success')
-    } catch (e) {
-      // Fallback: copy email content to clipboard
-      const fullEmailContent = `${currentLanguage.value === 'ar' ? 'الموضوع' : 'Subject'}: ${subject}\n\n${emailBody}`
-      await navigator.clipboard.writeText(fullEmailContent)
-      setStatusMessage(
-        currentLanguage.value === 'ar' 
-          ? 'تم نسخ محتوى البريد الإلكتروني - يمكنك لصقه في تطبيق البريد الإلكتروني المفضل لديك'
-          : 'Email content copied - you can paste it in your preferred email app', 
-        'info'
-      )
-    }
-  } catch (error) {
-    // Logging removed for production
-    setStatusMessage(currentLanguage.value === 'ar' ? 'فشل في مشاركة عبر البريد الإلكتروني' : 'Failed to share by email', 'error')
-  }
-}
-
-const shareByWhatsApp = async () => {
-  if (!publicLink.value) {
-    setStatusMessage(currentLanguage.value === 'ar' ? 'يجب إنشاء رابط عام أولاً' : 'Please generate a public link first', 'warning')
-    return
-  }
-  
-  try {
-    const message = getShareMessage('whatsapp')
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`
-    
-    // Try to open WhatsApp, fallback to copying
-    try {
-      window.open(whatsappUrl, '_blank')
-      setStatusMessage(currentLanguage.value === 'ar' ? 'تم فتح واتساب' : 'WhatsApp opened', 'success')
-    } catch (e) {
-      // Fallback: copy message to clipboard
-      await navigator.clipboard.writeText(message)
-      setStatusMessage(
-        currentLanguage.value === 'ar' 
-          ? 'تم نسخ الرسالة - يمكنك لصقها في واتساب'
-          : 'Message copied - you can paste it in WhatsApp', 
-        'info'
-      )
-    }
-  } catch (error) {
-    // Logging removed for production
-    setStatusMessage(currentLanguage.value === 'ar' ? 'فشل في مشاركة عبر واتساب' : 'Failed to share by WhatsApp', 'error')
-  }
-}
-
-const shareBySMS = async () => {
-  if (!publicLink.value) {
-    setStatusMessage(currentLanguage.value === 'ar' ? 'يجب إنشاء رابط عام أولاً' : 'Please generate a public link first', 'warning')
-    return
-  }
-  
-  try {
-    const message = getShareMessage('sms')
-    
-    // SMS URL with better handling
-    const smsUrl = `sms:?&body=${encodeURIComponent(message)}`
-    
-    // Try to open SMS, fallback to copying
-    try {
-      window.open(smsUrl, '_blank')
-      setStatusMessage(currentLanguage.value === 'ar' ? 'تم فتح تطبيق الرسائل النصية' : 'SMS app opened', 'success')
-    } catch (e) {
-      // Fallback: copy message to clipboard
-      await navigator.clipboard.writeText(message)
-      setStatusMessage(
-        currentLanguage.value === 'ar' 
-          ? 'تم نسخ الرسالة - يمكنك لصقها في تطبيق الرسائل النصية'
-          : 'Message copied - you can paste it in SMS app', 
-        'info'
-      )
-    }
-  } catch (error) {
-    // Logging removed for production
-    setStatusMessage(currentLanguage.value === 'ar' ? 'فشل في مشاركة عبر الرسائل النصية' : 'Failed to share by SMS', 'error')
-  }
-}
-
-// Additional function to download both link and QR code as a package
-// Currently unused but kept for future enhancement
-// const downloadSharePackage = async () => {
-//   if (!publicLink.value || !qrCanvas.value) {
-//     setStatusMessage(currentLanguage.value === 'ar' ? 'يجب إنشاء رابط عام أولاً' : 'Please generate a public link first', 'warning')
-//     return
-//   }
-
-//   try {
-//     // Create a text file with the survey information
-//     const textContent = getShareMessage('email')
-//     const textBlob = new Blob([textContent], { type: 'text/plain' })
-    
-//     // Download the text file
-//     const textLink = document.createElement('a')
-//     textLink.href = URL.createObjectURL(textBlob)
-//     textLink.download = `survey-invitation-${props.survey.id}.txt`
-//     textLink.click()
-    
-//     // Download the QR code
-//     setTimeout(() => {
-//       downloadQRCode()
-//     }, 500)
-    
-//     setStatusMessage(currentLanguage.value === 'ar' ? 'تم تحميل حزمة المشاركة' : 'Share package downloaded', 'success')
-//   } catch (error) {
-//     // Logging removed for production
-//     setStatusMessage(currentLanguage.value === 'ar' ? 'فشل في تحميل حزمة المشاركة' : 'Failed to download share package', 'error')
-//   }
-// }
 
 // User Search and Management
 const handleUserSearch = async () => {
@@ -947,6 +915,105 @@ const addUser = (user: User) => {
     userSearchResults.value = userSearchResults.value.filter(result => result.id !== user.id)
     userSearchQuery.value = ''
     setStatusMessage(`Added ${user.name} to shared users`, 'success')
+  }
+}
+
+// Email and Phone Management
+const addEmail = () => {
+  const email = currentEmailInput.value.trim()
+  if (!email) return
+  
+  // Basic email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email)) {
+    setStatusMessage(
+      currentLanguage.value === 'ar' 
+        ? 'البريد الإلكتروني غير صالح'
+        : 'Invalid email address',
+      'error'
+    )
+    return
+  }
+  
+  // Check for duplicates
+  if (restrictedEmails.value.includes(email)) {
+    setStatusMessage(
+      currentLanguage.value === 'ar' 
+        ? 'البريد الإلكتروني موجود بالفعل'
+        : 'Email already added',
+      'warning'
+    )
+    return
+  }
+  
+  restrictedEmails.value.push(email)
+  currentEmailInput.value = ''
+  setStatusMessage(
+    currentLanguage.value === 'ar' 
+      ? 'تم إضافة البريد الإلكتروني بنجاح'
+      : 'Email added successfully',
+    'success'
+  )
+}
+
+const removeEmail = (index: number) => {
+  if (index >= 0 && index < restrictedEmails.value.length) {
+    const removed = restrictedEmails.value.splice(index, 1)[0]
+    setStatusMessage(
+      currentLanguage.value === 'ar' 
+        ? `تم حذف ${removed}`
+        : `Removed ${removed}`,
+      'success'
+    )
+  }
+}
+
+const addPhone = () => {
+  const phone = currentPhoneInput.value.trim()
+  if (!phone) return
+  
+  // Basic phone validation (allow international format)
+  const phoneRegex = /^[+]?[1-9][\d]{0,15}$/
+  if (!phoneRegex.test(phone.replace(/[\s-()]/g, ''))) {
+    setStatusMessage(
+      currentLanguage.value === 'ar' 
+        ? 'رقم الهاتف غير صالح'
+        : 'Invalid phone number',
+      'error'
+    )
+    return
+  }
+  
+  // Check for duplicates
+  if (restrictedPhones.value.includes(phone)) {
+    setStatusMessage(
+      currentLanguage.value === 'ar' 
+        ? 'رقم الهاتف موجود بالفعل'
+        : 'Phone number already added',
+      'warning'
+    )
+    return
+  }
+  
+  restrictedPhones.value.push(phone)
+  currentPhoneInput.value = ''
+  setStatusMessage(
+    currentLanguage.value === 'ar' 
+      ? 'تم إضافة رقم الهاتف بنجاح'
+      : 'Phone number added successfully',
+    'success'
+  )
+}
+
+const removePhone = (index: number) => {
+  if (index >= 0 && index < restrictedPhones.value.length) {
+    const removed = restrictedPhones.value.splice(index, 1)[0]
+    setStatusMessage(
+      currentLanguage.value === 'ar' 
+        ? `تم حذف ${removed}`
+        : `Removed ${removed}`,
+      'success'
+    )
   }
 }
 
@@ -1040,7 +1107,8 @@ const handleSave = async () => {
     }
 
     // Call the survey service to update using the existing updateSurveyAccess method
-    await surveyService.updateSurveyAccess(props.survey.id, accessLevel)
+    const contactMethod = selectedAccess.value === 'PUBLIC' ? selectedContactMethod.value : undefined
+    await surveyService.updateSurveyAccess(props.survey.id, accessLevel, contactMethod)
     
     // Handle private access sharing if needed
     if (selectedAccess.value === 'PRIVATE' && selectedUsers.value.length > 0) {
@@ -1067,12 +1135,77 @@ const handleSave = async () => {
       }, 2000)
     }
 
-    emit('save', {
-      visibility: selectedAccess.value,
-      users: selectedUsers.value,
-      emails: [], // Email invitations removed from compact UI
-      groups: selectedGroups.value
-    })
+    // Open LinkSharingModal automatically if PUBLIC access is selected
+    if (selectedAccess.value === 'PUBLIC') {
+      // Handle password protection
+      if (passwordProtectionEnabled.value) {
+        try {
+          const passwordLinkOptions: PasswordProtectedLinkRequest = {
+            days_to_expire: 30
+          }
+          
+          // Add email/phone restrictions if specified
+          // Debug logging to understand the issue
+          console.log('passwordAccessMode:', passwordAccessMode.value)
+          console.log('restrictedEmails:', restrictedEmails.value)
+          console.log('restrictedPhones:', restrictedPhones.value)
+          
+          if (passwordAccessMode.value === 'email' && restrictedEmails.value.length > 0) {
+            // Convert reactive proxy to plain array and send the entire array of restricted emails
+            passwordLinkOptions.restricted_email = [...restrictedEmails.value]
+            console.log('Added restricted_email to options:', passwordLinkOptions.restricted_email)
+          } 
+          
+          if (passwordAccessMode.value === 'phone' && restrictedPhones.value.length > 0) {
+            // Convert reactive proxy to plain array and send the entire array of restricted phones
+            passwordLinkOptions.restricted_phone = [...restrictedPhones.value]
+            console.log('Added restricted_phone to options:', passwordLinkOptions.restricted_phone)
+          }
+          
+          console.log('passwordLinkOptions being sent:', passwordLinkOptions)
+          
+          const passwordLinkResponse = await surveyService.generatePasswordProtectedLink(props.survey.id, passwordLinkOptions)
+          passwordProtectedLink.value = passwordLinkResponse.data
+          
+          setStatusMessage(
+            currentLanguage.value === 'ar' 
+              ? 'تم إنشاء رابط محمي بكلمة مرور بنجاح'
+              : 'Password-protected link generated successfully',
+            'success'
+          )
+          
+          // Show modal with password-protected link
+          setTimeout(() => {
+            isLinkSharingModalVisible.value = true
+          }, 100)
+        } catch (error: any) {
+          const errorMessage = currentLanguage.value === 'ar' 
+            ? 'فشل في إنشاء رابط محمي بكلمة مرور'
+            : 'Failed to generate password-protected link'
+          setStatusMessage(errorMessage, 'error')
+        }
+      } else {
+        // Load regular public link if it doesn't exist, then open the modal
+        if (!publicLink.value) {
+          await loadPublicLink()
+        }
+        // Open the modal first, emit save later when modal closes
+        setTimeout(() => {
+          isLinkSharingModalVisible.value = true
+        }, 100)
+      }
+      // Don't emit save immediately for PUBLIC access - let the modal handle it
+    } else {
+      // For non-PUBLIC access, emit save immediately
+      const saveData = {
+        visibility: selectedAccess.value,
+        publicContactMethod: undefined as PublicContactMethod | undefined,
+        users: selectedUsers.value,
+        emails: [] as string[], // Email invitations removed from compact UI
+        groups: selectedGroups.value
+      }
+      emit('save', saveData)
+    }
   } catch (error: any) {
     // Logging removed for production
     
@@ -1117,10 +1250,26 @@ watch(() => selectedAccess.value, (newAccess) => {
   }
 })
 
-watch(() => publicLink.value, async (newLink) => {
-  if (newLink) {
-    await nextTick()
-    generateQRCode(newLink.link)
+// Watch password access mode to automatically set contact method
+watch(() => passwordAccessMode.value, (newMode) => {
+  if (passwordProtectionEnabled.value) {
+    if (newMode === 'email') {
+      selectedContactMethod.value = 'email'
+    } else if (newMode === 'phone') {
+      selectedContactMethod.value = 'phone'
+    }
+  }
+})
+
+// Watch password protection enabled state
+watch(() => passwordProtectionEnabled.value, (isEnabled) => {
+  if (isEnabled && passwordAccessMode.value !== 'anyone') {
+    // Set contact method based on current password access mode
+    if (passwordAccessMode.value === 'email') {
+      selectedContactMethod.value = 'email'
+    } else if (passwordAccessMode.value === 'phone') {
+      selectedContactMethod.value = 'phone'
+    }
   }
 })
 

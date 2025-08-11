@@ -3,7 +3,7 @@
     <!-- Loading State -->
     <div v-if="isLoading" :class="$style.loadingContainer">
       <div :class="$style.loadingSpinner"></div>
-      <p :class="$style.loadingText">{{ t('survey.auth.loading') }}</p>
+      <p :class="$style.loadingText">جاري تحميل الاستطلاع...</p>
     </div>
 
     <!-- Access Denied -->
@@ -24,11 +24,11 @@
       <div :class="$style.errorIcon">
         <i class="fas fa-exclamation-triangle"></i>
       </div>
-      <h2 :class="$style.errorTitle">{{ t('survey.auth.error') }}</h2>
+      <h2 :class="$style.errorTitle">خطأ</h2>
       <p :class="$style.errorMessage">{{ error }}</p>
       <button :class="$style.retryButton" @click="loadSurvey">
         <i class="fas fa-redo"></i>
-        {{ t('common.retry') }}
+        إعادة المحاولة
       </button>
     </div>
 
@@ -382,7 +382,7 @@ const loadSurvey = async () => {
     const surveyId = route.params.id as string
 
     if (!surveyId) {
-      error.value = t('survey.auth.errors.noSurveyId')
+      error.value = 'معرف الاستطلاع غير مُتاح'
       return
     }
 
@@ -392,21 +392,21 @@ const loadSurvey = async () => {
       survey.value = response.data.survey
       initializeAnswers()
     } else {
-      error.value = t('survey.auth.errors.surveyNotFound')
+      error.value = 'الاستطلاع غير موجود'
     }
   } catch (err: any) {
     // Logging removed for production
     
     if (err.message?.includes('403') || err.message?.includes('Access denied')) {
       accessDenied.value = true
-      accessMessage.value = t('survey.auth.errors.accessDenied')
+      accessMessage.value = 'ليس لديك صلاحية للوصول إلى هذا الاستطلاع'
     } else if (err.message?.includes('404')) {
-      error.value = t('survey.auth.errors.surveyNotFound')
+      error.value = 'الاستطلاع غير موجود'
     } else if (err.message?.includes('401')) {
       accessDenied.value = true
-      accessMessage.value = t('survey.auth.errors.authenticationRequired')
+      accessMessage.value = 'مطلوب المصادقة للوصول إلى هذا الاستطلاع'
     } else {
-      error.value = err.message || t('survey.auth.errors.loadFailed')
+      error.value = err.message || 'فشل في تحميل الاستطلاع'
     }
   } finally {
     isLoading.value = false
@@ -434,7 +434,7 @@ const startSurvey = () => {
 
 const nextQuestion = () => {
   if (!canProceed.value) {
-    questionError.value = t('survey.validation.answerRequired')
+    questionError.value = 'يرجى الإجابة على هذا السؤال للمتابعة'
     return
   }
   
@@ -489,7 +489,7 @@ const submitSurvey = async () => {
     
   } catch (err: any) {
     // Logging removed for production
-    questionError.value = err.message || t('survey.auth.errors.submitFailed')
+    questionError.value = err.message || 'فشل في إرسال إجابات الاستطلاع'
   } finally {
     isSubmitting.value = false
   }

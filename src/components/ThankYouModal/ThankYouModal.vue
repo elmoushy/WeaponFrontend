@@ -35,11 +35,11 @@
             <div :class="$style.actionButtons">
               <button 
                 :class="$style.primaryButton"
-                @click="handleClose"
+                @click="handlePrimaryAction"
                 ref="closeButton"
               >
-                <i class="fas fa-home"></i>
-                <span>العودة للصفحة الرئيسية</span>
+                <i :class="isFromPublicSurvey ? 'fas fa-times' : 'fas fa-home'"></i>
+                <span>{{ isFromPublicSurvey ? 'إغلاق الصفحة' : 'العودة للصفحة الرئيسية' }}</span>
               </button>
             </div>
 
@@ -59,15 +59,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, computed } from 'vue'
+import { ref, nextTick, computed, withDefaults } from 'vue'
 import { useAppStore } from '@/stores/useAppStore'
 
 // Props
 interface Props {
   isVisible: boolean
+  isFromPublicSurvey?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  isFromPublicSurvey: false
+})
 
 // Emits
 const emit = defineEmits<{
@@ -79,6 +82,7 @@ const store = useAppStore()
 
 // Computed
 const currentTheme = computed(() => store.currentTheme)
+const isFromPublicSurvey = computed(() => props.isFromPublicSurvey)
 
 // Refs
 const closeButton = ref<HTMLButtonElement>()
@@ -86,6 +90,26 @@ const closeButton = ref<HTMLButtonElement>()
 // Methods
 const handleClose = () => {
   emit('close')
+}
+
+const handlePrimaryAction = () => {
+  if (isFromPublicSurvey.value) {
+    // For public surveys, try to close the window/tab
+    try {
+      window.close()
+      // Try to navigate to about:blank as fallback
+      setTimeout(() => {
+        window.location.href = 'about:blank'
+      }, 100)
+    } catch (error) {
+      console.log('Window close failed:', error)
+      // Fallback to about:blank
+      window.location.href = 'about:blank'
+    }
+  } else {
+    // Regular close behavior for internal modals
+    handleClose()
+  }
 }
 
 // Focus management

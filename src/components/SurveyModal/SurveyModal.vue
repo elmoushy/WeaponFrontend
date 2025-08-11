@@ -279,7 +279,7 @@
 import { ref, computed, watch } from 'vue'
 import { useAppStore } from '../../stores/useAppStore'
 import { surveyService } from '../../services/surveyService'
-import type { Survey, SurveyCreateRequest, SurveyVisibility, QuestionCreateRequest } from '../../types/survey.types'
+import type { Survey, SurveyCreateRequest, SurveyVisibility, PublicContactMethod, QuestionCreateRequest } from '../../types/survey.types'
 import QuestionModal from '../QuestionModal/QuestionModal.vue'
 import SurveyAccessModal from '../SurveyAccessModal/SurveyAccessModal.vue'
 
@@ -338,6 +338,7 @@ const formData = ref<SurveyCreateRequest & {
   title: '',
   description: '',
   visibility: 'AUTH' as SurveyVisibility,
+  public_contact_method: 'email' as PublicContactMethod,
   is_active: true,
   allow_anonymous: false,
   require_completion: false,
@@ -496,23 +497,24 @@ watch(() => formData.value.description, (newDescription) => {
 
 // Methods
 const validateField = (field: string, value: string) => {
-  const fieldErrors = surveyService.validateSurveyData({ 
-    title: field === 'title' ? value : formData.value.title,
-    description: field === 'description' ? value : formData.value.description,
-    visibility: formData.value.visibility,
-    is_active: formData.value.is_active
-  })
-  
   // Clear previous errors for this field
   const newErrors = { ...errors.value }
   delete newErrors[field]
   
-  // Add new errors if any
-  fieldErrors.forEach(error => {
-    if (error.toLowerCase().includes(field)) {
-      newErrors[field] = error
+  // Custom validation with hardcoded Arabic messages
+  if (field === 'title') {
+    if (!value || value.trim().length === 0) {
+      newErrors[field] = 'عنوان الاستطلاع مطلوب'
+    } else if (value.length > 200) {
+      newErrors[field] = 'عنوان الاستطلاع يجب أن يكون أقل من 200 حرف'
     }
-  })
+  }
+  
+  if (field === 'description') {
+    if (value && value.length > 1000) {
+      newErrors[field] = 'وصف الاستطلاع يجب أن يكون أقل من 1000 حرف'
+    }
+  }
   
   errors.value = newErrors
 }
@@ -635,8 +637,8 @@ const handleSubmit = async () => {
   } catch (error: any) {
     // Logging removed for production
     // Show more specific error messages
-    const errorMessage = error.message || 'Failed to create survey'
-    alert(`Error: ${errorMessage}`)
+    const errorMessage = error.message || 'فشل في إنشاء الاستطلاع'
+    alert(`خطأ: ${errorMessage}`)
   } finally {
     isLoading.value = false
   }

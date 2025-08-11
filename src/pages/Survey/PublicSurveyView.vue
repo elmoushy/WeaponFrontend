@@ -289,37 +289,109 @@
       </div>
 
       <!-- Email Collection Section -->
-      <div v-if="currentQuestionIndex === survey.questions.length - 1 || showEmailForm" :class="$style.emailSection">
-        <div :class="$style.emailContainer">
-          <div :class="$style.emailHeader">
-            <h3 :class="$style.emailTitle">
-              <i class="fas fa-envelope"></i>
-              البريد الإلكتروني (مطلوب)
+      <div v-if="currentQuestionIndex === survey.questions.length - 1 || showContactForm" :class="$style.contactSection">
+        <div :class="$style.contactContainer">
+          <div :class="$style.contactHeader">
+            <h3 :class="$style.contactTitle">
+              <i :class="getContactIcon()"></i>
+              {{ getContactTitle() }}
             </h3>
-            <p :class="$style.emailDescription">
-              نحتاج بريدك الإلكتروني لحفظ إجاباتك وإرسال تأكيد المشاركة
+            <p :class="$style.contactDescription">
+              {{ getContactDescription() }}
             </p>
           </div>
           
-          <div :class="$style.emailInputContainer">
-            <div :class="$style.emailInputWrapper">
+          <!-- Email Input -->
+          <div v-if="requiredContactMethod === 'email'" :class="$style.contactInputContainer">
+            <div :class="$style.contactInputWrapper">
               <input
                 type="email"
-                :class="[$style.emailInput, { [$style.error]: emailError }]"
+                :class="[$style.contactInput, { [$style.error]: contactError }]"
                 v-model="userEmail"
                 placeholder="example@domain.com"
-                @input="emailError = ''"
+                @input="contactError = ''"
               />
-              <i class="fas fa-envelope" :class="$style.emailIcon"></i>
+              <i class="fas fa-envelope" :class="$style.contactIcon"></i>
             </div>
             
-            <div v-if="emailError" :class="$style.emailError">
+            <div v-if="contactError" :class="$style.contactError">
               <i class="fas fa-exclamation-triangle"></i>
-              <span>{{ emailError }}</span>
+              <span>{{ contactError }}</span>
+            </div>
+          </div>
+
+          <!-- Phone Input -->
+          <div v-else-if="requiredContactMethod === 'phone'" :class="$style.contactInputContainer">
+            <div :class="$style.phoneInputWrapper">
+              <!-- Country Code Selector -->
+              <div :class="$style.countrySelector" @click.stop>
+                <button 
+                  :class="$style.countryButton"
+                  @click="showCountryDropdown = !showCountryDropdown"
+                  type="button"
+                >
+                  <span :class="$style.countryFlag">{{ selectedCountry.flag }}</span>
+                  <span :class="$style.countryCode">{{ selectedCountryCode }}</span>
+                  <i class="fas fa-chevron-down" :class="$style.dropdownIcon"></i>
+                </button>
+                
+                <!-- Country Dropdown -->
+                <div v-if="showCountryDropdown" :class="$style.countryDropdown" @click.stop>
+                  <div :class="$style.dropdownSearch">
+                    <input 
+                      type="text" 
+                      :class="$style.searchInput"
+                      placeholder="البحث عن دولة..."
+                      @input="filterCountries"
+                      @click.stop
+                      ref="countrySearchInput"
+                    />
+                    <i class="fas fa-search" :class="$style.searchIcon"></i>
+                  </div>
+                  
+                  <div :class="$style.countriesList">
+                    <button
+                      v-for="country in filteredCountries"
+                      :key="country.code"
+                      :class="[$style.countryOption, { [$style.selected]: selectedCountryCode === country.dialCode }]"
+                      @click="selectCountry(country)"
+                      type="button"
+                    >
+                      <span :class="$style.optionFlag">{{ country.flag }}</span>
+                      <span :class="$style.optionName">{{ country.nameAr }}</span>
+                      <span :class="$style.optionCode">{{ country.dialCode }}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Phone Number Input -->
+              <div :class="$style.phoneInputContainer">
+                <input
+                  type="tel"
+                  :class="[$style.phoneInput, { [$style.error]: contactError }]"
+                  v-model="userPhone"
+                  placeholder="123456789"
+                  @input="contactError = ''"
+                  @focus="showCountryDropdown = false"
+                />
+                <i class="fas fa-phone" :class="$style.phoneIcon"></i>
+              </div>
+            </div>
+            
+            <!-- Full Phone Display -->
+            <div :class="$style.phonePreview">
+              <span :class="$style.previewLabel">الرقم الكامل:</span>
+              <span :class="$style.previewNumber">{{ fullPhoneNumber }}</span>
+            </div>
+            
+            <div v-if="contactError" :class="$style.contactError">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span>{{ contactError }}</span>
             </div>
           </div>
           
-          <div :class="$style.emailNote">
+          <div :class="$style.contactNote">
             <i class="fas fa-shield-alt"></i>
             <span>بياناتك محمية ولن نشاركها مع أطراف خارجية</span>
           </div>
@@ -353,7 +425,7 @@
           v-else
           :class="[$style.navButton, $style.submit]"
           @click="submitSurvey"
-          :disabled="!canSubmit || isSubmitting || !isValidEmail"
+          :disabled="!canSubmit || isSubmitting || !hasValidContactForSubmission"
         >
           <i v-if="isSubmitting" class="fas fa-spinner fa-spin"></i>
           <i v-else class="fas fa-paper-plane"></i>
@@ -374,6 +446,7 @@
     <!-- Thank You Modal -->
     <ThankYouModal 
       :isVisible="showThankYouModal" 
+      :isFromPublicSurvey="true"
       @close="handleModalClose" 
     />
   </div>
@@ -386,6 +459,8 @@ import { useAppStore } from '../../stores/useAppStore'
 import { surveyService } from '../../services/surveyService'
 import { ThankYouModal } from '../../components/ThankYouModal'
 import type { Survey } from '../../types/survey.types'
+import type { CountryCode } from '../../types/country.types'
+import countryCodesData from '../../data/countryCodes.json'
 
 // Router
 const route = useRoute()
@@ -408,9 +483,18 @@ const answers = ref<Record<string, any>>({})
 const questionError = ref('')
 const isSubmitting = ref(false)
 const userEmail = ref('')
-const emailError = ref('')
-const showEmailForm = ref(false)
+const userPhone = ref('')
+const selectedCountryCode = ref('+971') // Default to UAE
+const showCountryDropdown = ref(false)
+const searchQuery = ref('')
+const contactError = ref('')
+const showContactForm = ref(false)
 const showThankYouModal = ref(false)
+const countrySearchInput = ref<HTMLInputElement | null>(null)
+
+// Country codes data
+const countryCodes: CountryCode[] = countryCodesData as CountryCode[]
+const defaultCountry = countryCodes.find(country => country.dialCode === '+971') || countryCodes[0]
 
 // Computed
 const currentQuestion = computed(() => {
@@ -462,6 +546,87 @@ const isValidEmail = computed(() => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return emailRegex.test(userEmail.value.trim())
 })
+
+const isValidPhone = computed(() => {
+  // Extract only digits from the phone input
+  const digits = userPhone.value.replace(/\D/g, '')
+  
+  // Set minimum length based on selected country
+  // UAE (+971) requires 9 digits, others require at least 5
+  const minLength = selectedCountryCode.value === '+971' ? 9 : 5
+  const maxLength = 15
+  
+  return digits.length >= minLength && digits.length <= maxLength
+})
+
+const fullPhoneNumber = computed(() => {
+  return selectedCountryCode.value + userPhone.value.trim().replace(/\s|-|[()]/g, '')
+})
+
+const requiredContactMethod = computed(() => {
+  return survey.value?.public_contact_method || 'email'
+})
+
+// This is for form validation during submission
+const hasValidContactForSubmission = computed(() => {
+  if (requiredContactMethod.value === 'email') {
+    return userEmail.value.trim() !== '' && isValidEmail.value
+  } else if (requiredContactMethod.value === 'phone') {
+    return userPhone.value.trim() !== '' && isValidPhone.value
+  }
+  return false
+})
+
+const filteredCountries = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return countryCodes
+  }
+  
+  const query = searchQuery.value.toLowerCase().trim()
+  return countryCodes.filter(country => 
+    country.nameAr.toLowerCase().includes(query) ||
+    country.name.toLowerCase().includes(query) ||
+    country.dialCode.includes(query)
+  )
+})
+
+const selectedCountry = computed(() => {
+  return countryCodes.find(country => country.dialCode === selectedCountryCode.value) || defaultCountry
+})
+
+// Contact methods
+const getContactIcon = () => {
+  return requiredContactMethod.value === 'email' ? 'fas fa-envelope' : 'fas fa-phone'
+}
+
+const getContactTitle = () => {
+  return requiredContactMethod.value === 'email' 
+    ? 'البريد الإلكتروني (مطلوب)'
+    : 'رقم الهاتف (مطلوب)'
+}
+
+const getContactDescription = () => {
+  return requiredContactMethod.value === 'email'
+    ? 'نحتاج بريدك الإلكتروني لحفظ إجاباتك وإرسال تأكيد المشاركة'
+    : 'نحتاج رقم هاتفك لحفظ إجاباتك وإرسال تأكيد المشاركة'
+}
+
+// Phone country code functions
+const selectCountry = (country: CountryCode) => {
+  selectedCountryCode.value = country.dialCode
+  showCountryDropdown.value = false
+  searchQuery.value = ''
+}
+
+const filterCountries = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  searchQuery.value = target.value
+}
+
+const closeCountryDropdown = () => {
+  showCountryDropdown.value = false
+  searchQuery.value = ''
+}
 
 // Methods
 const loadSurvey = async () => {
@@ -574,18 +739,34 @@ const validateCurrentQuestion = (): boolean => {
   return true
 }
 
-const validateEmail = (): boolean => {
-  if (userEmail.value.trim() === '') {
-    emailError.value = 'البريد الإلكتروني مطلوب للمتابعة'
-    return false
+const validateContact = (): boolean => {
+  if (!hasValidContactForSubmission.value) {
+    if (requiredContactMethod.value === 'email') {
+      if (userEmail.value.trim() === '') {
+        contactError.value = 'البريد الإلكتروني مطلوب للمتابعة'
+        return false
+      }
+      if (!isValidEmail.value) {
+        contactError.value = 'يرجى إدخال بريد إلكتروني صحيح'
+        return false
+      }
+    } else if (requiredContactMethod.value === 'phone') {
+      if (userPhone.value.trim() === '') {
+        contactError.value = 'رقم الهاتف مطلوب للمتابعة'
+        return false
+      }
+      if (!isValidPhone.value) {
+        // Dynamic error message based on selected country
+        const minDigits = selectedCountryCode.value === '+971' ? 9 : 5
+        contactError.value = selectedCountryCode.value === '+971' 
+          ? 'يرجى إدخال رقم هاتف صحيح (9 أرقام للأرقام الإماراتية)'
+          : `يرجى إدخال رقم هاتف صحيح (${minDigits} أرقام على الأقل)`
+        return false
+      }
+    }
   }
   
-  if (!isValidEmail.value) {
-    emailError.value = 'يرجى إدخال بريد إلكتروني صحيح'
-    return false
-  }
-  
-  emailError.value = ''
+  contactError.value = ''
   return true
 }
 
@@ -614,34 +795,56 @@ const toggleMultipleChoice = (questionId: string, option: string) => {
 const submitSurvey = async () => {
   if (!canSubmit.value || isSubmitting.value) return
   
-  // Validate email before submission
-  if (!validateEmail()) {
-    showEmailForm.value = true
+  // Validate contact information before submission
+  if (!validateContact()) {
+    showContactForm.value = true
     return
   }
   
   try {
     isSubmitting.value = true
     
-    // Prepare the submission data according to the API specification
-    const submissionData = {
+    // Prepare the submission data according to the new API specification
+    const submissionData: any = {
       survey_id: survey.value!.id,
-      token: route.params.token as string,
-      email: userEmail.value.trim(),
       answers: formatAnswersForSubmission()
     }
+
+    // Add the appropriate contact method field
+    if (requiredContactMethod.value === 'email') {
+      submissionData.email = userEmail.value.trim()
+    } else if (requiredContactMethod.value === 'phone') {
+      submissionData.phone = fullPhoneNumber.value
+    }
     
-    
-    
-    // Call the API endpoint via surveyService
-    await surveyService.submitSurveyResponse(submissionData)
+    // Call the new anonymous response endpoint
+    await surveyService.submitAnonymousResponse(submissionData)
     
     // Success - Show thank you modal
     showThankYouModal.value = true
     
   } catch (error: any) {
-    // Logging removed for production
-    alert('فشل في إرسال الاستطلاع: ' + error.message)
+    // Handle specific API errors
+    let errorMessage = 'فشل في إرسال الاستطلاع'
+    
+    if (error.message) {
+      // Check for specific contact method errors
+      if (error.message.includes('Email is required')) {
+        contactError.value = 'البريد الإلكتروني مطلوب لهذا الاستطلاع'
+        showContactForm.value = true
+        return
+      } else if (error.message.includes('Phone is required')) {
+        contactError.value = 'رقم الهاتف مطلوب لهذا الاستطلاع'
+        showContactForm.value = true
+        return
+      } else if (error.message.includes('already submitted')) {
+        errorMessage = 'لقد قمت بإرسال إجابة لهذا الاستطلاع من قبل'
+      } else {
+        errorMessage = error.message
+      }
+    }
+    
+    alert(errorMessage)
   } finally {
     isSubmitting.value = false
   }
@@ -796,7 +999,11 @@ const handleModalClose = () => {
   // Reset form
   surveyStarted.value = false
   userEmail.value = ''
-  showEmailForm.value = false
+  userPhone.value = ''
+  selectedCountryCode.value = '+971'
+  showCountryDropdown.value = false
+  searchQuery.value = ''
+  showContactForm.value = false
   // Optionally redirect or reload the page
 }
 
@@ -818,6 +1025,23 @@ const formatDate = (dateString: string): string => {
 // Lifecycle
 onMounted(() => {
   loadSurvey()
+  
+  // Add global click listener to close country dropdown
+  const handleGlobalClick = () => {
+    if (showCountryDropdown.value) {
+      closeCountryDropdown()
+    }
+  }
+  
+  document.addEventListener('click', handleGlobalClick)
+  
+  // Cleanup on unmount
+  const cleanup = () => {
+    document.removeEventListener('click', handleGlobalClick)
+  }
+  
+  // Store cleanup function for potential manual cleanup
+  ;(window as any).__countryDropdownCleanup = cleanup
 })
 </script>
 

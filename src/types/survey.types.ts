@@ -18,6 +18,9 @@ export interface PaginatedApiResponse<T> {
 // Survey visibility levels
 export type SurveyVisibility = 'PRIVATE' | 'AUTH' | 'PUBLIC' | 'GROUPS'
 
+// Survey contact methods for public surveys
+export type PublicContactMethod = 'email' | 'phone'
+
 // Question types supported by the system
 export type QuestionType = 'text' | 'textarea' | 'single_choice' | 'multiple_choice' | 'rating' | 'yes_no'
 
@@ -46,7 +49,8 @@ export interface SurveyResponse {
   id: string
   survey: string // UUID of the survey
   respondent: number | null // User ID or null for anonymous
-  respondent_email: string
+  respondent_email: string | null
+  respondent_phone: string | null
   submitted_at: string
   is_complete: boolean
   answers: SurveyAnswer[]
@@ -58,13 +62,21 @@ export interface Survey {
   title: string
   description: string
   visibility: SurveyVisibility
+  public_contact_method?: PublicContactMethod // Only applies to PUBLIC surveys
+  shared_with: any[] // Array of user IDs or groups
   creator: number
   creator_email: string
   is_locked: boolean
   is_active: boolean
+  start_date?: string | null
+  end_date?: string | null
+  status: string
+  is_currently_active: boolean
   questions: SurveyQuestion[]
   response_count: number
   shared_with_emails: string[]
+  can_submit?: boolean
+  has_submitted?: boolean
   created_at: string
   updated_at: string
 }
@@ -74,7 +86,10 @@ export interface SurveyCreateRequest {
   title: string
   description?: string
   visibility?: SurveyVisibility
+  public_contact_method?: PublicContactMethod
   is_active?: boolean
+  start_date?: string | null
+  end_date?: string | null
   questions?: QuestionCreateRequest[] // Optional questions array for frontend use
 }
 
@@ -82,7 +97,10 @@ export interface SurveyUpdateRequest {
   title?: string
   description?: string
   visibility?: SurveyVisibility
+  public_contact_method?: PublicContactMethod
   is_active?: boolean
+  start_date?: string | null
+  end_date?: string | null
   is_locked?: boolean
 }
 
@@ -93,6 +111,34 @@ export interface QuestionCreateRequest {
   options?: string
   is_required?: boolean
   order?: number
+}
+
+// Survey response submission types
+export interface AnonymousResponseSubmission {
+  survey_id: string
+  email?: string // Required for email surveys
+  phone?: string // Required for phone surveys
+  answers: Array<{
+    question_id: string
+    answer: string | string[]
+  }>
+}
+
+export interface AuthenticatedResponseSubmission {
+  survey_id: string
+  answers: Array<{
+    question_id: string
+    answer: string | string[]
+  }>
+}
+
+export interface ResponseSubmissionResult {
+  response_id: string
+  survey_id: string
+  submitted_at: string
+  is_complete: boolean
+  answers_count: number
+  respondent_email?: string
 }
 
 // Survey audience configuration
@@ -107,10 +153,35 @@ export interface PublicLinkResponse {
   link: string
   token: string
   expires_at: string
+  password?: string // Password for password-protected links
+  is_password_protected?: boolean
+  is_contact_restricted?: boolean
+  restricted_email?: string
+  restricted_phone?: string
 }
 
 export interface PublicLinkRequest {
   days_to_expire?: number // Number of days until expiration
+}
+
+// Password-protected link management
+export interface PasswordProtectedLinkRequest {
+  days_to_expire?: number
+  email?: string // Optional single email restriction (legacy)
+  phone?: string // Optional single phone restriction (legacy)
+  restricted_email?: string[] // Optional array of email restrictions
+  restricted_phone?: string[] // Optional array of phone restrictions
+}
+
+export interface PasswordProtectedLinkResponse {
+  token: string
+  password: string
+  expires_at: string
+  is_password_protected: boolean
+  is_contact_restricted: boolean
+  restricted_email?: string | string[] // Support both single value and array
+  restricted_phone?: string | string[] // Support both single value and array
+  link: string // Full frontend URL
 }
 
 // User search and selection
@@ -395,9 +466,53 @@ export interface AuthResponseResult {
     response_id: string
     survey_id: string
     submitted_at: string
-    answer_count: number
-    respondent_email: string
+    answers_count: number
   }
+}
+
+// Password-protected survey response types
+export interface PasswordProtectedSurveyAccess {
+  password: string
+  email?: string // Required if token is email-restricted
+  phone?: string // Required if token is phone-restricted
+}
+
+export interface PasswordProtectedAccessValidation {
+  survey_id: string
+  survey_title: string
+  survey_description: string
+  has_access: boolean
+  is_password_protected: boolean
+  is_contact_restricted: boolean
+  token_expires_at: string
+  access_instructions: {
+    survey_endpoint: string
+    submission_endpoint: string
+    required_headers: {
+      Authorization: string
+    }
+    required_fields: string[]
+  }
+}
+
+export interface PasswordProtectedResponseSubmission {
+  survey_id: string
+  token: string
+  password: string
+  email?: string
+  phone?: string
+  answers: Array<{
+    question_id: string
+    answer: string | string[]
+  }>
+}
+
+export interface PasswordProtectedResponseResult {
+  response_id: string
+  survey_id: string
+  submitted_at: string
+  answers_count: number
+  access_method: 'password_token'
 }
 
 // Admin Groups for survey sharing

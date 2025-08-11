@@ -26,6 +26,11 @@ const apiClient: AxiosInstance = axios.create({
 // JWT Token Management (in-memory only)
 let accessToken: string | null = null
 let refreshToken: string | null = null // kept for backward compatibility if backend still returns it
+let refreshFailureCount = 0 // Track consecutive refresh failures
+let lastRefreshAttempt = 0 // Timestamp of last refresh attempt
+let refreshDisabled = false // Hard disable further silent refresh attempts until successful login
+const MAX_REFRESH_FAILURES = 3 // Stop trying after 3 consecutive failures
+const REFRESH_RETRY_DELAY = 60000 // Wait 1 minute between failed refresh attempts
 
 // Set JWT tokens for API requests (access token only in memory)
 export const setAuthTokens = (access: string | null, refresh: string | null = null): void => {
@@ -36,6 +41,8 @@ export const setAuthTokens = (access: string | null, refresh: string | null = nu
   }
   if (access) {
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${access}`
+    refreshFailureCount = 0 // Reset failure count on successful token set
+  refreshDisabled = false // Re-enable refresh attempts
   } else {
     delete apiClient.defaults.headers.common['Authorization']
   }
@@ -43,22 +50,44 @@ export const setAuthTokens = (access: string | null, refresh: string | null = nu
 
 // Attempt to silently obtain a new access token using refresh cookie
 export const silentRefreshAccessToken = async (): Promise<string | null> => {
+  // Skip entirely if we have no tokens at all (pre-login) to avoid 400 spam
+  if (!accessToken && !refreshToken) return null
+
+  if (refreshDisabled) return null
+
+  // Don't attempt refresh if we've failed too many times recently
+  if (refreshFailureCount >= MAX_REFRESH_FAILURES) return null
+
+  // Backoff window after a failure
+  const now = Date.now()
+  if (refreshFailureCount > 0 && (now - lastRefreshAttempt) < REFRESH_RETRY_DELAY) return null
+
+  lastRefreshAttempt = now
+
   try {
-    // Cookie-based refresh: backend should read refresh token from HttpOnly cookie
-    const response = await apiClient.post<TokenRefreshResponse>("/auth/token/refresh/", {})
+    const response = await apiClient.post<TokenRefreshResponse>("/auth/token/refresh/", {}, {
+      validateStatus: (status) => status < 500, // treat 4xx as handled
+    })
     if (response.status === 200 && response.data.access) {
       setAuthTokens(response.data.access, response.data.refresh || null)
       return response.data.access
     }
+    // Non-200 (likely 400) – disable further attempts until login
+    refreshFailureCount++
+    refreshDisabled = true
     return null
   } catch {
-    clearTokens()
+    refreshFailureCount++
+    refreshDisabled = true
     return null
   }
 }
 
 // Refresh access token using available method (cookie preferred)
 const refreshAccessToken = async (): Promise<string | null> => {
+  // Don't attempt refresh if we've failed too many times recently
+  if (refreshFailureCount >= MAX_REFRESH_FAILURES || refreshDisabled) return null
+
   // Prefer cookie-based refresh path; fall back to legacy body-based if we still retained refreshToken
   try {
     const token = await silentRefreshAccessToken()
@@ -66,17 +95,24 @@ const refreshAccessToken = async (): Promise<string | null> => {
 
     if (!refreshToken) return null
     // Legacy fallback (if backend still expects token in body)
-    const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, { refresh: refreshToken }, { withCredentials: true })
+    const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, { refresh: refreshToken }, { 
+      withCredentials: true,
+      // Suppress network errors from appearing in browser console
+      validateStatus: (status) => status < 500, // Don't throw for 4xx errors
+    })
     if (response.status === 200 && response.data?.access) {
       setAuthTokens(response.data.access, response.data.refresh || refreshToken)
       return response.data.access
     }
-    clearTokens()
-    redirectToLogin()
+    // Handle non-200 responses
+  refreshFailureCount++
+  refreshDisabled = true
+  if (refreshFailureCount >= MAX_REFRESH_FAILURES) redirectToLogin()
     return null
   } catch {
-    clearTokens()
-    redirectToLogin()
+  refreshFailureCount++
+  refreshDisabled = true
+  if (refreshFailureCount >= MAX_REFRESH_FAILURES) redirectToLogin()
     return null
   }
 }
@@ -86,6 +122,9 @@ const clearTokens = (): void => {
   setAuthTokens(null, null)
   accessToken = null
   refreshToken = null
+  refreshFailureCount = 0
+  lastRefreshAttempt = 0
+  refreshDisabled = false
 }
 
 // Redirect to login page
@@ -112,6 +151,14 @@ apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: AxiosError<AuthError>) => {
     const originalRequest = error.config as any
+    
+    // Don't attempt refresh if we've failed too many times recently
+    if (refreshFailureCount >= MAX_REFRESH_FAILURES) {
+      clearTokens()
+      redirectToLogin()
+      return Promise.reject(error)
+    }
+    
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true
       const newToken = await refreshAccessToken()
@@ -135,6 +182,10 @@ export const authAPI = {
         const { tokens, user } = response.data
         // Store access in memory only
         setAuthTokens(tokens.access || null, tokens.refresh || null)
+        // Reset refresh failure count on successful login
+  refreshFailureCount = 0
+  lastRefreshAttempt = 0
+  refreshDisabled = false
         // Refresh token assumed to be set as HttpOnly cookie by backend (ignore persisting)
         return { ...response.data, user }
       }
@@ -149,11 +200,22 @@ export const authAPI = {
 
   // Refresh access token (cookie-based)
   refreshToken: async (): Promise<TokenRefreshResponse> => {
-    const response = await apiClient.post<TokenRefreshResponse>('/auth/token/refresh/', {})
+    // Don't attempt refresh if we've failed too many times recently
+    if (refreshFailureCount >= MAX_REFRESH_FAILURES) {
+      throw new Error('Max refresh attempts exceeded')
+    }
+
+    const response = await apiClient.post<TokenRefreshResponse>('/auth/token/refresh/', {}, {
+      // Suppress network errors from appearing in browser console
+      validateStatus: (status) => status < 500, // Don't throw for 4xx errors
+    })
     if (response.status === 200) {
       setAuthTokens(response.data.access || null, response.data.refresh || null)
+      return response.data
+    } else {
+      refreshFailureCount++
+      throw new Error(`Token refresh failed with status ${response.status}`)
     }
-    return response.data
   },
 
   // Logout user and invalidate refresh cookie
@@ -217,4 +279,10 @@ export const handleApiError = (error: AxiosError<AuthError>): string => {
   return 'Network error occurred'
 }
 
-export { apiClient }
+export { apiClient, clearTokens }
+
+// Function to reset refresh failure count (useful after successful login)
+export const resetRefreshFailureCount = (): void => {
+  refreshFailureCount = 0
+  lastRefreshAttempt = 0
+}

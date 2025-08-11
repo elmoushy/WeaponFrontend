@@ -158,8 +158,14 @@
   padding: 24px;
   max-height: calc(85vh - 140px);
   overflow-y: auto;
+  /* Prevent horizontal spill from long unbroken (especially RTL) content */
+  overflow-x: hidden;
   position: relative;
+  z-index: 2;
 }
+
+/* Ensure predictable sizing inside scroll container */
+.modalBody * { box-sizing: border-box; }
 
 .formSection {
   margin-bottom: 20px;
@@ -169,7 +175,10 @@
   border-radius: 16px;
   padding: 20px;
   position: relative;
-  overflow: hidden;
+  /* Allow inner help text to flow fully (was hidden, caused clipping of long RTL text) */
+  overflow: visible;
+  /* Allow flex/grid shrink to avoid forcing horizontal overflow */
+  min-width: 0;
 }
 
 .modalContainer[data-theme="night"] .formSection {
@@ -218,11 +227,23 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+  /* Prevent vertical compression that could squeeze help text */
+  align-items: start;
 }
+
+/* Allow grid children to shrink instead of overflowing */
+.formGrid > * { min-width: 0; }
 
 .formGroup {
   margin-bottom: 16px;
+  /* Ensure children (e.g., help text) are not clipped */
+  overflow: visible;
+  /* Allow shrink inside grid/flex parents to prevent overflow */
+  min-width: 0;
 }
+
+/* Placeholder date row (if later wrapped in a flex container) */
+.dateRow, .dateRow > * { min-width: 0; }
 
 .formGroup.fullWidth {
   grid-column: 1 / -1;
@@ -724,6 +745,8 @@
   justify-content: flex-end;
   gap: 12px;
   background: rgba(248, 249, 250, 0.9);
+  position: relative;
+  z-index: 1;
 }
 
 .footerButton {
@@ -853,6 +876,29 @@
     width: 20px;
     height: 20px;
     font-size: 0.7rem;
+  }
+
+  .fieldHelp {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    margin-top: 0.4rem;
+    padding: 0;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+}
+
+/* Extra small screens - additional responsive adjustments */
+@media (max-width: 480px) {
+  .fieldHelp {
+    font-size: 0.7rem;
+    line-height: 1.6;
+    margin-top: 0.3rem;
+  }
+
+  .formGroup {
+    margin-bottom: 12px;
   }
 }
 
@@ -1004,8 +1050,18 @@
 .fieldHelp {
   font-size: 0.8rem;
   color: var(--text-muted, #666);
-  margin-top: 0.5rem;
-  line-height: 1.3;
+  /* Tighter spacing, and robust wrapping to keep text inside modal */
+  margin-top: 6px;
+  /* Strengthened wrapping to avoid truncation in various locales */
+  display: block;
+  line-height: 1.5;
+  word-wrap: break-word; /* legacy support */
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  overflow: visible;
+  hyphens: auto;
+  max-width: 100%;
+  white-space: normal;
 }
 
 .schedulingPreview {
@@ -1176,4 +1232,28 @@
 
 .modalContainer[dir="rtl"] .optionHeader {
   flex-direction: row-reverse;
+}
+
+.modalContainer[dir="rtl"] .fieldHelp {
+  text-align: right;
+  direction: rtl;
+  font-family: 'Segoe UI', 'Arial', sans-serif;
+}
+
+/* Global z-index overrides for third-party dropdowns */
+:global(.iti__country-list) { 
+  z-index: 10000 !important; 
+}
+
+:global(.vti__dropdown-list) { 
+  z-index: 10000 !important; 
+}
+
+:global(.vs__dropdown-menu) { 
+  z-index: 10000 !important; 
+}
+
+/* Custom phone input dropdown override */
+:global(.phone-dropdown) {
+  z-index: 10000 !important;
 }

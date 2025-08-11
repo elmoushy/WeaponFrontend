@@ -120,7 +120,7 @@
         <div :class="$style.loadingSpinner">
           <i class="fas fa-spinner fa-spin"></i>
         </div>
-        <p>{{ t('survey.list.loading') }}</p>
+        <p>جاري تحميل الاستطلاعات...</p>
       </div>
 
       <!-- Error State -->
@@ -128,11 +128,11 @@
         <div :class="$style.errorIcon">
           <i class="fas fa-exclamation-triangle"></i>
         </div>
-        <h3>{{ t('survey.shared.errors.loadFailed') }}</h3>
+        <h3>فشل في تحميل الاستطلاعات</h3>
         <p>{{ error }}</p>
         <button :class="$style.retryButton" @click="refreshData">
           <i class="fas fa-redo"></i>
-          {{ t('common.retry') }}
+          إعادة المحاولة
         </button>
       </div>
 
@@ -401,7 +401,7 @@ const loadSurveys = async () => {
     }
     
   } catch (err: any) {
-    error.value = err.message || t('survey.shared.errors.loadFailed')
+    error.value = err.message || 'فشل في تحميل الاستطلاعات'
     // Logging removed for production
   } finally {
     isLoading.value = false

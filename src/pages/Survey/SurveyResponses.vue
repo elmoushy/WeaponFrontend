@@ -13,10 +13,10 @@
         </div>
         
         <div :class="$style.headerActions">
-          <button :class="$style.exportButton" @click="showExportModal = true" :disabled="responses.length === 0">
+          <!-- <button :class="$style.exportButton" @click="showExportModal = true" :disabled="responses.length === 0">
             <i class="fas fa-download"></i>
             {{ t('survey.responses.export') }}
-          </button>
+          </button> -->
           
           <button :class="$style.refreshButton" @click="refreshData">
             <i class="fas fa-sync-alt" :class="{ [$style.spinning]: isLoading }"></i>
@@ -130,7 +130,7 @@
     <section :class="$style.responsesSection">
       <div v-if="isLoading" :class="$style.loadingContainer">
         <div :class="$style.loadingSpinner"></div>
-        <p :class="$style.loadingText">{{ t('survey.responses.loading') }}</p>
+        <p :class="$style.loadingText">جاري تحميل الردود...</p>
       </div>
       
       <div v-else-if="responses.length === 0" :class="$style.emptyState">
@@ -524,7 +524,7 @@ const performExport = async () => {
     }
   } catch (error) {
     // Logging removed for production
-    alert(t.value('survey.responses.exportError'))
+    alert('فشل في تصدير البيانات')
   } finally {
     isExporting.value = false
   }

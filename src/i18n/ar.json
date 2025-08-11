@@ -629,6 +629,7 @@
     "card": {
       "edit": "تحرير",
       "share": "مشاركة",
+      "shareLink": "مشاركة الرابط",
       "viewResponses": "عرض الردود",
       "clone": "تكرار",
       "delete": "حذف",
@@ -933,7 +934,10 @@
   },
   "validation": {
     "required": "هذا الحقل مطلوب",
-    "answerRequired": "يرجى الإجابة على هذا السؤال للمتابعة"
+    "answerRequired": "يرجى الإجابة على هذا السؤال للمتابعة",
+    "titleRequired": "عنوان الاستطلاع مطلوب",
+    "titleTooLong": "عنوان الاستطلاع يجب أن يكون أقل من 200 حرف",
+    "descriptionTooLong": "وصف الاستطلاع يجب أن يكون أقل من 1000 حرف"
   },
   "userManagement": {
     "title": "إدارة المستخدمين",

@@ -438,6 +438,8 @@
       "delete": "Delete",
       "viewResponses": "View Responses",
       "share": "Share",
+      "shareLink": "Share Link",
+      "manageAccess": "Manage Access",
       "export": "Export",
       "analytics": "Analytics",
       "preview": "Preview",
@@ -875,7 +877,10 @@
   "validation": {
     "required": "This field is required",
     "invalidPercentage": "Please enter a valid percentage (0-100)",
-    "answerRequired": "Please answer this question to continue"
+    "answerRequired": "Please answer this question to continue",
+    "titleRequired": "Survey title is required",
+    "titleTooLong": "Survey title must be less than 200 characters",
+    "descriptionTooLong": "Survey description must be less than 1000 characters"
   },
   "themes": {
     "toggleTheme": "Toggle Theme",

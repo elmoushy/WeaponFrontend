@@ -726,6 +726,51 @@
   padding: 20px;
 }
 
+.linkSharingSection {
+  text-align: center;
+  padding: 20px;
+}
+
+.linkSharingButton {
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.1) 0%, rgba(74, 144, 226, 0.2) 100%);
+  border: 1px solid rgba(74, 144, 226, 0.3);
+  border-radius: 12px;
+  padding: 14px 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #4A90E2;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+  margin: 0 auto 12px;
+  min-width: 180px;
+}
+
+.linkSharingButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.15) 0%, rgba(74, 144, 226, 0.25) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(74, 144, 226, 0.3);
+}
+
+.linkSharingButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.linkSharingNote {
+  font-size: 0.8rem;
+  color: #4A90E2;
+  margin: 0;
+  opacity: 0.8;
+  font-weight: 500;
+}
+
 .noLinkText {
   margin: 0 0 16px 0;
   opacity: 0.7;
@@ -1895,4 +1940,581 @@
   .surveyTitle {
     max-width: none;
   }
+}
+
+/* Contact Method Selection */
+.contactMethodSection {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: rgba(153, 122, 81, 0.05);
+  border: 1px solid rgba(153, 122, 81, 0.1);
+  border-radius: 12px;
+}
+
+.contactMethodHeader {
+  margin-bottom: 16px;
+}
+
+.contactMethodTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.contactMethodTitle i {
+  color: #997A51;
+}
+
+.contactMethodDescription {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.contactMethodOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contactMethodOption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: white;
+  border: 2px solid rgba(153, 122, 81, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.contactMethodOption:hover {
+  background: rgba(153, 122, 81, 0.05);
+  border-color: rgba(153, 122, 81, 0.3);
+}
+
+.contactMethodOption.selected {
+  background: rgba(153, 122, 81, 0.1);
+  border-color: #997A51;
+}
+
+.contactMethodRadio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ddd;
+  border-radius: 50%;
+  position: relative;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease;
+}
+
+.contactMethodOption.selected .contactMethodRadio {
+  border-color: #997A51;
+}
+
+.radioSelected {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  background: #997A51;
+  border-radius: 50%;
+}
+
+.contactMethodInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.contactMethodIcon {
+  color: #997A51;
+  font-size: 1.2rem;
+  width: 20px;
+  text-align: center;
+}
+
+.contactMethodName {
+  font-weight: 500;
+  color: #333;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.contactMethodDesc {
+  color: #666;
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+
+/* Dark theme styles */
+.modalContainer[data-theme="night"] .contactMethodSection {
+  background: rgba(153, 122, 81, 0.08);
+  border-color: rgba(153, 122, 81, 0.15);
+}
+
+.modalContainer[data-theme="night"] .contactMethodTitle {
+  color: #F5F3EE;
+}
+
+.modalContainer[data-theme="night"] .contactMethodDescription {
+  color: #B8B8B8;
+}
+
+.modalContainer[data-theme="night"] .contactMethodOption {
+  background: rgba(30, 35, 48, 0.8);
+  border-color: rgba(153, 122, 81, 0.25);
+}
+
+.modalContainer[data-theme="night"] .contactMethodOption:hover {
+  background: rgba(30, 35, 48, 0.95);
+  border-color: rgba(153, 122, 81, 0.4);
+}
+
+.modalContainer[data-theme="night"] .contactMethodOption.selected {
+  background: rgba(153, 122, 81, 0.15);
+  border-color: #997A51;
+}
+
+.modalContainer[data-theme="night"] .contactMethodName {
+  color: #F5F3EE;
+}
+
+.modalContainer[data-theme="night"] .contactMethodDesc {
+  color: #B8B8B8;
+}
+
+.modalContainer[data-theme="night"] .contactMethodRadio {
+  border-color: #666;
+}
+
+.modalContainer[data-theme="night"] .contactMethodOption.selected .contactMethodRadio {
+  border-color: #997A51;
+}
+
+/* Password Protection Styles */
+.passwordProtectionSection {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.passwordProtectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.passwordProtectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.passwordToggleContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggleSwitch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.toggleInput {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggleSlider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  border-radius: 24px;
+  transition: 0.3s;
+}
+
+.toggleSlider::before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.toggleInput:checked + .toggleSlider {
+  background-color: #997A51;
+}
+
+.toggleInput:checked + .toggleSlider::before {
+  transform: translateX(26px);
+}
+
+.toggleLabel {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.passwordOptions {
+  margin-top: 15px;
+}
+
+.passwordDescription {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+.accessControlSection {
+  margin-top: 20px;
+}
+
+.accessControlTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 15px 0;
+}
+
+.accessControlOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.accessControlOption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.accessControlOption:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.accessControlOption.selected {
+  border-color: #997A51;
+  background: rgba(153, 122, 81, 0.1);
+}
+
+.accessControlRadio {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.accessControlOption.selected .accessControlRadio {
+  border-color: #997A51;
+}
+
+.radioSelected {
+  width: 8px;
+  height: 8px;
+  background: #997A51;
+  border-radius: 50%;
+}
+
+.accessControlInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.accessControlIcon {
+  color: #997A51;
+  font-size: 16px;
+}
+
+.accessControlName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.accessControlDesc {
+  font-size: 13px;
+  color: #666;
+  margin: 2px 0 0 0;
+  display: block;
+}
+
+.contactInput {
+  margin-top: 20px;
+}
+
+.multiInputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contactTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.contactTag {
+  display: flex;
+  align-items: center;
+  background: rgba(153, 122, 81, 0.1);
+  border: 1px solid rgba(153, 122, 81, 0.2);
+  border-radius: 20px;
+  padding: 4px 8px 4px 12px;
+  font-size: 13px;
+  animation: tagSlideIn 0.2s ease;
+}
+
+.tagText {
+  color: #333;
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+.tagRemove {
+  background: none;
+  border: none;
+  color: rgba(153, 122, 81, 0.7);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  transition: all 0.2s ease;
+}
+
+.tagRemove:hover {
+  background: rgba(153, 122, 81, 0.15);
+  color: rgba(153, 122, 81, 0.9);
+  transform: scale(1.1);
+}
+
+.inputRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.inputRow .textInput {
+  flex: 1;
+}
+
+.addButton {
+  background: rgba(153, 122, 81, 0.1);
+  border: 2px solid rgba(153, 122, 81, 0.2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #997A51;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+}
+
+.addButton:not(:disabled):hover {
+  background: rgba(153, 122, 81, 0.15);
+  border-color: rgba(153, 122, 81, 0.4);
+  transform: translateY(-1px);
+}
+
+.addButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.inputHint {
+  color: #666;
+  font-size: 12px;
+  font-style: italic;
+  margin-top: 4px;
+  display: block;
+}
+
+@keyframes tagSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Night theme for multi-input */
+.modalContainer[data-theme="night"] .contactTag {
+  background: rgba(153, 122, 81, 0.15);
+  border-color: rgba(153, 122, 81, 0.3);
+}
+
+.modalContainer[data-theme="night"] .tagText {
+  color: #E5E5E5;
+}
+
+.modalContainer[data-theme="night"] .tagRemove {
+  color: rgba(207, 163, 101, 0.7);
+}
+
+.modalContainer[data-theme="night"] .tagRemove:hover {
+  background: rgba(153, 122, 81, 0.2);
+  color: rgba(207, 163, 101, 0.9);
+}
+
+.modalContainer[data-theme="night"] .addButton {
+  background: rgba(153, 122, 81, 0.15);
+  border-color: rgba(153, 122, 81, 0.3);
+  color: #CFA365;
+}
+
+.modalContainer[data-theme="night"] .addButton:not(:disabled):hover {
+  background: rgba(153, 122, 81, 0.2);
+  border-color: rgba(153, 122, 81, 0.5);
+}
+
+.modalContainer[data-theme="night"] .inputHint {
+  color: #B8B8B8;
+}
+
+.inputLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.textInput {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 14px;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+.textInput:focus {
+  outline: none;
+  border-color: #997A51;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.textInput::placeholder {
+  color: #999;
+}
+
+/* Night theme for password protection */
+.modalContainer[data-theme="night"] .passwordProtectionTitle {
+  color: #E5E5E5;
+}
+
+.modalContainer[data-theme="night"] .toggleLabel {
+  color: #B8B8B8;
+}
+
+.modalContainer[data-theme="night"] .passwordDescription {
+  color: #B8B8B8;
+}
+
+.modalContainer[data-theme="night"] .accessControlTitle {
+  color: #E5E5E5;
+}
+
+.modalContainer[data-theme="night"] .accessControlName {
+  color: #E5E5E5;
+}
+
+.modalContainer[data-theme="night"] .accessControlDesc {
+  color: #B8B8B8;
+}
+
+.modalContainer[data-theme="night"] .inputLabel {
+  color: #E5E5E5;
+}
+
+.modalContainer[data-theme="night"] .textInput {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #E5E5E5;
+}
+
+.modalContainer[data-theme="night"] .textInput:focus {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.modalContainer[data-theme="night"] .textInput::placeholder {
+  color: #888;
+}
+
+.modalContainer[data-theme="night"] .accessControlOption {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.modalContainer[data-theme="night"] .accessControlOption:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.modalContainer[data-theme="night"] .accessControlRadio {
+  border-color: #666;
+}
+
+.modalContainer[data-theme="night"] .passwordProtectionSection {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
 }

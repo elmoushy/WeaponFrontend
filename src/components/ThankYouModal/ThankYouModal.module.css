@@ -169,6 +169,8 @@
 /* Action Buttons */
 .actionButtons {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
   gap: 1rem;
 }
@@ -341,4 +343,31 @@
     padding: 0.875rem;
     text-align: center;
   }
+}
+
+/* Keyboard Hint */
+.keyboardHint {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(107, 114, 128, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(107, 114, 128, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.keyboardHint i {
+  color: #9ca3af;
+  font-size: 1rem;
+}
+
+/* Dark theme adjustments */
+:global(.theme-dark) .keyboardHint {
+  background: rgba(156, 163, 175, 0.1);
+  border-color: rgba(156, 163, 175, 0.2);
+  color: #9ca3af;
 }

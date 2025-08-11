@@ -15,6 +15,12 @@ import type {
   PaginatedApiResponse,
   PublicLinkResponse,
   PublicLinkRequest,
+  PasswordProtectedLinkRequest,
+  PasswordProtectedLinkResponse,
+  PasswordProtectedSurveyAccess,
+  PasswordProtectedAccessValidation,
+  PasswordProtectedResponseSubmission,
+  PasswordProtectedResponseResult,
   // User, // Unused - commenting out
   UserSearchResponse,
   ShareRequest,
@@ -29,7 +35,10 @@ import type {
   AuthResponseSubmission,
   AuthResponseResult,
   // AdminGroup, // Unused - commenting out
-  AdminGroupsResponse
+  AdminGroupsResponse,
+  AnonymousResponseSubmission,
+  AuthenticatedResponseSubmission,
+  ResponseSubmissionResult
 } from '../types/survey.types'
 import { apiClient } from './jwtAuthService'
 
@@ -171,10 +180,11 @@ class SurveyService {
     }
   }
 
-  // Dedicated method for updating access level
+  // Dedicated method for updating access level and contact method
   async updateSurveyAccess(
     surveyId: string, 
-    accessLevel: 'public' | 'authenticated' | 'private' | 'groups'
+    accessLevel: 'public' | 'authenticated' | 'private' | 'groups',
+    contactMethod?: 'email' | 'phone'
   ): Promise<ApiResponse<Survey>> {
     // Map access level to visibility for the PATCH API
     let visibility: 'PUBLIC' | 'AUTH' | 'PRIVATE' | 'GROUPS'
@@ -195,7 +205,15 @@ class SurveyService {
         visibility = 'PRIVATE'
     }
     
-    return this.updateSurvey(surveyId, { visibility })
+    // Build update data
+    const updateData: any = { visibility }
+    
+    // Add contact method if it's a public survey
+    if (visibility === 'PUBLIC' && contactMethod) {
+      updateData.public_contact_method = contactMethod
+    }
+    
+    return this.updateSurvey(surveyId, updateData)
   }
 
   async deleteSurvey(surveyId: string): Promise<void> {
@@ -304,6 +322,188 @@ class SurveyService {
         }
       } else {
         throw new Error(response.data.message || 'Failed to revoke public link')
+      }
+    } catch (error) {
+      // Logging removed for production
+      throw error
+    }
+  }
+
+  // Password-Protected Link Management
+  async generatePasswordProtectedLink(
+    surveyId: string,
+    options: PasswordProtectedLinkRequest = {}
+  ): Promise<ApiResponse<PasswordProtectedLinkResponse>> {
+    try {
+      const requestData: any = {
+        days_to_expire: options.days_to_expire || 30
+      }
+
+      // Add optional email/phone restrictions
+      if (options.email) {
+        requestData.email = options.email
+      }
+      if (options.phone) {
+        requestData.phone = options.phone
+      }
+      // Add new array-based restrictions
+      if (options.restricted_email && options.restricted_email.length > 0) {
+        requestData.restricted_email = options.restricted_email
+        console.log('Service: Adding restricted_email to request:', options.restricted_email)
+      }
+      if (options.restricted_phone && options.restricted_phone.length > 0) {
+        requestData.restricted_phone = options.restricted_phone
+        console.log('Service: Adding restricted_phone to request:', options.restricted_phone)
+      }
+
+      console.log('Service: Final requestData being sent to API:', requestData)
+
+      const response = await apiClient.post(`/surveys/surveys/${surveyId}/generate-password-link/`, requestData)
+      
+      if (response.data.status === 'success') {
+        // Construct the full frontend URL since backend only returns token
+        const frontendBaseUrl = import.meta.env.VITE_FRONTEND_BASE_URL || window.location.origin
+        const fullLink = `${frontendBaseUrl}/survey/password/${response.data.data.token}`
+        
+        return {
+          data: {
+            token: response.data.data.token,
+            password: response.data.data.password,
+            expires_at: response.data.data.expires_at,
+            is_password_protected: response.data.data.is_password_protected,
+            is_contact_restricted: response.data.data.is_contact_restricted,
+            restricted_email: response.data.data.restricted_email,
+            restricted_phone: response.data.data.restricted_phone,
+            link: fullLink
+          },
+          message: response.data.message,
+          status: response.data.status
+        }
+      } else {
+        throw new Error(response.data.message || 'Failed to generate password-protected link')
+      }
+    } catch (error) {
+      // Logging removed for production
+      throw error
+    }
+  }
+
+  async accessPasswordProtectedSurvey(
+    surveyId: string,
+    token: string,
+    accessData: PasswordProtectedSurveyAccess
+  ): Promise<ApiResponse<Survey>> {
+    try {
+      const response = await apiClient.post(
+        `/surveys/password-surveys/${surveyId}/`,
+        {
+          password: accessData.password,
+          email: accessData.email,
+          phone: accessData.phone
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      )
+      
+      if (response.data.status === 'success') {
+        return {
+          data: response.data.survey_details,
+          message: response.data.message,
+          status: response.data.status
+        }
+      } else {
+        throw new Error(response.data.message || 'Failed to access password-protected survey')
+      }
+    } catch (error) {
+      // Logging removed for production
+      throw error
+    }
+  }
+
+  // Alternative method to validate password access by token only (if backend supports it)
+  async validatePasswordAccessByToken(
+    token: string,
+    accessData: PasswordProtectedSurveyAccess
+  ): Promise<ApiResponse<PasswordProtectedAccessValidation>> {
+    try {
+      // Try a simpler approach: use token in the URL path itself
+      // This follows the pattern: /surveys/password-access/{token}/
+      const response = await apiClient.post(
+        `/surveys/password-access/${token}/`,
+        {
+          password: accessData.password,
+          email: accessData.email,
+          phone: accessData.phone
+        }
+      )
+      
+      if (response.data.status === 'success') {
+        return {
+          data: response.data.data,
+          message: response.data.message,
+          status: response.data.status
+        }
+      } else {
+        throw new Error(response.data.message || 'Failed to access password-protected survey')
+      }
+    } catch (error) {
+      // Logging removed for production
+      throw error
+    }
+  }
+
+  // Get password-protected survey data after validation
+  async getPasswordProtectedSurvey(
+    surveyId: string,
+    authToken: string,
+    password: string
+  ): Promise<ApiResponse<Survey>> {
+    try {
+      const response = await apiClient.post(`/surveys/password-surveys/${surveyId}/`, {
+        password: password
+      }, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      })
+      
+      if (response.data.status === 'success') {
+        return {
+          data: response.data.data,
+          message: response.data.message,
+          status: response.data.status
+        }
+      } else {
+        throw new Error(response.data.message || 'Failed to fetch password-protected survey')
+      }
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async submitPasswordProtectedResponse(
+    submissionData: PasswordProtectedResponseSubmission
+  ): Promise<ApiResponse<PasswordProtectedResponseResult>> {
+    try {
+      const response = await apiClient.post('/surveys/password-responses/', submissionData)
+      
+      if (response.data.status === 'success') {
+        return {
+          data: {
+            response_id: response.data.data.response_id,
+            survey_id: response.data.data.survey_id,
+            submitted_at: response.data.data.submitted_at,
+            answers_count: response.data.data.answers_count,
+            access_method: 'password_token'
+          },
+          message: response.data.message,
+          status: response.data.status
+        }
+      } else {
+        throw new Error(response.data.message || 'Failed to submit password-protected response')
       }
     } catch (error) {
       // Logging removed for production
@@ -441,12 +641,79 @@ class SurveyService {
     }
   }
 
-  // Survey Response Submission
+  // Survey Response Submission - Anonymous (Email or Phone)
+  async submitAnonymousResponse(
+    submissionData: AnonymousResponseSubmission
+  ): Promise<ApiResponse<ResponseSubmissionResult>> {
+    try {
+      const response = await apiClient.post('/surveys/responses/', submissionData)
+      
+      if (response.data.status === 'success') {
+        return {
+          data: response.data.data,
+          message: response.data.message,
+          status: response.data.status
+        }
+      } else {
+        throw new Error(response.data.message || 'Failed to submit survey response')
+      }
+    } catch (error) {
+      // Handle specific API errors
+      if (error instanceof Error && (error as any).response?.data) {
+        const apiError = (error as any).response.data
+        if (apiError.status === 'error') {
+          throw new Error(apiError.message || 'Failed to submit survey response')
+        }
+      }
+      
+      if (error instanceof Error) {
+        throw error
+      } else {
+        throw new Error('Failed to submit survey response')
+      }
+    }
+  }
+
+  // Survey Response Submission - Authenticated
+  async submitAuthenticatedResponse(
+    submissionData: AuthenticatedResponseSubmission
+  ): Promise<ApiResponse<ResponseSubmissionResult>> {
+    try {
+      const response = await apiClient.post('/surveys/auth-responses/', submissionData)
+      
+      if (response.data.status === 'success') {
+        return {
+          data: response.data.data,
+          message: response.data.message,
+          status: response.data.status
+        }
+      } else {
+        throw new Error(response.data.message || 'Failed to submit survey response')
+      }
+    } catch (error) {
+      // Handle specific API errors
+      if (error instanceof Error && (error as any).response?.data) {
+        const apiError = (error as any).response.data
+        if (apiError.status === 'error') {
+          throw new Error(apiError.message || 'Failed to submit survey response')
+        }
+      }
+      
+      if (error instanceof Error) {
+        throw error
+      } else {
+        throw new Error('Failed to submit survey response')
+      }
+    }
+  }
+
+  // Legacy method - kept for backward compatibility
   async submitSurveyResponse(
     submissionData: {
       survey_id: string
-      token: string
-      email: string
+      token?: string
+      email?: string
+      phone?: string
       answers: Array<{
         question_id: string
         answer: string | string[]
@@ -454,7 +721,10 @@ class SurveyService {
     }
   ): Promise<ApiResponse<{ message: string }>> {
     try {
-      const response = await apiClient.post('/surveys/responses/', submissionData)
+      // Remove token from submission data since it's not needed for the API
+      const { token: _token, ...apiSubmissionData } = submissionData
+      
+      const response = await apiClient.post('/surveys/responses/', apiSubmissionData)
       
       if (response.data.status === 'success') {
         return {
@@ -466,7 +736,13 @@ class SurveyService {
         throw new Error(response.data.message || 'Failed to submit survey response')
       }
     } catch (error) {
-      // Logging removed for production
+      // Handle specific API errors
+      if (error instanceof Error && (error as any).response?.data) {
+        const apiError = (error as any).response.data
+        if (apiError.status === 'error') {
+          throw new Error(apiError.message || 'Failed to submit survey response')
+        }
+      }
       
       if (error instanceof Error) {
         throw error
