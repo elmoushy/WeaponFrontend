@@ -25,6 +25,161 @@
   flex: 1;
 }
 
+/* Modern Glass Morphism Title */
+.glassMorphTitle {
+  flex: 1;
+  margin-bottom: 16px;
+}
+
+.titleGradientBg {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 0.1) 100%);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 24px;
+  padding: 32px 40px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 8px 32px rgba(153, 122, 81, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.titleGradientBg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(153, 122, 81, 0.08) 0%,
+    rgba(207, 163, 101, 0.05) 50%,
+    rgba(153, 122, 81, 0.03) 100%);
+  border-radius: 24px;
+  z-index: -1;
+}
+
+.titleGradientBg:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 40px rgba(153, 122, 81, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.titleIconContainer {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, 
+    rgba(153, 122, 81, 0.9) 0%, 
+    rgba(207, 163, 101, 0.9) 100%);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2.2rem;
+  flex-shrink: 0;
+  box-shadow: 
+    0 8px 24px rgba(153, 122, 81, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.titleIconContainer::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: rotate(45deg);
+  transition: all 0.6s ease;
+  opacity: 0;
+}
+
+.titleGradientBg:hover .titleIconContainer::before {
+  opacity: 1;
+  animation: shimmer 1.5s ease-in-out;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.titleContent {
+  flex: 1;
+  position: relative;
+}
+
+.modernPageTitle {
+  font-size: 2.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, 
+    #262626 0%, 
+    #997A51 50%, 
+    #CFA365 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  position: relative;
+}
+
+.modernPageSubtitle {
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: #666;
+  margin: 0 0 16px 0;
+  line-height: 1.4;
+  opacity: 0.9;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.titleAccent {
+  width: 120px;
+  height: 4px;
+  background: linear-gradient(90deg, 
+    #997A51 0%, 
+    #CFA365 50%, 
+    rgba(207, 163, 101, 0.3) 100%);
+  border-radius: 2px;
+  margin-top: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.titleAccent::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.6), 
+    transparent);
+  animation: accentGlow 2s ease-in-out infinite;
+}
+
+@keyframes accentGlow {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
 .pageTitle {
   font-size: 2.5rem;
   font-weight: 700;
@@ -642,7 +797,102 @@
 
 [data-theme="dark"] .overviewCard,
 [data-theme="dark"] .surveyCard,
-[data-theme="dark"] .searchInput,
+[data-theme="dark"] .searchInput {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive Design for Glass Morphism Title */
+@media (max-width: 768px) {
+  .titleGradientBg {
+    padding: 24px 20px;
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+  
+  .titleIconContainer {
+    width: 60px;
+    height: 60px;
+    font-size: 1.8rem;
+  }
+  
+  .modernPageTitle {
+    font-size: 2.2rem;
+  }
+  
+  .modernPageSubtitle {
+    font-size: 1.1rem;
+  }
+  
+  .titleAccent {
+    width: 80px;
+    margin: 12px auto 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .titleGradientBg {
+    padding: 20px 16px;
+    margin: 0 -16px;
+    border-radius: 20px;
+  }
+  
+  .titleIconContainer {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    border-radius: 16px;
+  }
+  
+  .modernPageTitle {
+    font-size: 1.8rem;
+    line-height: 1.3;
+  }
+  
+  .modernPageSubtitle {
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+  
+  .titleAccent {
+    width: 60px;
+    height: 3px;
+  }
+}
+
+/* Dark theme support for glass morphism */
+[data-theme="dark"] .titleGradientBg {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .titleGradientBg::before {
+  background: linear-gradient(135deg, 
+    rgba(153, 122, 81, 0.15) 0%,
+    rgba(207, 163, 101, 0.1) 50%,
+    rgba(153, 122, 81, 0.08) 100%);
+}
+
+[data-theme="dark"] .modernPageTitle {
+  background: linear-gradient(135deg, 
+    #ffffff 0%, 
+    #CFA365 50%, 
+    #997A51 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="dark"] .modernPageSubtitle {
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
 [data-theme="dark"] .filterSelect,
 [data-theme="dark"] .paginationSection {
   background: rgba(17, 24, 39, 0.8);

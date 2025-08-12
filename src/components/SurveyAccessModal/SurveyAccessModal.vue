@@ -263,16 +263,62 @@
                             </div>
                           </div>
                           
-                          <!-- Phone Input -->
+                          <!-- Phone Input with Country Dropdown -->
                           <div :class="$style.inputRow">
-                            <input 
-                              type="tel" 
-                              v-model="currentPhoneInput"
-                              :class="$style.textInput"
-                              :placeholder="getText('survey.access.enterPhonePlaceholder')"
-                              @keydown.enter.prevent="addPhone"
-                              @keydown.comma.prevent="addPhone"
-                            />
+                            <div :class="$style.phoneInputWrapper">
+                              <!-- Country Code Selector -->
+                              <div :class="$style.countrySelector" @click.stop>
+                                <button 
+                                  :class="$style.countryButton"
+                                  @click="showCountryDropdown = !showCountryDropdown"
+                                  type="button"
+                                >
+                                  <span :class="$style.countryFlag">{{ selectedCountry.flag }}</span>
+                                  <span :class="$style.countryCode">{{ selectedCountryCode }}</span>
+                                  <i class="fas fa-chevron-down" :class="$style.dropdownIcon"></i>
+                                </button>
+                                
+                                <!-- Country Dropdown -->
+                                <div v-if="showCountryDropdown" :class="$style.countryDropdown" @click.stop>
+                                  <div :class="$style.dropdownSearch">
+                                    <input 
+                                      type="text" 
+                                      :class="$style.searchInput"
+                                      placeholder="البحث عن دولة..."
+                                      @input="filterCountries"
+                                      @click.stop
+                                    />
+                                    <i class="fas fa-search" :class="$style.searchIcon"></i>
+                                  </div>
+                                  
+                                  <div :class="$style.countriesList">
+                                    <button
+                                      v-for="country in filteredCountries"
+                                      :key="country.code"
+                                      :class="[$style.countryOption, { [$style.selected]: selectedCountryCode === country.dialCode }]"
+                                      @click="selectCountry(country)"
+                                      type="button"
+                                    >
+                                      <span :class="$style.optionFlag">{{ country.flag }}</span>
+                                      <span :class="$style.optionName">{{ country.nameAr }}</span>
+                                      <span :class="$style.optionCode">{{ country.dialCode }}</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <!-- Phone Number Input -->
+                              <input 
+                                type="tel" 
+                                v-model="currentPhoneInput"
+                                :class="$style.phoneInput"
+                                :placeholder="getText('survey.access.enterPhonePlaceholder')"
+                                @keydown.enter.prevent="addPhone"
+                                @keydown.comma.prevent="addPhone"
+                                @focus="showCountryDropdown = false"
+                              />
+                            </div>
+                            
                             <button 
                               type="button"
                               :class="$style.addButton"
@@ -426,13 +472,12 @@
             </div>
 
             <!-- Private Access -->
-            <div 
+            <!-- <div 
               :class="[$style.accessOption, { [$style.selected]: selectedAccess === 'PRIVATE' }]"
               @click="handleAccessChange('PRIVATE')"
             >
               <div :class="$style.optionContent">
                 <div :class="$style.optionLeft">
-                  <!-- <i class="fas fa-lock" :class="[$style.optionIcon, $style.private]"></i> -->
                   <div :class="$style.optionText">
                     <span :class="$style.optionTitle">{{ getText('survey.access.private.title') }}</span>
                     <small :class="$style.optionDescription">{{ getText('survey.access.private.description') }}</small>
@@ -442,10 +487,8 @@
                 </div>
               </div>
               
-              <!-- Compact Private User Management -->
               <div v-if="selectedAccess === 'PRIVATE'" :class="$style.privateUsersSection">
                 <div :class="$style.userManagement">
-                  <!-- Quick User Search -->
                   <div :class="$style.userSearch">
                     <input
                       type="text"
@@ -456,7 +499,6 @@
                     />
                     <i class="fas fa-search" :class="$style.searchIcon"></i>
                     
-                    <!-- Compact Search Results -->
                     <div v-if="userSearchResults.length > 0" :class="$style.searchResults">
                       <div 
                         v-for="user in userSearchResults" 
@@ -470,14 +512,13 @@
                     </div>
                   </div>
 
-                  <!-- Selected Users Count -->
                   <div v-if="selectedUsers.length > 0" :class="$style.usersCount">
                     <i class="fas fa-users"></i>
                     <span>{{ selectedUsers.length }} {{ getText('survey.access.usersSelected') }}</span>
                   </div>
                 </div>
               </div>
-            </div>
+            </div> -->
           </div>
         </div>
 
@@ -541,6 +582,8 @@ import type {
   AdminGroup,
   PublicContactMethod
 } from '../../types/survey.types'
+import type { CountryCode } from '../../types/country.types'
+import countryCodesData from '../../data/countryCodes.json'
 
 // Props
 interface Props {
@@ -588,6 +631,24 @@ const saveButtonTooltip = computed(() => {
   }
   
   return currentLanguage.value === 'ar' ? 'حفظ التغييرات' : 'Save Changes'
+})
+
+// Country dropdown computed properties
+const filteredCountries = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return countryCodes
+  }
+  
+  const query = searchQuery.value.toLowerCase().trim()
+  return countryCodes.filter(country => 
+    country.nameAr.toLowerCase().includes(query) ||
+    country.name.toLowerCase().includes(query) ||
+    country.dialCode.includes(query)
+  )
+})
+
+const selectedCountry = computed(() => {
+  return countryCodes.find(country => country.dialCode === selectedCountryCode.value) || defaultCountry
 })
 
 // Inline translations
@@ -790,8 +851,6 @@ const statusMessage = ref<{
 } | null>(null)
 
 // User management
-const userSearchQuery = ref('')
-const userSearchResults = ref<User[]>([])
 const selectedUsers = ref<User[]>([])
 // Note: Email invitation variables kept for potential future enhancements
 // const inviteEmail = ref('')
@@ -810,6 +869,13 @@ const restrictedPhones = ref<string[]>([])
 const currentEmailInput = ref('')
 const currentPhoneInput = ref('')
 const passwordProtectedLink = ref<PasswordProtectedLinkResponse | null>(null)
+
+// Phone country code functionality
+const countryCodes: CountryCode[] = countryCodesData as CountryCode[]
+const selectedCountryCode = ref('+971') // Default to UAE
+const showCountryDropdown = ref(false)
+const searchQuery = ref('')
+const defaultCountry = countryCodes.find(country => country.dialCode === '+971') || countryCodes[0]
 
 // Methods
 const handleOverlayClick = () => {
@@ -891,33 +957,6 @@ const loadPublicLink = async () => {
   }
 }
 
-// User Search and Management
-const handleUserSearch = async () => {
-  if (userSearchQuery.value.length < 2) {
-    userSearchResults.value = []
-    return
-  }
-
-  try {
-    const response = await surveyService.searchUsers(userSearchQuery.value)
-    userSearchResults.value = response.data.users.filter(user => 
-      !selectedUsers.value.some(selected => selected.id === user.id)
-    )
-  } catch (error) {
-    // Logging removed for production
-    setStatusMessage('Failed to search users', 'error')
-  }
-}
-
-const addUser = (user: User) => {
-  if (!selectedUsers.value.some(selected => selected.id === user.id)) {
-    selectedUsers.value.push(user)
-    userSearchResults.value = userSearchResults.value.filter(result => result.id !== user.id)
-    userSearchQuery.value = ''
-    setStatusMessage(`Added ${user.name} to shared users`, 'success')
-  }
-}
-
 // Email and Phone Management
 const addEmail = () => {
   const email = currentEmailInput.value.trim()
@@ -969,12 +1008,15 @@ const removeEmail = (index: number) => {
 }
 
 const addPhone = () => {
-  const phone = currentPhoneInput.value.trim()
-  if (!phone) return
+  const phoneNumber = currentPhoneInput.value.trim()
+  if (!phoneNumber) return
+  
+  // Create full phone number with country code
+  const fullPhone = selectedCountryCode.value + phoneNumber.replace(/^\+/, '')
   
   // Basic phone validation (allow international format)
   const phoneRegex = /^[+]?[1-9][\d]{0,15}$/
-  if (!phoneRegex.test(phone.replace(/[\s-()]/g, ''))) {
+  if (!phoneRegex.test(fullPhone.replace(/[\s-()]/g, ''))) {
     setStatusMessage(
       currentLanguage.value === 'ar' 
         ? 'رقم الهاتف غير صالح'
@@ -985,7 +1027,7 @@ const addPhone = () => {
   }
   
   // Check for duplicates
-  if (restrictedPhones.value.includes(phone)) {
+  if (restrictedPhones.value.includes(fullPhone)) {
     setStatusMessage(
       currentLanguage.value === 'ar' 
         ? 'رقم الهاتف موجود بالفعل'
@@ -995,7 +1037,7 @@ const addPhone = () => {
     return
   }
   
-  restrictedPhones.value.push(phone)
+  restrictedPhones.value.push(fullPhone)
   currentPhoneInput.value = ''
   setStatusMessage(
     currentLanguage.value === 'ar' 
@@ -1015,6 +1057,23 @@ const removePhone = (index: number) => {
       'success'
     )
   }
+}
+
+// Phone country code functions
+const selectCountry = (country: CountryCode) => {
+  selectedCountryCode.value = country.dialCode
+  showCountryDropdown.value = false
+  searchQuery.value = ''
+}
+
+const filterCountries = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  searchQuery.value = target.value
+}
+
+const closeCountryDropdown = () => {
+  showCountryDropdown.value = false
+  searchQuery.value = ''
 }
 
 // Group Management
@@ -1144,25 +1203,17 @@ const handleSave = async () => {
             days_to_expire: 30
           }
           
-          // Add email/phone restrictions if specified
-          // Debug logging to understand the issue
-          console.log('passwordAccessMode:', passwordAccessMode.value)
-          console.log('restrictedEmails:', restrictedEmails.value)
-          console.log('restrictedPhones:', restrictedPhones.value)
           
           if (passwordAccessMode.value === 'email' && restrictedEmails.value.length > 0) {
             // Convert reactive proxy to plain array and send the entire array of restricted emails
             passwordLinkOptions.restricted_email = [...restrictedEmails.value]
-            console.log('Added restricted_email to options:', passwordLinkOptions.restricted_email)
           } 
           
           if (passwordAccessMode.value === 'phone' && restrictedPhones.value.length > 0) {
             // Convert reactive proxy to plain array and send the entire array of restricted phones
             passwordLinkOptions.restricted_phone = [...restrictedPhones.value]
-            console.log('Added restricted_phone to options:', passwordLinkOptions.restricted_phone)
           }
           
-          console.log('passwordLinkOptions being sent:', passwordLinkOptions)
           
           const passwordLinkResponse = await surveyService.generatePasswordProtectedLink(props.survey.id, passwordLinkOptions)
           passwordProtectedLink.value = passwordLinkResponse.data
@@ -1280,6 +1331,23 @@ onMounted(() => {
   if (props.survey.visibility === 'GROUPS') {
     loadAdminGroups()
   }
+  
+  // Add global click listener to close country dropdown
+  const handleGlobalClick = () => {
+    if (showCountryDropdown.value) {
+      closeCountryDropdown()
+    }
+  }
+  
+  document.addEventListener('click', handleGlobalClick)
+  
+  // Cleanup on unmount
+  const cleanup = () => {
+    document.removeEventListener('click', handleGlobalClick)
+  }
+  
+  // Store cleanup function for potential manual cleanup
+  ;(window as any).__countryDropdownCleanup = cleanup
 })
 </script>
 

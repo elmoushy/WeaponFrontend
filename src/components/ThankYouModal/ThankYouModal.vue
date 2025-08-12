@@ -32,14 +32,14 @@
             </div>
 
             <!-- Action Buttons -->
-            <div :class="$style.actionButtons">
+            <div v-if="!isFromPublicSurvey" :class="$style.actionButtons">
               <button 
                 :class="$style.primaryButton"
                 @click="handlePrimaryAction"
                 ref="closeButton"
               >
-                <i :class="isFromPublicSurvey ? 'fas fa-times' : 'fas fa-home'"></i>
-                <span>{{ isFromPublicSurvey ? 'إغلاق الصفحة' : 'العودة للصفحة الرئيسية' }}</span>
+                <i class="fas fa-home"></i>
+                <span>العودة للصفحة الرئيسية</span>
               </button>
             </div>
 

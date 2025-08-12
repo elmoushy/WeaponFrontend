@@ -379,6 +379,7 @@ import SurveyModal from '../../components/SurveyModal/SurveyModal.vue'
 import AnalyticsModal from '../../components/AnalyticsModal/AnalyticsModal.vue'
 import SurveyAccessModal from '../../components/SurveyAccessModal/SurveyAccessModal.vue'
 import LinkSharingModal from '../../components/LinkSharingModal/LinkSharingModal.vue'
+import Swal from 'sweetalert2'
 
 // Router
 const router = useRouter()
@@ -656,14 +657,8 @@ const manageSurveyAccess = (survey: Survey) => {
 const openLinkSharingModal = async (survey: Survey) => {
   selectedSurveyForLinkSharing.value = survey
   
-  try {
-    // Try to get existing public link for the survey
-    const linkResponse = await surveyService.getPublicLink(survey.id)
-    publicLinkForSharing.value = linkResponse.data
-  } catch (error) {
-    // If no public link exists, that's okay - the modal can generate one
-    publicLinkForSharing.value = null
-  }
+  // No need to fetch link data here - the modal will handle it with getCurrentLink
+  publicLinkForSharing.value = null
   
   showLinkSharingModal.value = true
 }
@@ -711,19 +706,47 @@ const cloneSurvey = async (surveyId: string) => {
     await loadSurveys()
   } catch (error) {
     // Logging removed for production
-    alert('Failed to clone survey')
+    Swal.fire({
+      icon: 'error',
+      title: 'خطأ',
+      text: 'فشل في نسخ الاستطلاع',
+      confirmButtonText: 'موافق'
+    })
   }
 }
 
 const deleteSurvey = async (surveyId: string) => {
-  if (confirm('Are you sure you want to delete this survey?')) {
+  const result = await Swal.fire({
+    icon: 'warning',
+    title: 'تأكيد الحذف',
+    text: 'هل أنت متأكد من أنك تريد حذف هذا الاستطلاع؟',
+    showCancelButton: true,
+    confirmButtonText: 'نعم، احذف',
+    cancelButtonText: 'إلغاء',
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6'
+  })
+
+  if (result.isConfirmed) {
     try {
       await surveyService.deleteSurvey(surveyId)
       
       await loadSurveys()
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'تم الحذف',
+        text: 'تم حذف الاستطلاع بنجاح',
+        confirmButtonText: 'موافق'
+      })
     } catch (error) {
       // Logging removed for production
-      alert('Failed to delete survey')
+      Swal.fire({
+        icon: 'error',
+        title: 'خطأ',
+        text: 'فشل في حذف الاستطلاع',
+        confirmButtonText: 'موافق'
+      })
     }
   }
 }
@@ -780,9 +803,14 @@ const handleSurveySave = async (surveyData: any, existingSurvey?: any) => {
     await loadSurveys()
   } catch (error) {
     // Logging removed for production
-    alert(selectedSurveyForEdit.value 
-      ? 'Failed to update survey' 
-      : 'Failed to create survey')
+    Swal.fire({
+      icon: 'error',
+      title: 'خطأ',
+      text: selectedSurveyForEdit.value 
+        ? 'فشل في تحديث الاستطلاع' 
+        : 'فشل في إنشاء الاستطلاع',
+      confirmButtonText: 'موافق'
+    })
   }
 }
 
@@ -801,7 +829,18 @@ const bulkDeactivate = async () => {
 }
 
 const bulkDelete = async () => {
-  if (confirm(t.value('survey.bulk.confirmations.delete').replace('{count}', selectedSurveys.value.length.toString()))) {
+  const result = await Swal.fire({
+    icon: 'warning',
+    title: 'تأكيد الحذف الجماعي',
+    text: `هل أنت متأكد من أنك تريد حذف ${selectedSurveys.value.length} استطلاع؟`,
+    showCancelButton: true,
+    confirmButtonText: 'نعم، احذف الكل',
+    cancelButtonText: 'إلغاء',
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6'
+  })
+
+  if (result.isConfirmed) {
     await performBulkOperation('delete')
   }
 }
@@ -816,9 +855,37 @@ const performBulkOperation = async (operation: string) => {
     
     selectedSurveys.value = []
     await loadSurveys()
+    
+    // Show success message
+    let successMessage = ''
+    switch (operation) {
+      case 'activate':
+        successMessage = 'تم تفعيل الاستطلاعات بنجاح'
+        break
+      case 'deactivate':
+        successMessage = 'تم إلغاء تفعيل الاستطلاعات بنجاح'
+        break
+      case 'delete':
+        successMessage = 'تم حذف الاستطلاعات بنجاح'
+        break
+      default:
+        successMessage = 'تمت العملية بنجاح'
+    }
+    
+    Swal.fire({
+      icon: 'success',
+      title: 'نجحت العملية',
+      text: successMessage,
+      confirmButtonText: 'موافق'
+    })
   } catch (error) {
     // Logging removed for production
-    alert('Bulk operation failed')
+    Swal.fire({
+      icon: 'error',
+      title: 'خطأ',
+      text: 'فشلت العملية الجماعية',
+      confirmButtonText: 'موافق'
+    })
   } finally {
     bulkOperationLoading.value = false
   }

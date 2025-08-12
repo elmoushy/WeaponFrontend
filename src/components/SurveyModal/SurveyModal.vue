@@ -282,6 +282,7 @@ import { surveyService } from '../../services/surveyService'
 import type { Survey, SurveyCreateRequest, SurveyVisibility, PublicContactMethod, QuestionCreateRequest } from '../../types/survey.types'
 import QuestionModal from '../QuestionModal/QuestionModal.vue'
 import SurveyAccessModal from '../SurveyAccessModal/SurveyAccessModal.vue'
+import Swal from 'sweetalert2'
 
 // Props
 interface Props {
@@ -325,6 +326,7 @@ const savedSurvey = ref<Survey | null>(null)
 const errors = ref<Record<string, string>>({})
 const editingQuestionIndex = ref<number | null>(null)
 const editingQuestionData = ref<any>(null)
+const isTimeoutError = ref(false)
 
 const formData = ref<SurveyCreateRequest & { 
   allow_anonymous: boolean
@@ -351,7 +353,9 @@ const formData = ref<SurveyCreateRequest & {
 
 // Form validation
 const isFormValid = computed(() => {
-  return formData.value.title.trim().length > 0 && Object.keys(errors.value).length === 0
+  return formData.value.title.trim().length > 0 && 
+         Object.keys(errors.value).length === 0 &&
+         formData.value.questions.length > 0
 })
 
 // Visibility options
@@ -546,32 +550,27 @@ const addQuestionsToSurvey = async (surveyId: string) => {
 }
 
 const updateSurveyQuestions = async (surveyId: string) => {
-  try {
-    // For now, we'll implement a simple approach:
-    // This is a basic implementation - in production you might want to:
-    // 1. Compare existing questions with new ones
-    // 2. Update existing questions
-    // 3. Add new questions
-    // 4. Delete removed questions
-    
-    // For simplicity, we'll just add new questions that don't have a proper UUID
-    for (const question of formData.value.questions) {
-      // If question doesn't have a proper UUID (starts with temporary ID), add it
-      if (!question.id || typeof question.id === 'number') {
-        const questionData = {
-          text: question.text,
-          question_type: question.question_type,
-          options: question.options,
-          is_required: question.is_required || false,
-          order: question.order || 1
-        }
-        
-        await surveyService.addQuestion(surveyId, questionData)
+  // For now, we'll implement a simple approach:
+  // This is a basic implementation - in production you might want to:
+  // 1. Compare existing questions with new ones
+  // 2. Update existing questions
+  // 3. Add new questions
+  // 4. Delete removed questions
+  
+  // For simplicity, we'll just add new questions that don't have a proper UUID
+  for (const question of formData.value.questions) {
+    // If question doesn't have a proper UUID (starts with temporary ID), add it
+    if (!question.id || typeof question.id === 'number') {
+      const questionData = {
+        text: question.text,
+        question_type: question.question_type,
+        options: question.options,
+        is_required: question.is_required || false,
+        order: question.order || 1
       }
+      
+      await surveyService.addQuestion(surveyId, questionData)
     }
-  } catch (error) {
-    // Logging removed for production
-    throw error
   }
 }
 
@@ -586,6 +585,12 @@ const handleSubmit = async () => {
   
   try {
     isLoading.value = true
+    isTimeoutError.value = false
+    
+    // Create a timeout promise for 15 seconds
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('TIMEOUT')), 15000)
+    })
     
     // Convert datetime-local to ISO format for API
     const formatDateForAPI = (dateString: string | null): string | null => {
@@ -611,34 +616,62 @@ const handleSubmit = async () => {
     }
     
     if (isEditing.value && props.survey) {
-      // Update existing survey
-      const response = await surveyService.updateSurvey(props.survey.id, submitData)
+      // Update existing survey with timeout
+      const response = await Promise.race([
+        surveyService.updateSurvey(props.survey.id, submitData),
+        timeoutPromise
+      ]) as any
       savedSurvey.value = response.data
       
       // Update questions if any changes were made
-      if (formData.value.questions.length > 0) {
-        await updateSurveyQuestions(savedSurvey.value.id)
+      if (formData.value.questions.length > 0 && savedSurvey.value) {
+        await Promise.race([
+          updateSurveyQuestions(savedSurvey.value.id),
+          timeoutPromise
+        ])
       }
       
       showAccessModal.value = true
     } else {
-      // Create new survey - the API now handles questions in the same request
-      const response = await surveyService.createSurvey(submitData)
+      // Create new survey with timeout - the API now handles questions in the same request
+      const response = await Promise.race([
+        surveyService.createSurvey(submitData),
+        timeoutPromise
+      ]) as any
       savedSurvey.value = response.data
       
       // Since questions are included in the create request, we don't need separate calls
       // unless the API doesn't support it yet
-      if (formData.value.questions.length > 0 && !submitData.questions) {
-        await addQuestionsToSurvey(savedSurvey.value.id)
+      if (formData.value.questions.length > 0 && !submitData.questions && savedSurvey.value) {
+        await Promise.race([
+          addQuestionsToSurvey(savedSurvey.value.id),
+          timeoutPromise
+        ])
       }
       
       showAccessModal.value = true
     }
   } catch (error: any) {
-    // Logging removed for production
+    // Check if it's a timeout error
+    if (error.message === 'TIMEOUT') {
+      isTimeoutError.value = true
+      Swal.fire({
+        icon: 'error',
+        title: 'انتهت مهلة الاتصال',
+        text: 'انتهت مهلة الاتصال بالخادم. يرجى المحاولة مرة أخرى.',
+        confirmButtonText: 'موافق'
+      })
+      return
+    }
+    
     // Show more specific error messages
     const errorMessage = error.message || 'فشل في إنشاء الاستطلاع'
-    alert(`خطأ: ${errorMessage}`)
+    Swal.fire({
+      icon: 'error',
+      title: 'خطأ في الحفظ',
+      text: `خطأ: ${errorMessage}`,
+      confirmButtonText: 'موافق'
+    })
   } finally {
     isLoading.value = false
   }
@@ -687,20 +720,37 @@ const editQuestion = (index: number) => {
   showQuestionModal.value = true
 }
 
-const deleteQuestion = (index: number) => {
+const deleteQuestion = async (index: number) => {
   const questionText = formData.value.questions[index].text
   const isArabic = store.currentLanguage === 'ar'
   
-  const confirmMessage = isArabic 
-    ? `هل أنت متأكد من حذف السؤال: "${questionText}"؟`
-    : `Are you sure you want to delete the question: "${questionText}"?`
+  const result = await Swal.fire({
+    icon: 'warning',
+    title: isArabic ? 'تأكيد الحذف' : 'Confirm Deletion',
+    text: isArabic 
+      ? `هل أنت متأكد من حذف السؤال: "${questionText}"؟`
+      : `Are you sure you want to delete the question: "${questionText}"?`,
+    showCancelButton: true,
+    confirmButtonText: isArabic ? 'نعم، احذف' : 'Yes, Delete',
+    cancelButtonText: isArabic ? 'إلغاء' : 'Cancel',
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6'
+  })
   
-  if (confirm(confirmMessage)) {
+  if (result.isConfirmed) {
     formData.value.questions.splice(index, 1)
     
     // Update the order of remaining questions
     formData.value.questions.forEach((question, newIndex) => {
       question.order = newIndex + 1
+    })
+    
+    // Show success message
+    Swal.fire({
+      icon: 'success',
+      title: isArabic ? 'تم الحذف' : 'Deleted',
+      text: isArabic ? 'تم حذف السؤال بنجاح' : 'Question deleted successfully',
+      confirmButtonText: isArabic ? 'موافق' : 'OK'
     })
   }
 }

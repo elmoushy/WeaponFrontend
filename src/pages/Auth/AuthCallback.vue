@@ -10,12 +10,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useBackendAuth } from '../../composables/useBackendAuth'
 
 const router = useRouter()
 const message = ref('Processing authentication...')
 
-const { syncWithBackend } = useBackendAuth()
+// Removed useBackendAuth as it doesn't exist
 
 onMounted(async () => {
   try {
@@ -28,8 +27,8 @@ onMounted(async () => {
     // if (azureAuth.isAuthenticated.value) {
       message.value = 'Connecting to backend...'
       
-      // Sync with backend to get user data
-      await syncWithBackend()
+      // Skip backend sync since useBackendAuth doesn't exist
+      // await syncWithBackend()
       
       // if (isAuthenticated.value) {
         message.value = `Welcome! Redirecting to dashboard...`

@@ -203,7 +203,8 @@
     },
     "status": {
       "active": "Active",
-      "inactive": "Inactive"
+      "inactive": "Inactive",
+      "superAdminOnly": "Only available to super admin"
     },
     "quickActions": {
       "title": "Quick Actions",

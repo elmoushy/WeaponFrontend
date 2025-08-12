@@ -41,6 +41,7 @@
                 required
                 :class="$style.input"
                 :disabled="mode.type === 'view' || mode.type === 'edit'"
+                autocomplete="off"
               />
             </div>
           </div>
@@ -80,6 +81,7 @@
               required
               :class="$style.input"
               :placeholder="t('userManagement.forms.user.passwordPlaceholder')"
+              autocomplete="new-password"
             />
           </div>
           

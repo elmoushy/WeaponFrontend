@@ -436,6 +436,59 @@
   100% { transform: scale(1.05); }
 }
 
+/* === RESTRICTED MODULE STYLES === */
+.restrictedModule {
+  position: relative;
+  filter: grayscale(0.5);
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.restrictedModule:hover {
+  transform: translateY(-4px);
+  filter: grayscale(0.3);
+  opacity: 0.8;
+}
+
+.restrictedModule .moduleIcon {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  box-shadow: 0 4px 15px rgba(156, 163, 175, 0.3);
+}
+
+.restrictedStatus {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.restrictedOverlay {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2;
+}
+
+.restrictedBadge {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+  animation: restrictedPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes restrictedPulse {
+  0% { transform: scale(1); opacity: 0.9; }
+  100% { transform: scale(1.03); opacity: 1; }
+}
+
 /* === QUICK ACTIONS SECTION === */
 .quickActionsSection {
   padding: 0 2rem 4rem;

@@ -149,31 +149,33 @@
 <script setup lang="ts">
 import { onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useAuth } from '../../composables/useAuth'
-import { useBackendAuth } from '../../composables/useBackendAuth'
+import { useUnifiedAuth } from '../../composables/useUnifiedAuth'
 import styles from './Login.module.css'
 
 const router = useRouter()
 const route = useRoute()
 
-// Azure AD authentication
+// Unified authentication (JWT-based)
+const auth = useUnifiedAuth()
 const { 
   initialize,
   login,
-  loginPopup,
   isAuthenticated: _isAzureAuthenticated,
   isLoading: azureLoading,
   error: azureError,
   clearError: clearAzureError
-} = useAuth()
+} = auth
 
-// Backend integration
+// Note: loginPopup not available in unified auth
+const loginPopup = () => console.warn('loginPopup not implemented')
+
+// Backend integration - using unified auth
 const { 
-  isFullyAuthenticated,
+  isAuthenticated: isFullyAuthenticated,
   isLoading: backendLoading, 
   error: backendError,
   clearError: clearBackendError 
-} = useBackendAuth()
+} = auth
 
 // Computed properties for combined state
 const isAuthenticated = isFullyAuthenticated

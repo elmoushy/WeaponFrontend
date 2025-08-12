@@ -32,6 +32,25 @@
       </button>
     </div>
 
+    <!-- Timeout Error State -->
+    <div v-else-if="timeoutError" :class="$style.errorState">
+      <div :class="$style.errorIcon">
+        <i class="fas fa-clock"></i>
+      </div>
+      <h2 :class="$style.errorTitle">انتهت مهلة الطلب</h2>
+      <p :class="$style.errorMessage">فشل في تحميل الاستطلاع خلال 15 ثانية</p>
+      <div :class="$style.errorActions">
+        <button :class="$style.retryButton" @click="loadSurvey">
+          <i class="fas fa-redo"></i>
+          إعادة المحاولة
+        </button>
+        <button :class="$style.refreshButton" @click="refreshPage">
+          <i class="fas fa-sync-alt"></i>
+          تحديث الصفحة
+        </button>
+      </div>
+    </div>
+
     <!-- Survey Preview (Before Starting) -->
     <div v-else-if="survey && !surveyStarted" :class="$style.surveyContent">
       <!-- Survey Header -->
@@ -303,6 +322,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from '@/hooks/useI18n'
 import { surveyService } from '@/services/surveyService'
 import { ThankYouModal } from '@/components/ThankYouModal'
+import Swal from 'sweetalert2'
 import type { 
   AuthSurvey, 
   AuthResponseSubmission
@@ -317,6 +337,7 @@ const { t, currentTheme, isRTL } = useI18n()
 const survey = ref<AuthSurvey | null>(null)
 const isLoading = ref(true)
 const error = ref<string | null>(null)
+const timeoutError = ref(false)
 const accessDenied = ref(false)
 const accessMessage = ref('')
 const surveyStarted = ref(false)
@@ -377,36 +398,81 @@ const loadSurvey = async () => {
   try {
     isLoading.value = true
     error.value = null
+    timeoutError.value = false
     accessDenied.value = false
     
     const surveyId = route.params.id as string
 
     if (!surveyId) {
       error.value = 'معرف الاستطلاع غير مُتاح'
+      await Swal.fire({
+        title: 'خطأ',
+        text: 'معرف الاستطلاع غير مُتاح',
+        icon: 'error',
+        confirmButtonText: 'موافق',
+        confirmButtonColor: '#dc3545'
+      })
       return
     }
 
-    const response = await surveyService.getAuthSurvey(surveyId)
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('TIMEOUT')), 15000)
+    })
+
+    const response = await Promise.race([
+      surveyService.getAuthSurvey(surveyId),
+      timeoutPromise
+    ]) as any
     
     if (response.data && response.data.survey) {
       survey.value = response.data.survey
       initializeAnswers()
     } else {
       error.value = 'الاستطلاع غير موجود'
+      await Swal.fire({
+        title: 'خطأ',
+        text: 'الاستطلاع غير موجود',
+        icon: 'error',
+        confirmButtonText: 'موافق',
+        confirmButtonColor: '#dc3545'
+      })
     }
   } catch (err: any) {
     // Logging removed for production
     
-    if (err.message?.includes('403') || err.message?.includes('Access denied')) {
+    if (err.message === 'TIMEOUT') {
+      timeoutError.value = true
+      await Swal.fire({
+        title: 'انتهت مهلة الطلب',
+        text: 'فشل في تحميل الاستطلاع خلال 15 ثانية. يرجى المحاولة مرة أخرى.',
+        icon: 'error',
+        confirmButtonText: 'موافق',
+        confirmButtonColor: '#dc3545'
+      })
+    } else if (err.message?.includes('403') || err.message?.includes('Access denied')) {
       accessDenied.value = true
       accessMessage.value = 'ليس لديك صلاحية للوصول إلى هذا الاستطلاع'
     } else if (err.message?.includes('404')) {
       error.value = 'الاستطلاع غير موجود'
+      await Swal.fire({
+        title: 'خطأ',
+        text: 'الاستطلاع غير موجود',
+        icon: 'error',
+        confirmButtonText: 'موافق',
+        confirmButtonColor: '#dc3545'
+      })
     } else if (err.message?.includes('401')) {
       accessDenied.value = true
       accessMessage.value = 'مطلوب المصادقة للوصول إلى هذا الاستطلاع'
     } else {
       error.value = err.message || 'فشل في تحميل الاستطلاع'
+      await Swal.fire({
+        title: 'خطأ في تحميل الاستطلاع',
+        text: err.message || 'فشل في تحميل الاستطلاع',
+        icon: 'error',
+        confirmButtonText: 'موافق',
+        confirmButtonColor: '#dc3545'
+      })
     }
   } finally {
     isLoading.value = false
@@ -482,13 +548,46 @@ const submitSurvey = async () => {
       }
     }
     
-    await surveyService.submitAuthResponse(submissionData)
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('TIMEOUT')), 15000)
+    })
+    
+    await Promise.race([
+      surveyService.submitAuthResponse(submissionData),
+      timeoutPromise
+    ])
+    
+    // Show success message and then thank you modal
+    await Swal.fire({
+      title: 'تم الإرسال بنجاح',
+      text: 'تم إرسال إجابات الاستطلاع بنجاح. شكراً لمشاركتك!',
+      icon: 'success',
+      confirmButtonText: 'موافق',
+      confirmButtonColor: '#28a745'
+    })
     
     // Show thank you modal instead of redirecting immediately
     showThankYouModal.value = true
     
   } catch (err: any) {
     // Logging removed for production
+    if (err.message === 'TIMEOUT') {
+      await Swal.fire({
+        title: 'انتهت مهلة الطلب',
+        text: 'فشل في إرسال الإجابات خلال 15 ثانية. يرجى المحاولة مرة أخرى.',
+        icon: 'error',
+        confirmButtonText: 'موافق',
+        confirmButtonColor: '#dc3545'
+      })
+    } else {
+      await Swal.fire({
+        title: 'خطأ في الإرسال',
+        text: err.message || 'فشل في إرسال إجابات الاستطلاع',
+        icon: 'error',
+        confirmButtonText: 'موافق',
+        confirmButtonColor: '#dc3545'
+      })
+    }
     questionError.value = err.message || 'فشل في إرسال إجابات الاستطلاع'
   } finally {
     isSubmitting.value = false
@@ -497,6 +596,10 @@ const submitSurvey = async () => {
 
 const goBack = () => {
   router.push('/surveys')
+}
+
+const refreshPage = () => {
+  window.location.reload()
 }
 
 const handleModalClose = () => {

@@ -496,35 +496,110 @@
 
 /* Error State */
 .errorState {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(251, 191, 36, 0.2);
-  border-radius: 20px;
-  padding: 60px 40px;
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 24px;
+  padding: 80px 60px;
   text-align: center;
-  max-width: 500px;
+  max-width: 520px;
   width: 100%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  position: relative;
+  overflow: hidden;
+  transform: translateY(0);
+  transition: all 0.3s ease;
+}
+
+.errorState::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.05) 100%);
+  border-radius: 24px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.errorState:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .errorIcon {
-  font-size: 4rem;
-  color: #f59e0b;
-  margin-bottom: 24px;
+  font-size: 5rem;
+  margin-bottom: 32px;
+  background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+  animation: iconPulse 2s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+  }
+  50% {
+    transform: scale(1.05);
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.15));
+  }
 }
 
 .errorTitle {
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 700;
-  margin: 0 0 16px 0;
-  color: #262626;
+  margin: 0 0 20px 0;
+  color: #1f2937;
+  background: linear-gradient(135deg, #1f2937 0%, #4b5563 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .errorMessage {
-  font-size: 1.1rem;
-  opacity: 0.7;
+  font-size: 1.2rem;
+  color: #4b5563;
   margin: 0;
-  line-height: 1.6;
+  line-height: 1.7;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+/* Center the error state in password survey container */
+.passwordSurveyContainer .errorState {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+}
+
+/* Add a wrapper to center error state properly */
+.passwordSurveyContainer > div:has(.errorState) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 20px;
+  position: relative;
+  z-index: 1;
 }
 
 /* Dark Theme */
@@ -535,10 +610,53 @@
 }
 
 .publicSurveyContainer[data-theme="dark"] .surveyContent,
-.publicSurveyContainer[data-theme="dark"] .accessDenied,
-.publicSurveyContainer[data-theme="dark"] .errorState {
+.publicSurveyContainer[data-theme="dark"] .accessDenied {
   background: rgba(30, 35, 48, 0.95);
   border-color: rgba(74, 144, 226, 0.2);
+}
+
+.publicSurveyContainer[data-theme="dark"] .errorState {
+  background: rgba(30, 35, 48, 0.25);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(74, 144, 226, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(74, 144, 226, 0.2);
+}
+
+.publicSurveyContainer[data-theme="dark"] .errorState::before {
+  background: linear-gradient(135deg, 
+    rgba(74, 144, 226, 0.15) 0%,
+    rgba(30, 35, 48, 0.1) 100%);
+}
+
+.publicSurveyContainer[data-theme="dark"] .errorState:hover {
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(74, 144, 226, 0.3);
+}
+
+.publicSurveyContainer[data-theme="dark"] .errorIcon {
+  background: linear-gradient(135deg, #fbbf24 0%, #f87171 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.publicSurveyContainer[data-theme="dark"] .errorTitle {
+  color: #f9fafb;
+  background: linear-gradient(135deg, #f9fafb 0%, #d1d5db 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.publicSurveyContainer[data-theme="dark"] .errorMessage {
+  color: #d1d5db;
 }
 
 .publicSurveyContainer[data-theme="dark"] .surveyHeader {
@@ -2609,6 +2727,51 @@
   box-shadow: 
     0 12px 35px rgba(74, 144, 226, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Error State Dark Theme for Password Survey */
+.passwordSurveyContainer[data-theme="dark"] .errorState {
+  background: rgba(20, 25, 38, 0.25);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(74, 144, 226, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(74, 144, 226, 0.2);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .errorState::before {
+  background: linear-gradient(135deg, 
+    rgba(74, 144, 226, 0.15) 0%,
+    rgba(20, 25, 38, 0.1) 100%);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .errorState:hover {
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.7),
+    0 4px 12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(74, 144, 226, 0.3);
+}
+
+.passwordSurveyContainer[data-theme="dark"] .errorIcon {
+  background: linear-gradient(135deg, #fbbf24 0%, #f87171 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+}
+
+.passwordSurveyContainer[data-theme="dark"] .errorTitle {
+  color: #f9fafb;
+  background: linear-gradient(135deg, #f9fafb 0%, #d1d5db 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.passwordSurveyContainer[data-theme="dark"] .errorMessage {
+  color: #d1d5db;
 }
 
 /* Responsive Design */

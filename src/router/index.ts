@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import { useJWTAuth } from '../composables/useJWTAuth'
+import { useSimpleAuth } from '../composables/useSimpleAuth'
 import JWTLogin from '../pages/Auth/JWTLogin.vue'
-import Register from '../pages/Auth/Register.vue'
+// import Register from '../pages/Auth/Register.vue' // Temporarily disabled until JWT registration is implemented
 import Welcome from '../pages/Welcome/Welcome.vue'
 import Dashboard from '../pages/Dashboard/Dashboard.vue'
 import Projects from '../pages/Projects/Projects.vue'
@@ -42,6 +42,7 @@ const routes: RouteRecordRaw[] = [
       requiresGuest: true // Only accessible when not authenticated
     }
   },
+  /*
   {
     path: '/register',
     name: 'Register',
@@ -51,13 +52,14 @@ const routes: RouteRecordRaw[] = [
       requiresGuest: true // Only accessible when not authenticated
     }
   },
+  */
   {
     path: '/survey/public/:token',
     name: 'PublicSurvey',
     component: PublicSurveyView,
     meta: {
-      title: 'Public Survey - WPC | WeaponpowerCloud App',
-      requiresAuth: false // Public access, no authentication required
+      title: 'Public Survey - WPC | WeaponpowerCloud App'
+      // NO AUTH REQUIREMENTS AT ALL
     }
   },
   {
@@ -65,8 +67,8 @@ const routes: RouteRecordRaw[] = [
     name: 'PasswordProtectedSurvey',
     component: PasswordProtectedSurveyView,
     meta: {
-      title: 'Protected Survey - WPC | WeaponpowerCloud App',
-      requiresAuth: false // Public access with password
+      title: 'Protected Survey - WPC | WeaponpowerCloud App'
+      // NO AUTH REQUIREMENTS AT ALL
     }
   },
   {
@@ -213,22 +215,37 @@ const router = createRouter({
 
 // Authentication guard using JWT
 router.beforeEach(async (to, from, next) => {
-  const { isAuthenticated, checkAuth, user } = useJWTAuth()
+  // ABSOLUTE BYPASS: Survey routes are completely public and separate from the main app
+  if (to.path.startsWith('/survey/')) {
+    console.log('SURVEY ROUTE DETECTED - COMPLETE BYPASS:', to.path)
+    next()
+    return
+  }
+
+  // Only check auth for non-survey routes
+  const { isAuthenticated, checkAuth, user } = useSimpleAuth()
   const requiresAuth = to.meta?.requiresAuth
   const requiresGuest = to.meta?.requiresGuest
   const requiresAdmin = to.meta?.requiresAdmin
+
   let authenticated = isAuthenticated.value
-  if (!authenticated) {
+  
+  // Only check auth if route requires it
+  if (requiresAuth && !authenticated) {
     try {
       authenticated = await checkAuth()
     } catch {
       authenticated = false
     }
+    
+    if (!authenticated) {
+      const redirectPath = to.fullPath !== '/' ? to.fullPath : '/surveys'
+      next({ path: '/login', query: { redirect: redirectPath } })
+      return
+    }
   }
-  if (requiresAuth && !authenticated) {
-    const redirectPath = to.fullPath !== '/' ? to.fullPath : '/surveys'
-    next({ path: '/', query: { redirect: redirectPath } })
-  } else if (requiresGuest && authenticated) {
+  
+  if (requiresGuest && authenticated) {
     const redirectTo = (from.query.redirect as string) || '/surveys'
     next(redirectTo)
   } else if (requiresAdmin && authenticated) {

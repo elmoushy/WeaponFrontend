@@ -162,7 +162,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../../stores/useAppStore'
-import { useJWTAuth } from '../../composables/useJWTAuth'
+import { useSimpleAuth } from '../../composables/useSimpleAuth'
 
 const router = useRouter()
 const store = useAppStore()
@@ -177,7 +177,7 @@ const {
   // updateProfile, // Unused - commenting out
   logout,
   clearError
-} = useJWTAuth()
+} = useSimpleAuth()
 
 // Computed properties for compatibility
 const displayName = computed(() => userFullName.value)

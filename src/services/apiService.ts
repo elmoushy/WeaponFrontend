@@ -77,6 +77,12 @@ apiClient.interceptors.response.use(
       // Clear invalid token and redirect to login
       setAuthToken(null)
       
+      // CRITICAL: Don't redirect if we're on a survey page - surveys are public!
+      if (window.location.pathname.startsWith('/survey/')) {
+        console.log('Skipping login redirect from API service - user is on a public survey page')
+        return Promise.reject(error)
+      }
+      
       // Only redirect if not already on login page
       if (window.location.pathname !== '/login') {
         window.location.href = '/login'

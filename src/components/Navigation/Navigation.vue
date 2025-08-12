@@ -196,7 +196,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '../../stores/useAppStore'
-import { useJWTAuth } from '../../composables/useJWTAuth'
+import { useSimpleAuth } from '../../composables/useSimpleAuth'
 
 // Navigation link interface
 interface NavigationLink {
@@ -218,7 +218,7 @@ const {
   userFullName: userDisplayName, 
   user,
   logout: authLogout
-} = useJWTAuth()
+} = useSimpleAuth()
 
 // Computed user email
 const userEmail = computed(() => user.value?.email || '')

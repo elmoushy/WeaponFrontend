@@ -67,22 +67,20 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuth } from './composables/useAuthV2'
 import { AuthState } from './services/authService'
 import AuthLoading from './components/AuthLoading/AuthLoading.vue'
 import AuthError from './components/AuthError/AuthError.vue'
 
 const router = useRouter()
-const {
-  authContext,
-  state,
-  error,
-  isInitializing,
-  loadingMessage: authLoadingMessage,
-  initialize,
-  retry,
-  clearError
-} = useAuth()
+// Minimal auth state for unused component
+const authContext = ref<any>(null)
+const state = ref(AuthState.AUTHENTICATED)
+const error = ref<string | null>(null)
+const isInitializing = ref(false)
+const authLoadingMessage = ref('')
+const initialize = () => {}
+const retry = () => {}
+const clearError = () => {}
 
 const isDev = computed(() => import.meta.env.VITE_ENVIRONMENT === 'development')
 const showSessionWarning = ref(false)

@@ -34,13 +34,18 @@
         </div>
 
         <!-- User Management Module -->
-        <div :class="[$style.moduleCard, $style.activeModule]" @click="navigateToUserManagement">
+        <div :class="[
+          $style.moduleCard, 
+          isSuperAdmin ? $style.activeModule : $style.restrictedModule
+        ]" @click="navigateToUserManagement">
           <div :class="$style.moduleHeader">
             <div :class="$style.moduleIcon">
               <i class="fas fa-users-cog"></i>
             </div>
             <div :class="$style.moduleStatus">
-              <span :class="$style.activeStatus">{{ t('control.status.active') || 'Active' }}</span>
+              <span :class="isSuperAdmin ? $style.activeStatus : $style.restrictedStatus">
+                {{ isSuperAdmin ? t('control.status.active') || 'Active' : t('control.status.superAdminOnly') || 'متاح فقط للمسؤول الأعلى' }}
+              </span>
             </div>
           </div>
           
@@ -50,13 +55,26 @@
           </div>
           
           <div :class="$style.moduleFooter">
-            <button :class="[$style.moduleButton, $style.primaryButton]">
+            <button :class="[
+              $style.moduleButton, 
+              isSuperAdmin ? $style.primaryButton : $style.disabledButton
+            ]" :disabled="!isSuperAdmin">
               {{ t('control.modules.users.button') }}
-              <i class="fas fa-arrow-right" :class="$style.buttonIcon"></i>
+              <i :class="[
+                isSuperAdmin ? 'fas fa-arrow-right' : 'fas fa-lock', 
+                $style.buttonIcon
+              ]"></i>
             </button>
           </div>
           
-          <div :class="$style.moduleGlow"></div>
+          <div v-if="!isSuperAdmin" :class="$style.restrictedOverlay">
+            <div :class="$style.restrictedBadge">
+              <i class="fas fa-shield-alt"></i>
+              {{ t('control.status.superAdminOnly') || 'متاح فقط للمسؤول الأعلى' }}
+            </div>
+          </div>
+          
+          <div v-if="isSuperAdmin" :class="$style.moduleGlow"></div>
         </div>
         
         
@@ -170,15 +188,22 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../../stores/useAppStore'
+import { useSimpleAuth } from '../../composables/useSimpleAuth'
 
 // Store and router
 const store = useAppStore()
 const router = useRouter()
 
+// Authentication
+const { user } = useSimpleAuth()
+
 // Computed properties
 const currentTheme = computed(() => store.currentTheme)
 const isRTL = computed(() => store.currentLanguage === 'ar')
 const t = computed(() => store.t)
+
+// Check if user is super admin
+const isSuperAdmin = computed(() => user.value?.role === 'super_admin')
 
 // Methods
 const navigateToSurveys = () => {
@@ -186,7 +211,9 @@ const navigateToSurveys = () => {
 }
 
 const navigateToUserManagement = () => {
-  router.push('/control/users')
+  if (isSuperAdmin.value) {
+    router.push('/control/users')
+  }
 }
 </script>
 

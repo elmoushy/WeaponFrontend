@@ -120,21 +120,22 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useAuth } from '../../composables/useAuth'
+import { useSimpleAuth } from '../../composables/useSimpleAuth'
 import styles from './Register.module.css'
 
 const router = useRouter()
 const route = useRoute()
 
 const { 
-  initialize, 
-  login, 
-  loginPopup, 
+  initializeAuth: initialize, 
   isAuthenticated, 
   isLoading: authLoading, 
   error: authError,
   clearError: clearAuthError 
-} = useAuth()
+} = useSimpleAuth()
+
+// Note: loginPopup is not available in useSimpleAuth
+const loginPopup = () => console.warn('loginPopup not implemented')
 
 // Particle animation styles
 const particleStyle = (_index: number) => {
@@ -165,14 +166,16 @@ onMounted(async () => {
   }
 })
 
-// Handle Microsoft signup using redirect (same as login since account is auto-created)
+// Handle Microsoft signup using redirect (not implemented for JWT auth)
 const handleMicrosoftSignup = async () => {
   try {
     // Store intended redirect location
     const redirectTo = (route.query.redirect as string) || '/surveys'
     localStorage.setItem('auth-redirect-to', redirectTo)
     
-    await login()
+    // JWT auth doesn't support Microsoft signup without credentials
+    console.warn('Microsoft signup not supported with JWT auth')
+    router.push('/login')
   } catch (error) {
     // Logging removed for production
   }
@@ -232,7 +235,9 @@ const goToLogin = () => {
 }
 
 .cardBody {
-  space-y: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .errorAlert {

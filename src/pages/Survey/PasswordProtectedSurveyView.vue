@@ -7,7 +7,7 @@
     </div>
 
     <!-- Password Access Form -->
-    <div v-else-if="!isAuthenticated" :class="$style.passwordAccessForm">
+    <div v-else-if="!isAuthenticated && !accessError" :class="$style.passwordAccessForm">
       <div :class="$style.accessCard">
         <div :class="$style.accessHeader">
           <div :class="$style.lockIconContainer">
@@ -433,12 +433,76 @@
     </div>
 
     <!-- Error State -->
+    <div v-else-if="accessError && !isAuthenticated" :class="$style.errorState">
+      <div :class="$style.errorIcon">
+        <i :class="accessError === 'هذا الاستطلاع لم يعد متاحًا' ? 'fas fa-times-circle' : 'fas fa-exclamation-triangle'"></i>
+      </div>
+      <h2 :class="$style.errorTitle">
+        {{ isTimeoutError ? 'انتهت مهلة الاتصال' : (accessError === 'هذا الاستطلاع لم يعد متاحًا' ? 'الاستطلاع غير متاح' : 'حدث خطأ غير متوقع') }}
+      </h2>
+      <p :class="$style.errorMessage">
+        {{ isTimeoutError ? 'انتهت مهلة الاتصال بالخادم. يرجى المحاولة مرة أخرى.' : accessError }}
+      </p>
+      <button 
+        v-if="isTimeoutError" 
+        :class="$style.refreshButton" 
+        @click="refreshPage"
+        style="
+          background: #007bff;
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-size: 16px;
+          cursor: pointer;
+          margin-top: 20px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: background-color 0.2s;
+        "
+      >
+        <i class="fas fa-sync-alt"></i>
+        تحديث الصفحة
+      </button>
+    </div>
+
+    <!-- Fallback Error State -->
     <div v-else :class="$style.errorState">
       <div :class="$style.errorIcon">
         <i class="fas fa-exclamation-triangle"></i>
       </div>
-      <h2 :class="$style.errorTitle">حدث خطأ غير متوقع</h2>
-      <p :class="$style.errorMessage">عذراً، لم نتمكن من تحميل الاستطلاع. يرجى المحاولة مرة أخرى.</p>
+      <h2 :class="$style.errorTitle">
+        {{ isTimeoutError ? 'انتهت مهلة الاتصال' : 'حدث خطأ غير متوقع' }}
+      </h2>
+      <p :class="$style.errorMessage">
+        {{ isTimeoutError 
+          ? 'انتهت مهلة الاتصال بالخادم. يرجى المحاولة مرة أخرى.' 
+          : 'عذراً، لم نتمكن من تحميل الاستطلاع. يرجى المحاولة مرة أخرى.' 
+        }}
+      </p>
+      <button 
+        v-if="isTimeoutError" 
+        :class="$style.refreshButton" 
+        @click="refreshPage"
+        style="
+          background: #007bff;
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-size: 16px;
+          cursor: pointer;
+          margin-top: 20px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: background-color 0.2s;
+        "
+      >
+        <i class="fas fa-sync-alt"></i>
+        تحديث الصفحة
+      </button>
     </div>
 
     <!-- Thank You Modal -->
@@ -459,6 +523,7 @@ import { ThankYouModal } from '../../components/ThankYouModal'
 import type { Survey, PasswordProtectedResponseSubmission } from '../../types/survey.types'
 import type { CountryCode } from '../../types/country.types'
 import countryCodesData from '../../data/countryCodes.json'
+import Swal from 'sweetalert2'
 
 // Router
 const route = useRoute()
@@ -502,6 +567,7 @@ const contactError = ref('')
 const showContactForm = ref(false)
 const showThankYouModal = ref(false)
 const countrySearchInput = ref<HTMLInputElement | null>(null)
+const isTimeoutError = ref(false)
 
 // Country codes data
 const countryCodes: CountryCode[] = countryCodesData as CountryCode[]
@@ -606,9 +672,10 @@ const selectedCountry = computed(() => {
 })
 
 // Methods
-const checkAccessRequirements = async () => {
+const checkSurveyAvailability = async () => {
   try {
     isLoading.value = true
+    isTimeoutError.value = false
     const token = route.params.token as string
 
     if (!token) {
@@ -616,20 +683,70 @@ const checkAccessRequirements = async () => {
       return
     }
 
-    // Try to get basic info about access requirements
-    // This would need a new endpoint to check what's required without giving access
-    // For now, we'll handle this in the attemptAccess method
+    // Create a timeout promise for 15 seconds
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('TIMEOUT')), 15000)
+    })
+
+    // Check survey availability using hardcoded password "111"
+    try {
+      const accessData = {
+        password: "111"
+      }
+      
+      // Race between the API call and timeout
+      await Promise.race([
+        surveyService.validatePasswordAccessByToken(token, accessData),
+        timeoutPromise
+      ])
+      // If we reach here without error, the survey exists and password validation worked
+      // This means the survey is available but needs the correct password
+      
+    } catch (error: any) {
+      // Check if it's a timeout error
+      if (error.message === 'TIMEOUT') {
+        isTimeoutError.value = true
+        accessError.value = 'انتهت مهلة الاتصال بالخادم'
+        return
+      }
+      
+      if (error.response?.status === 404) {
+        // Survey not found - show "survey no longer available" message
+        accessError.value = 'هذا الاستطلاع لم يعد متاحًا'
+        return
+      } else if (error.response?.status === 401) {
+        // Unauthorized - survey exists but password is wrong (which is expected)
+        // This means the survey is available and needs authentication
+        // Continue to show the password form
+      } else {
+        // Other error - show generic error
+        accessError.value = 'فشل في التحقق من حالة الاستطلاع'
+        return
+      }
+    }
     
   } catch (error: any) {
+    // Check if it's a timeout error
+    if (error.message === 'TIMEOUT') {
+      isTimeoutError.value = true
+      accessError.value = 'انتهت مهلة الاتصال بالخادم'
+      return
+    }
+    
     accessError.value = 'فشل في التحقق من متطلبات الوصول'
   } finally {
     isLoading.value = false
   }
 }
 
+const refreshPage = () => {
+  window.location.reload()
+}
+
 const attemptAccess = async () => {
   try {
     isAccessAttempting.value = true
+    isTimeoutError.value = false
     clearErrors()
 
     const token = route.params.token as string
@@ -655,7 +772,16 @@ const attemptAccess = async () => {
       accessData.phone = selectedCountryCode.value + phone.value.trim()
     }
 
-    const response = await surveyService.validatePasswordAccessByToken(token, accessData)
+    // Create a timeout promise for 15 seconds
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('TIMEOUT')), 15000)
+    })
+
+    // Race between the API call and timeout
+    const response = await Promise.race([
+      surveyService.validatePasswordAccessByToken(token, accessData),
+      timeoutPromise
+    ]) as any
     
     if (response.data.has_access) {
       // Store access info for submission later
@@ -674,7 +800,12 @@ const attemptAccess = async () => {
       sessionStorage.setItem('survey_auth_token', authToken)
       sessionStorage.setItem('survey_password', password.value.trim())
       
-      const surveyResponse = await surveyService.getPasswordProtectedSurvey(surveyId, authToken, password.value.trim())
+      // Apply timeout to survey data fetch as well
+      const surveyResponse = await Promise.race([
+        surveyService.getPasswordProtectedSurvey(surveyId, authToken, password.value.trim()),
+        timeoutPromise
+      ]) as any
+      
       survey.value = surveyResponse.data
       isAuthenticated.value = true
       
@@ -684,6 +815,13 @@ const attemptAccess = async () => {
     }
 
   } catch (error: any) {
+    // Check if it's a timeout error
+    if (error.message === 'TIMEOUT') {
+      isTimeoutError.value = true
+      accessError.value = 'انتهت مهلة الاتصال بالخادم'
+      return
+    }
+    
     if (error.response?.data) {
       const errorData = error.response.data
       
@@ -880,7 +1018,12 @@ const submitSurvey = async () => {
       }
     }
     
-    alert(errorMessage)
+    Swal.fire({
+      icon: 'error',
+      title: 'خطأ في الإرسال',
+      text: errorMessage,
+      confirmButtonText: 'موافق'
+    })
   } finally {
     isSubmitting.value = false
   }
@@ -1014,7 +1157,7 @@ const handleModalClose = () => {
 
 // Lifecycle
 onMounted(() => {
-  checkAccessRequirements()
+  checkSurveyAvailability()
   
   // Global click listener for country dropdown
   const handleGlobalClick = () => {

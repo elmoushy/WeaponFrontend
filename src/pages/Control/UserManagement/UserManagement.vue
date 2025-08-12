@@ -224,6 +224,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useAppStore } from '../../../stores/useAppStore'
 import { useUserManagement } from '../../../composables/useUserManagement'
 import userManagementService from '../../../services/userManagementService'
+import Swal from 'sweetalert2'
 import UserManagementTable from '../../../components/UserManagementTable/UserManagementTable.vue'
 import GroupManagementTable from '../../../components/GroupManagementTable/GroupManagementTable.vue'
 import UserModal from '../../../components/UserModal/UserModal.vue'
@@ -364,9 +365,27 @@ const handleUserAction = async (action: string, user: User) => {
         openUserModal('edit', user)
         break
       case 'delete':
-        if (confirm(t.value('userManagement.modals.user.delete.subtitle'))) {
+        const userDeleteResult = await Swal.fire({
+          title: 'تأكيد حذف المستخدم',
+          text: 'هل أنت متأكد من حذف هذا المستخدم؟ لا يمكن التراجع عن هذا الإجراء.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'نعم، احذف',
+          cancelButtonText: 'إلغاء',
+          confirmButtonColor: '#dc3545',
+          cancelButtonColor: '#6c757d'
+        })
+        
+        if (userDeleteResult.isConfirmed) {
           // TODO: Implement user deletion
           await refreshData()
+          await Swal.fire({
+            title: 'تم الحذف',
+            text: 'تم حذف المستخدم بنجاح',
+            icon: 'success',
+            confirmButtonText: 'موافق',
+            confirmButtonColor: '#28a745'
+          })
         }
         break
       case 'change_role':
@@ -376,8 +395,15 @@ const handleUserAction = async (action: string, user: User) => {
         // TODO: Show user groups modal
         break
     }
-  } catch (err) {
+  } catch (err: any) {
     // Logging removed for production
+    await Swal.fire({
+      title: 'خطأ في عملية المستخدم',
+      text: err.message || 'فشل في تنفيذ العملية المطلوبة',
+      icon: 'error',
+      confirmButtonText: 'موافق',
+      confirmButtonColor: '#dc3545'
+    })
   }
 }
 
@@ -392,8 +418,26 @@ const handleGroupAction = async (action: string, group: Group) => {
         openGroupModal('edit', group)
         break
       case 'delete':
-        if (confirm(t.value('userManagement.modals.group.delete.subtitle'))) {
+        const groupDeleteResult = await Swal.fire({
+          title: 'تأكيد حذف المجموعة',
+          text: 'هل أنت متأكد من حذف هذه المجموعة؟ لا يمكن التراجع عن هذا الإجراء.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'نعم، احذف',
+          cancelButtonText: 'إلغاء',
+          confirmButtonColor: '#dc3545',
+          cancelButtonColor: '#6c757d'
+        })
+        
+        if (groupDeleteResult.isConfirmed) {
           await deleteExistingGroup(group.id)
+          await Swal.fire({
+            title: 'تم الحذف',
+            text: 'تم حذف المجموعة بنجاح',
+            icon: 'success',
+            confirmButtonText: 'موافق',
+            confirmButtonColor: '#28a745'
+          })
         }
         break
       case 'add_users':
@@ -404,8 +448,15 @@ const handleGroupAction = async (action: string, group: Group) => {
         openGroupModal('view', group)
         break
     }
-  } catch (err) {
+  } catch (err: any) {
     // Logging removed for production
+    await Swal.fire({
+      title: 'خطأ في عملية المجموعة',
+      text: err.message || 'فشل في تنفيذ العملية المطلوبة',
+      icon: 'error',
+      confirmButtonText: 'موافق',
+      confirmButtonColor: '#dc3545'
+    })
   }
 }
 
@@ -431,8 +482,22 @@ const handleUserSave = async (userData: any) => {
         break
     }
     closeUserModal()
-  } catch (err) {
+    await Swal.fire({
+      title: 'تم بنجاح',
+      text: 'تمت عملية المستخدم بنجاح',
+      icon: 'success',
+      confirmButtonText: 'موافق',
+      confirmButtonColor: '#28a745'
+    })
+  } catch (err: any) {
     // Logging removed for production
+    await Swal.fire({
+      title: 'خطأ في حفظ المستخدم',
+      text: err.message || 'فشل في حفظ بيانات المستخدم',
+      icon: 'error',
+      confirmButtonText: 'موافق',
+      confirmButtonColor: '#dc3545'
+    })
   }
 }
 
@@ -460,8 +525,23 @@ const handleGroupSave = async (groupData: any) => {
         openAddUsersToGroupModal(createdGroup!)
       }, 300) // Small delay to allow modal transition
     }
-  } catch (err) {
+    
+    await Swal.fire({
+      title: 'تم بنجاح',
+      text: 'تمت عملية المجموعة بنجاح',
+      icon: 'success',
+      confirmButtonText: 'موافق',
+      confirmButtonColor: '#28a745'
+    })
+  } catch (err: any) {
     // Logging removed for production
+    await Swal.fire({
+      title: 'خطأ في حفظ المجموعة',
+      text: err.message || 'فشل في حفظ بيانات المجموعة',
+      icon: 'error',
+      confirmButtonText: 'موافق',
+      confirmButtonColor: '#dc3545'
+    })
   }
 }
 
@@ -480,8 +560,22 @@ const handleBulkActionApply = async (actionData: any) => {
     }
     closeBulkActionModal()
     clearUserSelection()
-  } catch (err) {
+    await Swal.fire({
+      title: 'تم بنجاح',
+      text: 'تمت العملية المجمعة بنجاح',
+      icon: 'success',
+      confirmButtonText: 'موافق',
+      confirmButtonColor: '#28a745'
+    })
+  } catch (err: any) {
     // Logging removed for production
+    await Swal.fire({
+      title: 'خطأ في العملية المجمعة',
+      text: err.message || 'فشل في تنفيذ العملية المجمعة',
+      icon: 'error',
+      confirmButtonText: 'موافق',
+      confirmButtonColor: '#dc3545'
+    })
   }
 }
 
@@ -490,8 +584,16 @@ const openAddUsersToGroupModal = async (group: Group) => {
   try {
     // Logging removed for production
     
+    // Timeout Promise for 15 seconds
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('TIMEOUT')), 15000)
+    })
+    
     // Fetch the detailed groups information with members and admins
-    const detailedGroupsResponse = await userManagementService.getGroupsWithDetails()
+    const detailedGroupsResponse = await Promise.race([
+      userManagementService.getGroupsWithDetails(),
+      timeoutPromise
+    ]) as any
     
     // Find the detailed group data with members
     const detailedGroup = detailedGroupsResponse.groups.find((g: Group) => g.id === group.id)
@@ -503,8 +605,25 @@ const openAddUsersToGroupModal = async (group: Group) => {
     // Logging removed for production
     selectedGroupForAddUsers.value = detailedGroup
     addUsersToGroupModalVisible.value = true
-  } catch (error) {
+  } catch (error: any) {
     // Logging removed for production
+    if (error.message === 'TIMEOUT') {
+      await Swal.fire({
+        title: 'انتهت مهلة الطلب',
+        text: 'فشل في تحميل بيانات المجموعة خلال 15 ثانية. يرجى المحاولة مرة أخرى.',
+        icon: 'error',
+        confirmButtonText: 'موافق',
+        confirmButtonColor: '#dc3545'
+      })
+    } else {
+      await Swal.fire({
+        title: 'خطأ في تحميل البيانات',
+        text: 'فشل في تحميل بيانات المجموعة. سيتم استخدام البيانات الأساسية.',
+        icon: 'warning',
+        confirmButtonText: 'موافق',
+        confirmButtonColor: '#ffc107'
+      })
+    }
     // Fallback to the original group if detailed fetch fails
     selectedGroupForAddUsers.value = group
     addUsersToGroupModalVisible.value = true

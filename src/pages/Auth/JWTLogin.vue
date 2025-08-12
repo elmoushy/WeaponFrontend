@@ -173,7 +173,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useJWTAuth } from '../../composables/useJWTAuth'
+import { useSimpleAuth } from '../../composables/useSimpleAuth'
 import styles from './JWTLogin.module.css'
 
 const router = useRouter()
@@ -188,7 +188,7 @@ const {
   login,
   clearError,
   checkAuth
-} = useJWTAuth()
+} = useSimpleAuth()
 
 // Form state
 const email = ref('')

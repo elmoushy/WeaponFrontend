@@ -20,9 +20,9 @@
 
         <!-- Body -->
         <div :class="$style.modalBody">
-          <div v-if="publicLink || passwordProtectedLink" :class="$style.linkContainer">
+          <div v-if="publicLink || passwordProtectedLink || currentLinkData" :class="$style.linkContainer">
             <!-- Password Protection Notice -->
-            <div v-if="passwordProtectedLink" :class="$style.passwordNotice">
+            <div v-if="isPasswordProtected" :class="$style.passwordNotice">
               <div :class="$style.passwordHeader">
                 <i class="fas fa-shield-alt" :class="$style.shieldIcon"></i>
                 <h3 :class="$style.passwordTitle">{{ getText('survey.access.passwordProtected') }}</h3>
@@ -31,24 +31,24 @@
                 <div :class="$style.passwordRow">
                   <label :class="$style.passwordLabel">{{ getText('survey.access.password') }}:</label>
                   <div :class="$style.passwordValue">
-                    <span :class="$style.passwordText">{{ passwordProtectedLink.password }}</span>
+                    <span :class="$style.passwordText">{{ currentPassword }}</span>
                     <button 
                       :class="$style.copyPasswordButton"
-                      @click="copyToClipboard(passwordProtectedLink.password)"
+                      @click="copyToClipboard(currentPassword)"
                       :title="getText('survey.access.copyPassword')"
                     >
                       <i class="fas fa-copy"></i>
                     </button>
                   </div>
                 </div>
-                <div v-if="passwordProtectedLink.is_contact_restricted" :class="$style.restrictionInfo">
-                  <div v-if="passwordProtectedLink.restricted_email" :class="$style.restrictionRow">
+                <div v-if="isContactRestricted" :class="$style.restrictionInfo">
+                  <div v-if="restrictedEmail" :class="$style.restrictionRow">
                     <i class="fas fa-envelope"></i>
-                    <span>{{ getText('survey.access.restrictedToEmail') }}: {{ passwordProtectedLink.restricted_email }}</span>
+                    <span>{{ getText('survey.access.restrictedToEmail') }}: {{ restrictedEmail }}</span>
                   </div>
-                  <div v-if="passwordProtectedLink.restricted_phone" :class="$style.restrictionRow">
+                  <div v-if="restrictedPhone" :class="$style.restrictionRow">
                     <i class="fas fa-phone"></i>
-                    <span>{{ getText('survey.access.restrictedToPhone') }}: {{ passwordProtectedLink.restricted_phone }}</span>
+                    <span>{{ getText('survey.access.restrictedToPhone') }}: {{ restrictedPhone }}</span>
                   </div>
                 </div>
               </div>
@@ -107,27 +107,27 @@
             <!-- Share Actions -->
             <div :class="$style.shareActions">
               <button 
-                :class="[$style.shareButton, { [$style.disabled]: !publicLink }]"
+                :class="[$style.shareButton, { [$style.disabled]: !currentLinkData && !publicLink }]"
                 @click="shareByEmail"
-                :disabled="!publicLink"
+                :disabled="!currentLinkData && !publicLink"
                 :title="getText('survey.access.shareByEmail')"
               >
                 <i class="fas fa-envelope"></i>
                 {{ getText('survey.access.email') }}
               </button>
               <button 
-                :class="[$style.shareButton, { [$style.disabled]: !publicLink }]"
+                :class="[$style.shareButton, { [$style.disabled]: !currentLinkData && !publicLink }]"
                 @click="shareByWhatsApp"
-                :disabled="!publicLink"
+                :disabled="!currentLinkData && !publicLink"
                 :title="getText('survey.access.shareByWhatsApp')"
               >
                 <i class="fab fa-whatsapp"></i>
                 {{ getText('survey.access.whatsapp') }}
               </button>
               <button 
-                :class="[$style.shareButton, { [$style.disabled]: !publicLink }]"
+                :class="[$style.shareButton, { [$style.disabled]: !currentLinkData && !publicLink }]"
                 @click="shareBySMS"
-                :disabled="!publicLink"
+                :disabled="!currentLinkData && !publicLink"
                 :title="getText('survey.access.shareBySMS')"
               >
                 <i class="fas fa-sms"></i>
@@ -136,7 +136,7 @@
             </div>
           </div>
           
-          <div v-else :class="$style.generateLinkSection">
+          <div v-else-if="!currentLinkData" :class="$style.generateLinkSection">
             <button :class="$style.generateButton" @click="generateLink" :disabled="isGeneratingLink">
               <div v-if="isGeneratingLink" :class="$style.loadingSpinner"></div>
               <i v-else class="fas fa-link"></i>
@@ -163,7 +163,8 @@ import QRCode from 'qrcode'
 import type { 
   Survey, 
   PublicLinkResponse,
-  PasswordProtectedLinkResponse
+  PasswordProtectedLinkResponse,
+  CurrentLinkResponseData
 } from '../../types/survey.types'
 
 // Props
@@ -191,14 +192,43 @@ const currentTheme = computed(() => store.currentTheme)
 const isRTL = computed(() => store.currentLanguage === 'ar')
 const currentLanguage = computed(() => store.currentLanguage)
 
-// Get the current link (password-protected takes precedence)
-const currentLink = computed(() => {
-  return props.passwordProtectedLink?.link || props.publicLink?.link || ''
-})
-
 // State
 const isGeneratingLink = ref(false)
 const qrCanvas = ref<HTMLCanvasElement | null>(null)
+const currentLinkData = ref<CurrentLinkResponseData | null>(null)
+
+// Get the current link - use the unified current link data if available, otherwise fallback to props
+const currentLink = computed(() => {
+  if (currentLinkData.value) {
+    // Use the link from getCurrentLink response
+    const frontendBaseUrl = import.meta.env.VITE_FRONTEND_BASE_URL || window.location.origin
+    return `${frontendBaseUrl}/survey/public/${currentLinkData.value.token}`
+  }
+  return props.passwordProtectedLink?.link || props.publicLink?.link || ''
+})
+
+// Check if current link is password protected based on unified data
+const isPasswordProtected = computed(() => {
+  return currentLinkData.value?.is_password_protected || false
+})
+
+// Get password from unified data
+const currentPassword = computed(() => {
+  return currentLinkData.value?.password || props.passwordProtectedLink?.password || ''
+})
+
+// Get contact restrictions from unified data
+const isContactRestricted = computed(() => {
+  return currentLinkData.value?.is_contact_restricted || props.passwordProtectedLink?.is_contact_restricted || false
+})
+
+const restrictedEmail = computed(() => {
+  return currentLinkData.value?.restricted_email || props.passwordProtectedLink?.restricted_email || ''
+})
+
+const restrictedPhone = computed(() => {
+  return currentLinkData.value?.restricted_phone || props.passwordProtectedLink?.restricted_phone || ''
+})
 
 // Status message for user feedback
 const statusMessage = ref<{
@@ -213,7 +243,7 @@ const translations = computed(() => {
     // Modal
     'survey.linkSharing.title': 'مشاركة الاستطلاع',
     'survey.access.scanToAccess': 'امسح للوصول إلى الاستطلاع',
-    'survey.access.generateLink': 'إنشاء رابط',
+    'survey.access.generateLink': 'الحصول على الرابط',
     'survey.access.download': 'تحميل',
     'survey.access.copy': 'نسخ',
     'survey.access.downloadQR': 'تحميل رمز QR',
@@ -236,7 +266,7 @@ const translations = computed(() => {
     // Modal
     'survey.linkSharing.title': 'Share Survey Link',
     'survey.access.scanToAccess': 'Scan to access survey',
-    'survey.access.generateLink': 'Generate Link',
+    'survey.access.generateLink': 'Get Link',
     'survey.access.download': 'Download',
     'survey.access.copy': 'Copy',
     'survey.access.downloadQR': 'Download QR Code',
@@ -293,25 +323,57 @@ const setStatusMessage = (text: string, type: 'success' | 'error' | 'warning' | 
   }
 }
 
+// Load current link data using the unified endpoint
+const loadCurrentLink = async () => {
+  try {
+    const response = await surveyService.getCurrentLink(props.survey.id)
+    currentLinkData.value = response.data
+    
+    // Generate QR code for the current link
+    await nextTick()
+    const link = currentLink.value
+    if (link) {
+      generateQRCode(link)
+    }
+  } catch (error: any) {
+    // If no link exists, that's fine - we'll show the generate button
+    console.log('No current link found:', error.message)
+    currentLinkData.value = null
+  }
+}
+
 const generateLink = async () => {
   try {
     isGeneratingLink.value = true
     
-    const response = await surveyService.generatePublicLink(props.survey.id, {
-      days_to_expire: 30
-    })
+    // Use getCurrentLink which will either return existing link or auto-generate one
+    const response = await surveyService.getCurrentLink(props.survey.id)
+    currentLinkData.value = response.data
     
-    emit('linkGenerated', response.data)
-    setStatusMessage('Public link generated successfully', 'success')
-    
-    // Generate QR code immediately after link generation
-    await nextTick()
-    if (response.data?.link) {
-      console.log('Generating QR code immediately after link generation')
-      generateQRCode(response.data.link)
+    // Create a PublicLinkResponse-like object for backward compatibility with the emit
+    const linkResponse = {
+      link: currentLink.value,
+      token: response.data.token,
+      expires_at: response.data.expires_at
     }
+    
+    emit('linkGenerated', linkResponse)
+    
+    const successMessage = response.data.auto_generated 
+      ? 'Public link auto-generated successfully'
+      : 'Current link retrieved successfully'
+    
+    setStatusMessage(successMessage, 'success')
+    
+    // Generate QR code for the current link
+    await nextTick()
+    const link = currentLink.value
+    if (link) {
+      generateQRCode(link)
+    }
+    
   } catch (error: any) {
-    const errorMessage = error.response?.data?.message || error.message || 'Failed to generate public link'
+    const errorMessage = error.response?.data?.message || error.message || 'Failed to get current link'
     setStatusMessage(errorMessage, 'error')
   } finally {
     isGeneratingLink.value = false
@@ -350,7 +412,6 @@ const generateQRCode = async (text: string): Promise<void> => {
       }
     })
     
-    console.log('QR Code generated successfully for:', text)
   } catch (error) {
     console.error('QR Code generation error:', error)
     setStatusMessage('Failed to generate QR code', 'error')
@@ -392,22 +453,22 @@ const copyQRToClipboard = async () => {
 const getShareMessage = (platform: 'email' | 'whatsapp' | 'sms' = 'email') => {
   const surveyTitle = props.survey.title
   const link = currentLink.value
-  const isPasswordProtected = !!props.passwordProtectedLink
-  const password = props.passwordProtectedLink?.password
+  const isPasswordProtectedValue = isPasswordProtected.value
+  const password = currentPassword.value
   
   if (currentLanguage.value === 'ar') {
     if (platform === 'email') {
       let message = `مرحباً!\n\nأدعوك للمشاركة في استطلاع: "${surveyTitle}"\n\nيمكنك الوصول إليه من خلال النقر على الرابط:\n\n${link}\n\n`
       
-      if (isPasswordProtected && password) {
+      if (isPasswordProtectedValue && password) {
         message += `⚠️ هذا الاستطلاع محمي بكلمة مرور\nكلمة المرور: ${password}\n\nتأكد من إدخال كلمة المرور بعد النقر على الرابط.\n\n`
         
-        if (props.passwordProtectedLink?.is_contact_restricted) {
-          if (props.passwordProtectedLink.restricted_email) {
-            message += `📧 تقييد البريد الإلكتروني: ${props.passwordProtectedLink.restricted_email}\n`
+        if (isContactRestricted.value) {
+          if (restrictedEmail.value) {
+            message += `📧 تقييد البريد الإلكتروني: ${restrictedEmail.value}\n`
           }
-          if (props.passwordProtectedLink.restricted_phone) {
-            message += `📱 تقييد رقم الهاتف: ${props.passwordProtectedLink.restricted_phone}\n`
+          if (restrictedPhone.value) {
+            message += `📱 تقييد رقم الهاتف: ${restrictedPhone.value}\n`
           }
           message += '\n'
         }
@@ -420,15 +481,15 @@ const getShareMessage = (platform: 'email' | 'whatsapp' | 'sms' = 'email') => {
     } else if (platform === 'whatsapp') {
       let message = `🔗 مرحباً!\n\nأدعوك للمشاركة في استطلاع:\n*${surveyTitle}*\n\nالرابط:\n${link}\n`
       
-      if (isPasswordProtected && password) {
+      if (isPasswordProtectedValue && password) {
         message += `\n🔒 كلمة المرور: *${password}*\n`
         
-        if (props.passwordProtectedLink?.is_contact_restricted) {
-          if (props.passwordProtectedLink.restricted_email) {
-            message += `📧 البريد المطلوب: ${props.passwordProtectedLink.restricted_email}\n`
+        if (isContactRestricted.value) {
+          if (restrictedEmail.value) {
+            message += `📧 البريد المطلوب: ${restrictedEmail.value}\n`
           }
-          if (props.passwordProtectedLink.restricted_phone) {
-            message += `📱 الهاتف المطلوب: ${props.passwordProtectedLink.restricted_phone}\n`
+          if (restrictedPhone.value) {
+            message += `📱 الهاتف المطلوب: ${restrictedPhone.value}\n`
           }
         }
       }
@@ -438,7 +499,7 @@ const getShareMessage = (platform: 'email' | 'whatsapp' | 'sms' = 'email') => {
     } else { // SMS
       let message = `استطلاع: ${surveyTitle}\n\nالرابط:\n${link}\n`
       
-      if (isPasswordProtected && password) {
+      if (isPasswordProtectedValue && password) {
         message += `\nكلمة المرور: ${password}\n`
       }
       
@@ -449,15 +510,15 @@ const getShareMessage = (platform: 'email' | 'whatsapp' | 'sms' = 'email') => {
     if (platform === 'email') {
       let message = `Hello!\n\nYou're invited to participate in the survey: "${surveyTitle}"\n\nAccess it by clicking this link:\n\n${link}\n\n`
       
-      if (isPasswordProtected && password) {
+      if (isPasswordProtectedValue && password) {
         message += `⚠️ This survey is password protected\nPassword: ${password}\n\nMake sure to enter the password after clicking the link.\n\n`
         
-        if (props.passwordProtectedLink?.is_contact_restricted) {
-          if (props.passwordProtectedLink.restricted_email) {
-            message += `📧 Email restriction: ${props.passwordProtectedLink.restricted_email}\n`
+        if (isContactRestricted.value) {
+          if (restrictedEmail.value) {
+            message += `📧 Email restriction: ${restrictedEmail.value}\n`
           }
-          if (props.passwordProtectedLink.restricted_phone) {
-            message += `📱 Phone restriction: ${props.passwordProtectedLink.restricted_phone}\n`
+          if (restrictedPhone.value) {
+            message += `📱 Phone restriction: ${restrictedPhone.value}\n`
           }
           message += '\n'
         }
@@ -470,15 +531,15 @@ const getShareMessage = (platform: 'email' | 'whatsapp' | 'sms' = 'email') => {
     } else if (platform === 'whatsapp') {
       let message = `🔗 Hello!\n\nYou're invited to participate in the survey:\n*${surveyTitle}*\n\nLink:\n${link}\n`
       
-      if (isPasswordProtected && password) {
+      if (isPasswordProtectedValue && password) {
         message += `\n🔒 Password: *${password}*\n`
         
-        if (props.passwordProtectedLink?.is_contact_restricted) {
-          if (props.passwordProtectedLink.restricted_email) {
-            message += `📧 Required email: ${props.passwordProtectedLink.restricted_email}\n`
+        if (isContactRestricted.value) {
+          if (restrictedEmail.value) {
+            message += `📧 Required email: ${restrictedEmail.value}\n`
           }
-          if (props.passwordProtectedLink.restricted_phone) {
-            message += `📱 Required phone: ${props.passwordProtectedLink.restricted_phone}\n`
+          if (restrictedPhone.value) {
+            message += `📱 Required phone: ${restrictedPhone.value}\n`
           }
         }
       }
@@ -488,7 +549,7 @@ const getShareMessage = (platform: 'email' | 'whatsapp' | 'sms' = 'email') => {
     } else { // SMS
       let message = `Survey: ${surveyTitle}\n\nLink:\n${link}\n`
       
-      if (isPasswordProtected && password) {
+      if (isPasswordProtectedValue && password) {
         message += `\nPassword: ${password}\n`
       }
       
@@ -499,8 +560,8 @@ const getShareMessage = (platform: 'email' | 'whatsapp' | 'sms' = 'email') => {
 }
 
 const shareByEmail = async () => {
-  if (!props.publicLink) {
-    setStatusMessage(currentLanguage.value === 'ar' ? 'يجب إنشاء رابط عام أولاً' : 'Please generate a public link first', 'warning')
+  if (!currentLinkData.value && !props.publicLink) {
+    setStatusMessage(currentLanguage.value === 'ar' ? 'يجب إنشاء رابط أولاً' : 'Please generate a link first', 'warning')
     return
   }
   
@@ -535,8 +596,8 @@ const shareByEmail = async () => {
 }
 
 const shareByWhatsApp = async () => {
-  if (!props.publicLink) {
-    setStatusMessage(currentLanguage.value === 'ar' ? 'يجب إنشاء رابط عام أولاً' : 'Please generate a public link first', 'warning')
+  if (!currentLinkData.value && !props.publicLink) {
+    setStatusMessage(currentLanguage.value === 'ar' ? 'يجب إنشاء رابط أولاً' : 'Please generate a link first', 'warning')
     return
   }
   
@@ -562,8 +623,8 @@ const shareByWhatsApp = async () => {
 }
 
 const shareBySMS = async () => {
-  if (!props.publicLink) {
-    setStatusMessage(currentLanguage.value === 'ar' ? 'يجب إنشاء رابط عام أولاً' : 'Please generate a public link first', 'warning')
+  if (!currentLinkData.value && !props.publicLink) {
+    setStatusMessage(currentLanguage.value === 'ar' ? 'يجب إنشاء رابط أولاً' : 'Please generate a link first', 'warning')
     return
   }
   
@@ -589,44 +650,29 @@ const shareBySMS = async () => {
 }
 
 // Watchers
-watch(() => props.publicLink, async (newLink) => {
-  if (newLink?.link && props.isVisible && !props.passwordProtectedLink) {
-    await nextTick()
-    console.log('Generating QR code for public link:', newLink.link)
-    generateQRCode(newLink.link)
-  }
-}, { immediate: true })
-
-watch(() => props.passwordProtectedLink, async (newLink) => {
-  if (newLink?.link && props.isVisible) {
-    await nextTick()
-    console.log('Generating QR code for password-protected link:', newLink.link)
-    generateQRCode(newLink.link)
-  }
-}, { immediate: true })
-
-watch(() => props.isVisible, async (visible) => {
-  if (visible) {
+watch(() => currentLinkData.value, async (newData) => {
+  if (newData && props.isVisible) {
     await nextTick()
     const link = currentLink.value
     if (link) {
-      console.log('Modal visible, generating QR code for:', link)
+      console.log('Generating QR code for current link:', link)
       generateQRCode(link)
     }
   }
 }, { immediate: true })
 
+watch(() => props.isVisible, async (visible) => {
+  if (visible) {
+    // Load current link data when modal becomes visible
+    await loadCurrentLink()
+  }
+}, { immediate: true })
+
 // Lifecycle
 onMounted(() => {
-  // Generate QR code if modal is visible and link is available
+  // Load current link data if modal is visible
   if (props.isVisible) {
-    const link = currentLink.value
-    if (link) {
-      nextTick(() => {
-        console.log('Component mounted, generating QR code')
-        generateQRCode(link)
-      })
-    }
+    loadCurrentLink()
   }
 })
 </script>

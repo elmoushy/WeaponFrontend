@@ -17,6 +17,7 @@ import type {
   PublicLinkRequest,
   PasswordProtectedLinkRequest,
   PasswordProtectedLinkResponse,
+  CurrentLinkResponse,
   PasswordProtectedSurveyAccess,
   PasswordProtectedAccessValidation,
   PasswordProtectedResponseSubmission,
@@ -322,6 +323,35 @@ class SurveyService {
         }
       } else {
         throw new Error(response.data.message || 'Failed to revoke public link')
+      }
+    } catch (error) {
+      // Logging removed for production
+      throw error
+    }
+  }
+
+  // Get current link (unified method for both password-protected and public links)
+  async getCurrentLink(surveyId: string): Promise<CurrentLinkResponse> {
+    try {
+      const response = await apiClient.get(`/surveys/surveys/${surveyId}/current-link/`)
+      
+      if (response.data.status === 'success') {
+        // Construct the full frontend URL since backend only returns token
+        const frontendBaseUrl = import.meta.env.VITE_FRONTEND_BASE_URL || window.location.origin
+        
+        // Add the full link to the response data
+        const responseData = {
+          ...response.data.data,
+          link: `${frontendBaseUrl}/survey/public/${response.data.data.token}`
+        }
+        
+        return {
+          status: response.data.status,
+          message: response.data.message,
+          data: responseData
+        }
+      } else {
+        throw new Error(response.data.message || 'Failed to get current link')
       }
     } catch (error) {
       // Logging removed for production

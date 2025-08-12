@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue'
-import { authAPI, handleApiError, silentRefreshAccessToken } from '../services/jwtAuthService'
+import { authAPI, handleApiError, initializeAuth as initAuthState } from '../services/jwtAuthService'
 import type { UserProfile, LoginResponse } from '../types/auth.types'
 
 // Reactive state
@@ -7,31 +7,50 @@ const isAuthenticated = ref(false)
 const user = ref<UserProfile | null>(null)
 const isLoading = ref(false)
 const error = ref<string | null>(null)
+const isInitialized = ref(false)
+const initPromise = ref<Promise<void> | null>(null)
 
 // Initialize auth state (attempt silent refresh then load profile)
 const initializeAuth = async (): Promise<void> => {
-  try {
-    isLoading.value = true
-    // Attempt to obtain an access token if refresh cookie exists
-    const token = await silentRefreshAccessToken()
-    if (token) {
-      // Fetch user profile
-      try {
-        const profile = await authAPI.getCurrentUser()
-        user.value = profile.user
-        isAuthenticated.value = true
-      } catch {
-        // Failed to fetch profile – treat as unauthenticated
+  // If already initialized and authenticated, skip
+  if (isInitialized.value && isAuthenticated.value) {
+    return
+  }
+  
+  // If initialization is already in progress, wait for it
+  if (initPromise.value) {
+    return initPromise.value
+  }
+  
+  initPromise.value = (async () => {
+    try {
+      isLoading.value = true
+      
+      // First try to initialize auth state from storage (this handles token refresh)
+      const hasValidToken = await initAuthState()
+      if (hasValidToken) {
+        // If we have a valid token, try to fetch user profile
+        try {
+          const profile = await authAPI.getCurrentUser()
+          user.value = profile.user
+          isAuthenticated.value = true
+        } catch {
+          // Failed to fetch profile – treat as unauthenticated
+          isAuthenticated.value = false
+          user.value = null
+        }
+      } else {
         isAuthenticated.value = false
         user.value = null
       }
-    } else {
-      isAuthenticated.value = false
-      user.value = null
+    } finally {
+      isLoading.value = false
+      isInitialized.value = true
+      initPromise.value = null
     }
-  } finally {
-    isLoading.value = false
-  }
+  })()
+  
+  return initPromise.value
 }
 
 export const useJWTAuth = () => {
@@ -43,6 +62,7 @@ export const useJWTAuth = () => {
       const response: LoginResponse = await authAPI.login(email, password)
       user.value = response.user
       isAuthenticated.value = true
+      isInitialized.value = true
       return { success: true }
     } catch (err: any) {
       error.value = handleApiError(err)
@@ -63,6 +83,7 @@ export const useJWTAuth = () => {
     } finally {
       user.value = null
       isAuthenticated.value = false
+      isInitialized.value = false
       isLoading.value = false
       window.location.href = '/login'
     }
@@ -105,9 +126,8 @@ export const useJWTAuth = () => {
 
   // Check if user is authenticated (ensure access token present by trying profile fetch)
   const checkAuth = async (): Promise<boolean> => {
-    if (!isAuthenticated.value) {
-      await initializeAuth()
-    }
+    // Always run initialization to attempt silent refresh, especially on page refresh
+    await initializeAuth()
     return isAuthenticated.value
   }
 

@@ -3,12 +3,21 @@
     <!-- Header Section -->
     <section :class="$style.headerSection">
       <div :class="$style.headerContent">
-        <div :class="$style.titleSection">
-          <h1 :class="$style.pageTitle">
-            <i class="fas fa-share-alt"></i>
-            {{ t('survey.shared.title') }}
-          </h1>
-          <p :class="$style.pageSubtitle">{{ t('survey.shared.subtitle') }}</p>
+        <div :class="$style.glassMorphTitle">
+          <div :class="$style.titleGradientBg">
+            <div :class="$style.titleIconContainer">
+              <i class="fas fa-chart-bar"></i>
+            </div>
+            <div :class="$style.titleContent">
+              <h1 :class="$style.modernPageTitle">
+                نظرة عامة
+              </h1>
+              <p :class="$style.modernPageSubtitle">
+                على الاستبيانات ومؤشرات الأداء الرئيسية
+              </p>
+              <div :class="$style.titleAccent"></div>
+            </div>
+          </div>
         </div>
         
         <div :class="$style.headerActions">
@@ -134,6 +143,25 @@
           <i class="fas fa-redo"></i>
           إعادة المحاولة
         </button>
+      </div>
+
+      <!-- Timeout Error State -->
+      <div v-else-if="timeoutError" :class="$style.errorState">
+        <div :class="$style.errorIcon">
+          <i class="fas fa-clock"></i>
+        </div>
+        <h3>انتهت مهلة الطلب</h3>
+        <p>فشل في تحميل الاستطلاعات خلال 15 ثانية</p>
+        <div :class="$style.errorActions">
+          <button :class="$style.retryButton" @click="refreshData">
+            <i class="fas fa-redo"></i>
+            إعادة المحاولة
+          </button>
+          <button :class="$style.refreshButton" @click="refreshPage">
+            <i class="fas fa-sync-alt"></i>
+            تحديث الصفحة
+          </button>
+        </div>
       </div>
 
       <!-- Empty State -->
@@ -289,6 +317,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from '@/hooks/useI18n'
 import { surveyService } from '@/services/surveyService'
+import Swal from 'sweetalert2'
 import type { 
   SharedSurvey, 
   SharedSurveysResponse, 
@@ -306,6 +335,7 @@ const { t, currentLanguage, currentTheme, isRTL } = useI18n()
 const surveys = ref<SharedSurvey[]>([])
 const isLoading = ref(false)
 const error = ref<string | null>(null)
+const timeoutError = ref(false)
 const accessSummary = ref<SharedSurveysAccessSummary | null>(null)
 
 // Search and filters
@@ -352,6 +382,7 @@ const visiblePages = computed(() => {
 const loadSurveys = async () => {
   isLoading.value = true
   error.value = null
+  timeoutError.value = false
   
   try {
     const filters: SharedSurveysFilters = {
@@ -376,7 +407,14 @@ const loadSurveys = async () => {
       filters.is_locked = lockedFilter.value === 'true'
     }
     
-    const response = await surveyService.getMySharedSurveys(filters)
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('TIMEOUT')), 15000)
+    })
+    
+    const response = await Promise.race([
+      surveyService.getMySharedSurveys(filters),
+      timeoutPromise
+    ]) as PaginatedApiResponse<SharedSurvey> | ApiResponse<SharedSurveysResponse>
     
     // Handle different response formats
     if ('count' in response) {
@@ -401,7 +439,25 @@ const loadSurveys = async () => {
     }
     
   } catch (err: any) {
-    error.value = err.message || 'فشل في تحميل الاستطلاعات'
+    if (err.message === 'TIMEOUT') {
+      timeoutError.value = true
+      await Swal.fire({
+        title: 'انتهت مهلة الطلب',
+        text: 'فشل في تحميل الاستطلاعات خلال 15 ثانية. يرجى المحاولة مرة أخرى.',
+        icon: 'error',
+        confirmButtonText: 'موافق',
+        confirmButtonColor: '#dc3545'
+      })
+    } else {
+      error.value = err.message || 'فشل في تحميل الاستطلاعات'
+      await Swal.fire({
+        title: 'خطأ في تحميل الاستطلاعات',
+        text: err.message || 'فشل في تحميل الاستطلاعات',
+        icon: 'error',
+        confirmButtonText: 'موافق',
+        confirmButtonColor: '#dc3545'
+      })
+    }
     // Logging removed for production
   } finally {
     isLoading.value = false
@@ -410,6 +466,10 @@ const loadSurveys = async () => {
 
 const refreshData = () => {
   loadSurveys()
+}
+
+const refreshPage = () => {
+  window.location.reload()
 }
 
 const handleSearch = () => {

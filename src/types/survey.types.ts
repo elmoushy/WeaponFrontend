@@ -184,6 +184,33 @@ export interface PasswordProtectedLinkResponse {
   link: string // Full frontend URL
 }
 
+// Current link response types - unified response for both password-protected and public links
+export interface CurrentLinkResponseData {
+  token: string
+  expires_at: string
+  survey_visibility: string
+  note: string
+  // Password-protected link specific fields
+  password?: string
+  is_password_protected?: boolean
+  is_contact_restricted?: boolean
+  restricted_email?: string
+  restricted_phone?: string
+  closed_links_info?: {
+    closed_count: number
+    closed_type: string
+    message: string
+  }
+  // Public link specific fields
+  auto_generated?: boolean
+}
+
+export interface CurrentLinkResponse {
+  status: string
+  message: string
+  data: CurrentLinkResponseData
+}
+
 // User search and selection
 export interface User {
   id: number

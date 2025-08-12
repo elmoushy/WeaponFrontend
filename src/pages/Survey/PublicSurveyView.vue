@@ -366,7 +366,7 @@
               </div>
               
               <!-- Phone Number Input -->
-              <div :class="$style.phoneInputContainer">
+              <div :class="$style.phoneInputContainer" :style="{ transform: 'translateY(10px)' }">
                 <input
                   type="tel"
                   :class="[$style.phoneInput, { [$style.error]: contactError }]"
@@ -375,7 +375,6 @@
                   @input="contactError = ''"
                   @focus="showCountryDropdown = false"
                 />
-                <i class="fas fa-phone" :class="$style.phoneIcon"></i>
               </div>
             </div>
             
@@ -439,8 +438,37 @@
       <div :class="$style.errorIcon">
         <i class="fas fa-exclamation-triangle"></i>
       </div>
-      <h2 :class="$style.errorTitle">حدث خطأ غير متوقع</h2>
-      <p :class="$style.errorMessage">عذراً، لم نتمكن من تحميل الاستطلاع. يرجى المحاولة مرة أخرى.</p>
+      <h2 :class="$style.errorTitle">
+        {{ isTimeoutError ? 'انتهت مهلة الاتصال' : 'حدث خطأ غير متوقع' }}
+      </h2>
+      <p :class="$style.errorMessage">
+        {{ isTimeoutError 
+          ? 'انتهت مهلة الاتصال بالخادم. يرجى المحاولة مرة أخرى.' 
+          : 'عذراً، لم نتمكن من تحميل الاستطلاع. يرجى المحاولة مرة أخرى.' 
+        }}
+      </p>
+      <button 
+        v-if="isTimeoutError" 
+        :class="$style.refreshButton" 
+        @click="refreshPage"
+        style="
+          background: #007bff;
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-size: 16px;
+          cursor: pointer;
+          margin-top: 20px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: background-color 0.2s;
+        "
+      >
+        <i class="fas fa-sync-alt"></i>
+        تحديث الصفحة
+      </button>
     </div>
 
     <!-- Thank You Modal -->
@@ -461,6 +489,7 @@ import { ThankYouModal } from '../../components/ThankYouModal'
 import type { Survey } from '../../types/survey.types'
 import type { CountryCode } from '../../types/country.types'
 import countryCodesData from '../../data/countryCodes.json'
+import Swal from 'sweetalert2'
 
 // Router
 const route = useRoute()
@@ -491,6 +520,7 @@ const contactError = ref('')
 const showContactForm = ref(false)
 const showThankYouModal = ref(false)
 const countrySearchInput = ref<HTMLInputElement | null>(null)
+const isTimeoutError = ref(false)
 
 // Country codes data
 const countryCodes: CountryCode[] = countryCodesData as CountryCode[]
@@ -632,6 +662,7 @@ const closeCountryDropdown = () => {
 const loadSurvey = async () => {
   try {
     isLoading.value = true
+    isTimeoutError.value = false
     const token = route.params.token as string
 
     if (!token) {
@@ -640,8 +671,16 @@ const loadSurvey = async () => {
       return
     }
 
-    // Use validateAccess with the token - backend will find survey by token
-    const response = await surveyService.validateAccess(token)
+    // Create a timeout promise for 15 seconds
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('TIMEOUT')), 15000)
+    })
+
+    // Race between the API call and timeout
+    const response = await Promise.race([
+      surveyService.validateAccess(token),
+      timeoutPromise
+    ]) as any
     
     if (response.data.has_access && response.data.survey) {
       survey.value = response.data.survey
@@ -658,6 +697,13 @@ const loadSurvey = async () => {
     // Logging removed for production
     
     accessDenied.value = true
+    
+    // Check if it's a timeout error
+    if (error.message === 'TIMEOUT') {
+      isTimeoutError.value = true
+      accessMessage.value = 'انتهت مهلة الاتصال بالخادم'
+      return
+    }
     
     // Extract message from error response
     let errorMessage = 'فشل في تحميل الاستطلاع'
@@ -678,6 +724,10 @@ const loadSurvey = async () => {
   } finally {
     isLoading.value = false
   }
+}
+
+const refreshPage = () => {
+  window.location.reload()
 }
 
 const initializeAnswers = () => {
@@ -844,7 +894,12 @@ const submitSurvey = async () => {
       }
     }
     
-    alert(errorMessage)
+    Swal.fire({
+      icon: 'error',
+      title: 'خطأ في الإرسال',
+      text: errorMessage,
+      confirmButtonText: 'موافق'
+    })
   } finally {
     isSubmitting.value = false
   }
@@ -875,10 +930,20 @@ const copyLink = async () => {
   try {
     const currentUrl = window.location.href
     await navigator.clipboard.writeText(currentUrl)
-    alert('تم نسخ الرابط بنجاح!')
+    Swal.fire({
+      icon: 'success',
+      title: 'تم النسخ بنجاح',
+      text: 'تم نسخ الرابط بنجاح!',
+      confirmButtonText: 'موافق'
+    })
   } catch (error) {
     // Logging removed for production
-    alert('فشل في نسخ الرابط')
+    Swal.fire({
+      icon: 'error',
+      title: 'خطأ في النسخ',
+      text: 'فشل في نسخ الرابط',
+      confirmButtonText: 'موافق'
+    })
   }
 }
 
