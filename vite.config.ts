@@ -2,8 +2,6 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
-import { readFileSync } from 'fs'
-import { resolve } from 'path'
 
 // https://vite.dev/config/
 export default defineConfig(({ command, isPreview }) => {
@@ -16,7 +14,7 @@ export default defineConfig(({ command, isPreview }) => {
     },
     preview: {
       host: 'localhost',
-      port: 4173 // explicit HTTP (no https key set)
+      port: 4173 // HTTP only
     }
   }
 
@@ -25,15 +23,12 @@ export default defineConfig(({ command, isPreview }) => {
       ...baseConfig,
       server: {
         host: 'localhost',
-        port: 5173,
-        https: {
-          key: readFileSync(resolve(__dirname, 'localhost+2-key.pem')),
-            cert: readFileSync(resolve(__dirname, 'localhost+2.pem'))
-        }
+        port: 5173
+        // HTTP only - no HTTPS configuration
       }
     }
   }
 
-  // build / preview (dist) – no HTTPS
+  // build / preview (dist) – HTTP only
   return baseConfig
 })
