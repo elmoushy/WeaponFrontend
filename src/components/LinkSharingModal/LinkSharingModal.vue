@@ -202,7 +202,8 @@ const currentLink = computed(() => {
   if (currentLinkData.value) {
     // Use the link from getCurrentLink response
     const frontendBaseUrl = import.meta.env.VITE_FRONTEND_BASE_URL || window.location.origin
-    return `${frontendBaseUrl}/survey/public/${currentLinkData.value.token}`
+    const pathType = currentLinkData.value.is_password_protected ? 'password' : 'public'
+    return `${frontendBaseUrl}/survey/${pathType}/${currentLinkData.value.token}`
   }
   return props.passwordProtectedLink?.link || props.publicLink?.link || ''
 })
