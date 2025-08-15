@@ -467,9 +467,6 @@ const handleSubmit = async () => {
   }
 }
 
-const handleOverlayClick = () => {
-  // Modal stays open when clicking outside - removed functionality
-}
 </script>
 
 <style module src="./QuestionModal.module.css">

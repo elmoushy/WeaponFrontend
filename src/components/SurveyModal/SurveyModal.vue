@@ -698,10 +698,6 @@ const handleSubmit = async () => {
   }
 }
 
-const handleOverlayClick = () => {
-  // Modal stays open when clicking outside - removed functionality
-}
-
 const handleQuestionSave = (questionData: QuestionCreateRequest) => {
   if (editingQuestionIndex.value !== null) {
     // Update existing question

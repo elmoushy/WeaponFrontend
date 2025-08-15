@@ -877,11 +877,6 @@ const showCountryDropdown = ref(false)
 const searchQuery = ref('')
 const defaultCountry = countryCodes.find(country => country.dialCode === '+971') || countryCodes[0]
 
-// Methods
-const handleOverlayClick = () => {
-  // Modal stays open when clicking outside - removed functionality
-}
-
 const handleAccessChange = (access: SurveyVisibility) => {
   selectedAccess.value = access
   clearStatusMessage()
