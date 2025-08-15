@@ -1,5 +1,5 @@
 <template>
-  <div :class="$style.modalOverlay" @click="handleOverlayClick">
+  <div :class="$style.modalOverlay">
     <div 
       :class="$style.modalContainer" 
       :data-theme="currentTheme" 
@@ -468,9 +468,7 @@ const handleSubmit = async () => {
 }
 
 const handleOverlayClick = () => {
-  if (!isLoading.value) {
-    emit('cancel')
-  }
+  // Modal stays open when clicking outside - removed functionality
 }
 </script>
 

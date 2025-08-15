@@ -1,5 +1,5 @@
 <template>
-  <div :class="$style.modalOverlay" @click="handleOverlayClick">
+  <div :class="$style.modalOverlay">
     <div 
       :class="$style.modalContainer" 
       :data-theme="currentTheme" 
@@ -879,9 +879,7 @@ const defaultCountry = countryCodes.find(country => country.dialCode === '+971')
 
 // Methods
 const handleOverlayClick = () => {
-  if (!isSaving.value) {
-    emit('cancel')
-  }
+  // Modal stays open when clicking outside - removed functionality
 }
 
 const handleAccessChange = (access: SurveyVisibility) => {
