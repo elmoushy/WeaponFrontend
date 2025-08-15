@@ -592,11 +592,32 @@ const handleSubmit = async () => {
       setTimeout(() => reject(new Error('TIMEOUT')), 15000)
     })
     
-    // Convert datetime-local to ISO format for API
+    // Keep datetime-local exactly as entered without timezone conversion
     const formatDateForAPI = (dateString: string | null): string | null => {
       if (!dateString) return null
-      return new Date(dateString).toISOString()
+      // Return the datetime string exactly as entered, just add seconds if missing
+      return dateString.includes(':') && dateString.split(':').length === 2 
+        ? `${dateString}:00` 
+        : dateString
     }
+    
+    /* Alternative: Use Asia/Dubai timezone
+    const formatDateForAPI = (dateString: string | null): string | null => {
+      if (!dateString) return null
+      // Parse the datetime-local value and convert to Asia/Dubai timezone
+      const date = new Date(dateString)
+      const dubaiTime = new Intl.DateTimeFormat('sv-SE', {
+        timeZone: 'Asia/Dubai',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }).format(date)
+      return dubaiTime.replace(' ', 'T')
+    }
+    */
     
     const submitData = {
       title: formData.value.title,
