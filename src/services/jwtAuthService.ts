@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, type AxiosResponse, type AxiosError } from 'axios'
+import Swal from 'sweetalert2'
 import type { 
   HealthCheckResponse,
   UserProfileResponse,
@@ -29,6 +30,7 @@ let refreshToken: string | null = null
 let refreshFailureCount = 0 // Track consecutive refresh failures
 let lastRefreshAttempt = 0 // Timestamp of last refresh attempt
 let refreshDisabled = false // Hard disable further silent refresh attempts until successful login
+let sessionExpiredAlertShown = false // Prevent multiple session expired alerts
 const MAX_REFRESH_FAILURES = 3 // Stop trying after 3 consecutive failures
 const REFRESH_RETRY_DELAY = 60000 // Wait 1 minute between failed refresh attempts
 const REFRESH_TOKEN_KEY = 'weaponpower_refresh_token'
@@ -77,6 +79,7 @@ export const setAuthTokens = (access: string | null, refresh: string | null = nu
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${access}`
     refreshFailureCount = 0 // Reset failure count on successful token set
     refreshDisabled = false // Re-enable refresh attempts
+    sessionExpiredAlertShown = false // Reset alert flag for new session
   } else {
     delete apiClient.defaults.headers.common['Authorization']
   }
@@ -108,7 +111,7 @@ export const silentRefreshAccessToken = async (): Promise<string | null> => {
 
   refreshPromise = (async (): Promise<string | null> => {
     try {
-      const response = await apiClient.post<TokenRefreshResponse>("/auth/token/refresh/", {
+      const response = await apiClient.post<TokenRefreshResponse>("auth/token/refresh/", {
         refresh: refreshToken
       }, {
         validateStatus: (status) => status < 500, // treat 4xx as handled
@@ -122,17 +125,26 @@ export const silentRefreshAccessToken = async (): Promise<string | null> => {
       if (response.status === 401) {
         console.warn('Refresh token expired or invalid, logging out user')
         clearTokens()
-        redirectToLogin()
+        await showSessionExpiredAlert()
         return null
       }
       
       // Non-200 (likely 400) – disable further attempts until explicit login
       refreshFailureCount++
       refreshDisabled = true
+      if (refreshFailureCount >= MAX_REFRESH_FAILURES) {
+        clearTokens()
+        await showSessionExpiredAlert()
+      }
       return null
-    } catch {
+    } catch (error) {
       refreshFailureCount++
       refreshDisabled = true
+      console.warn('Silent token refresh failed:', error)
+      if (refreshFailureCount >= MAX_REFRESH_FAILURES) {
+        clearTokens()
+        await showSessionExpiredAlert()
+      }
       return null
     } finally {
       isRefreshing = false
@@ -156,7 +168,7 @@ const refreshAccessToken = async (): Promise<string | null> => {
     if (!refreshToken) return null
     
     // Legacy fallback (if backend still expects token in body)
-    const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, { 
+    const response = await axios.post(`${API_BASE_URL}auth/token/refresh/`, { 
       refresh: refreshToken 
     }, { 
       withCredentials: true,
@@ -172,25 +184,57 @@ const refreshAccessToken = async (): Promise<string | null> => {
     if (response.status === 401) {
       console.warn('Refresh token expired or invalid, logging out user')
       clearTokens()
-      redirectToLogin()
+      await showSessionExpiredAlert()
       return null
     }
     
     // Handle non-200 responses
     refreshFailureCount++
     refreshDisabled = true
-    if (refreshFailureCount >= MAX_REFRESH_FAILURES) redirectToLogin()
+    if (refreshFailureCount >= MAX_REFRESH_FAILURES) {
+      clearTokens()
+      await showSessionExpiredAlert()
+      redirectToLogin()
+    }
     return null
-  } catch {
+  } catch (error) {
     refreshFailureCount++
     refreshDisabled = true
-    if (refreshFailureCount >= MAX_REFRESH_FAILURES) redirectToLogin()
+    console.warn('Token refresh failed:', error)
+    if (refreshFailureCount >= MAX_REFRESH_FAILURES) {
+      clearTokens()
+      await showSessionExpiredAlert()
+    }
     return null
   }
 }
 
+// Check if we're on a survey page or making a survey API call - surveys are public!
+const isSurveyContext = (url?: string): boolean => {
+  // Check current page URL - covers all survey patterns including public surveys
+  const currentPath = window.location.pathname
+  const isOnSurveyPage = currentPath.startsWith('/survey/') || 
+                        currentPath.includes('/survey/public/') ||
+                        currentPath.includes('/survey/password/') ||
+                        currentPath.includes('/survey/auth/')
+  
+  // Check API request URL (if provided) - only for PUBLIC survey endpoints
+  const isSurveyApiCall = url ? (
+    url.includes('/survey/public/') ||
+    url.includes('password-access') ||
+    url.includes('public-link/') ||
+    url.includes('/api/surveys/public/') ||
+    url.includes('/api/surveys/password/') ||
+    url.includes('/surveys/password-surveys/') ||
+    url.includes('/surveys/public/')
+  ) : false
+  
+  return isOnSurveyPage || isSurveyApiCall
+}
+
 // Clear all tokens (memory and storage)
 const clearTokens = (): void => {
+  // Clear JWT tokens and state
   setAuthTokens(null, null)
   accessToken = null
   refreshToken = null
@@ -198,24 +242,150 @@ const clearTokens = (): void => {
   refreshFailureCount = 0
   lastRefreshAttempt = 0
   refreshDisabled = false
+  sessionExpiredAlertShown = false // Reset alert flag for future sessions
+  
+  // Clear Azure AD tokens from localStorage
+  try {
+    localStorage.removeItem('azure_id_token')
+  } catch (error) {
+    console.warn('Failed to clear Azure AD token from localStorage:', error)
+  }
+  
+  // Clear user session data from sessionStorage (from useSimpleAuth)
+  try {
+    sessionStorage.removeItem('wpc_user')
+    sessionStorage.removeItem('wpc_auth_status')
+  } catch (error) {
+    console.warn('Failed to clear user session data from sessionStorage:', error)
+  }
+  
+  // Clear any other potential auth-related storage
+  try {
+    // Clear any other authentication keys that might exist
+    const keysToRemove = [
+      'weaponpower_refresh_token',
+      'auth_token',
+      'access_token', 
+      'user_data',
+      'auth_state'
+    ]
+    
+    keysToRemove.forEach(key => {
+      localStorage.removeItem(key)
+      sessionStorage.removeItem(key)
+    })
+  } catch (error) {
+    console.warn('Failed to clear additional auth storage:', error)
+  }
+  
+  // Clear all cookies that might contain auth data
+  try {
+    // Get all cookies and clear any that might contain auth data
+    document.cookie.split(";").forEach((cookie) => {
+      const eqPos = cookie.indexOf("=")
+      const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim()
+      
+      // Clear common auth-related cookie names
+      if (name.includes('auth') || name.includes('token') || name.includes('session') || 
+          name.includes('refresh') || name.includes('access') || name.includes('jwt') ||
+          name.includes('csrf') || name.includes('weaponpower')) {
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname}`
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`
+      }
+    })
+  } catch (error) {
+    console.warn('Failed to clear auth cookies:', error)
+  }
+}
+
+// Show session expired alert with SweetAlert2
+const showSessionExpiredAlert = async (): Promise<void> => {
+  // Prevent multiple session expired alerts
+  if (sessionExpiredAlertShown) {
+    return
+  }
+  
+  // CRITICAL: Don't show session expired alert on survey pages - surveys are public!
+  if (isSurveyContext()) {
+    console.log('Skipping session expired alert - user is on a public survey page')
+    return
+  }
+  
+  // Additional safety check for public survey URLs
+  const currentPath = window.location.pathname
+  if (currentPath.includes('/survey/public/') || 
+      currentPath.includes('/survey/password/') ||
+      currentPath.includes('/survey/auth/') ||
+      currentPath.startsWith('/survey/')) {
+    console.log('Extra safety check: Skipping session expired alert for survey URL:', currentPath)
+    return
+  }
+  
+  sessionExpiredAlertShown = true
+  
+  const result = await Swal.fire({
+    title: 'Session Expired',
+    text: 'Your session has ended. Access and refresh tokens have been cleared. Please log in again to continue.',
+    icon: 'warning',
+    confirmButtonText: 'Go to Login',
+    confirmButtonColor: '#3085d6',
+    allowOutsideClick: false,
+    allowEscapeKey: false
+  })
+  
+  // After user clicks the button, redirect to login with a hard refresh
+  if (result.isConfirmed) {
+    // Add a small delay to ensure the alert is properly dismissed
+    setTimeout(() => {
+      // Force a hard redirect to login page to clear all JavaScript state
+      window.location.replace('/login')
+      
+      // As a backup, also try to reload after a short delay
+      setTimeout(() => {
+        window.location.reload()
+      }, 100)
+    }, 100)
+  }
 }
 
 // Redirect to login page
 const redirectToLogin = (): void => {
   // CRITICAL: Don't redirect if we're on a survey page - surveys are public!
-  if (window.location.pathname.startsWith('/survey/')) {
+  if (isSurveyContext()) {
     console.log('Skipping login redirect - user is on a public survey page')
     return
   }
   
-  if (window.location.pathname !== '/') {
-    window.location.href = '/'
+  // Additional safety check for public survey URLs
+  const currentPath = window.location.pathname
+  if (currentPath.includes('/survey/public/') || 
+      currentPath.includes('/survey/password/') ||
+      currentPath.includes('/survey/auth/') ||
+      currentPath.startsWith('/survey/')) {
+    console.log('Extra safety check: Skipping login redirect for survey URL:', currentPath)
+    return
   }
+  
+  // Use replace() to force a hard redirect and clear JavaScript state
+  window.location.replace('/login')
 }
 
 // Request interceptor to ensure token is present
 apiClient.interceptors.request.use(
   async (config) => {
+    // CRITICAL: Skip auth token injection for survey contexts - surveys are public!
+    if (isSurveyContext(config.url)) {
+      console.log('Skipping auth token injection for survey API endpoint:', config.url)
+      return config
+    }
+    
+    // Extra safety check for survey URLs in the current page
+    const currentPath = window.location.pathname
+    if (currentPath.startsWith('/survey/')) {
+      console.log('Extra safety: Skipping auth token injection - user is on survey page:', currentPath)
+      return config
+    }
+    
     // If we don't have an access token but have a refresh token, try to get one
     if (!accessToken && refreshToken && !isRefreshing) {
       try {
@@ -240,10 +410,23 @@ apiClient.interceptors.response.use(
   async (error: AxiosError<AuthError>) => {
     const originalRequest = error.config as any
     
+    // CRITICAL: Don't attempt refresh or show alerts for survey API endpoints - surveys are public!
+    if (isSurveyContext(originalRequest?.url)) {
+      console.log('Skipping auth handling for survey API endpoint:', originalRequest.url)
+      return Promise.reject(error)
+    }
+    
+    // Extra safety check for survey URLs in the current page
+    const currentPath = window.location.pathname
+    if (currentPath.startsWith('/survey/')) {
+      console.log('Extra safety: Skipping auth handling - user is on survey page:', currentPath)
+      return Promise.reject(error)
+    }
+    
     // Don't attempt refresh if we've failed too many times recently
     if (refreshFailureCount >= MAX_REFRESH_FAILURES) {
       clearTokens()
-      redirectToLogin()
+      await showSessionExpiredAlert()
       return Promise.reject(error)
     }
     
@@ -251,10 +434,10 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true
       
       // Check if this is a refresh token endpoint request that failed
-      if (originalRequest.url?.includes('/auth/token/refresh/')) {
+      if (originalRequest.url?.includes('auth/token/refresh/')) {
         console.warn('Refresh token request failed with 401, logging out user')
         clearTokens()
-        redirectToLogin()
+        await showSessionExpiredAlert()
         return Promise.reject(error)
       }
       
@@ -262,11 +445,12 @@ apiClient.interceptors.response.use(
       if (newToken) {
         originalRequest.headers = originalRequest.headers || {}
         originalRequest.headers.Authorization = `Bearer ${newToken}`
-        return apiClient(originalRequest)
+        // Ensure the config is properly cloned for retry
+        return apiClient.request(originalRequest)
       } else {
         // Failed to refresh token, redirect to login
         clearTokens()
-        redirectToLogin()
+        await showSessionExpiredAlert()
       }
     }
     return Promise.reject(error)
@@ -310,7 +494,7 @@ export const authAPI = {
       throw new Error('No refresh token available')
     }
 
-    const response = await apiClient.post<TokenRefreshResponse>('/auth/token/refresh/', {
+    const response = await apiClient.post<TokenRefreshResponse>('auth/token/refresh/', {
       refresh: refreshToken
     }, {
       // Suppress network errors from appearing in browser console
@@ -324,7 +508,7 @@ export const authAPI = {
       // Token is expired or invalid
       console.warn('Refresh token expired or invalid, logging out user')
       clearTokens()
-      redirectToLogin()
+      await showSessionExpiredAlert()
       throw new Error('Refresh token expired')
     } else {
       refreshFailureCount++

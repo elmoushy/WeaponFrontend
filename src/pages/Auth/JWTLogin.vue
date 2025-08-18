@@ -127,6 +127,9 @@
                   <span :class="styles.buttonText">تسجيل الدخول</span>
                   <div :class="styles.buttonRipple"></div>
                 </button>
+                <p :class="styles.footerText" style="text-align: center !important;">
+                  محمي بتشفير متقدم • <span :class="styles.highlight">مصادقة JWT</span>
+                </p>
               </form>
             </div>
 
@@ -157,14 +160,6 @@
           </div>
         </div>
 
-        <!-- Footer -->
-        <footer :class="styles.footer">
-          <div :class="styles.footerContent">
-            <p :class="styles.footerText">
-              محمي بتشفير متقدم • <span :class="styles.highlight">مصادقة JWT</span>
-            </p>
-          </div>
-        </footer>
       </div>
     </div>
   </div>

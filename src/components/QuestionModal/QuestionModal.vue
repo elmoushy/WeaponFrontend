@@ -31,7 +31,7 @@
             ></textarea>
             <div v-if="errors.text" :class="$style.errorMessage">
               <i class="fas fa-exclamation-triangle"></i>
-              {{ errors.text }}
+               السؤال مطلوب
             </div>
           </div>
 

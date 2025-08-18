@@ -4,23 +4,18 @@
     <section :class="$style.headerSection">
       <div :class="$style.headerContent">
         <div :class="$style.titleSection">
+
+                    <button :class="$style.refreshButton" @click="refreshData">
+            <i class="fas fa-sync-alt" :class="{ [$style.spinning]: isLoading }"></i>
+            {{ t('common.refresh') }}
+          </button>
+        </div>
+        
+        <div :class="$style.headerActions">
           <button :class="$style.backButton" @click="goBack">
             <i class="fas fa-arrow-right" v-if="isRTL"></i>
             <i class="fas fa-arrow-left" v-if="!isRTL"></i>
             <span>{{ t('common.back') }}</span>
-          </button>
-          
-        </div>
-        
-        <div :class="$style.headerActions">
-          <!-- <button :class="$style.exportButton" @click="showExportModal = true" :disabled="responses.length === 0">
-            <i class="fas fa-download"></i>
-            {{ t('survey.responses.export') }}
-          </button> -->
-          
-          <button :class="$style.refreshButton" @click="refreshData">
-            <i class="fas fa-sync-alt" :class="{ [$style.spinning]: isLoading }"></i>
-            {{ t('common.refresh') }}
           </button>
         </div>
       </div>

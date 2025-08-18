@@ -934,18 +934,16 @@ const handleStatusUpdate = (message: string, type: 'success' | 'error' | 'warnin
   setStatusMessage(message, type)
 }
 
-// Public Link Management
+// Public Link Management - Only called when user explicitly saves
 const loadPublicLink = async () => {
-  if (selectedAccess.value === 'PUBLIC') {
-    try {
-      const response = await surveyService.getPublicLink(props.survey.id)
-      publicLink.value = response.data
-      
-    } catch (error: any) {
-      // Logging removed for production
-      if (error.response?.status !== 404) {
-        setStatusMessage('Failed to load public link', 'error')
-      }
+  try {
+    const response = await surveyService.getPublicLink(props.survey.id)
+    publicLink.value = response.data
+    
+  } catch (error: any) {
+    // Logging removed for production
+    if (error.response?.status !== 404) {
+      setStatusMessage('Failed to load public link', 'error')
     }
   }
 }
@@ -1229,10 +1227,8 @@ const handleSave = async () => {
           setStatusMessage(errorMessage, 'error')
         }
       } else {
-        // Load regular public link if it doesn't exist, then open the modal
-        if (!publicLink.value) {
-          await loadPublicLink()
-        }
+        // Load regular public link when user explicitly saves, then open the modal
+        await loadPublicLink()
         // Open the modal first, emit save later when modal closes
         setTimeout(() => {
           isLinkSharingModalVisible.value = true
@@ -1287,9 +1283,8 @@ const loadSharedUsers = async () => {
 
 // Watchers
 watch(() => selectedAccess.value, (newAccess) => {
-  if (newAccess === 'PUBLIC') {
-    loadPublicLink()
-  } else if (newAccess === 'GROUPS') {
+  // Only load admin groups for GROUPS access (no need to prevent initialization for this)
+  if (newAccess === 'GROUPS') {
     loadAdminGroups()
   }
 })
@@ -1319,7 +1314,6 @@ watch(() => passwordProtectionEnabled.value, (isEnabled) => {
 
 // Lifecycle
 onMounted(() => {
-  loadPublicLink()
   loadSharedUsers()
   if (props.survey.visibility === 'GROUPS') {
     loadAdminGroups()
