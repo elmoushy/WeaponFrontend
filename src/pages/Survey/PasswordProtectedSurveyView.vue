@@ -410,7 +410,7 @@
 
         <button
           @click="nextQuestion"
-          :class="[$style.navButton, $style.nextButton]"
+          :class="[$style.navButton, $style.prevButton]"
           :disabled="!canProceed"
           v-if="currentQuestionIndex < survey.questions.length - 1"
         >
