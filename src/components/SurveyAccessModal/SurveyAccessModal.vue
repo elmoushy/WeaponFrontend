@@ -1,5 +1,5 @@
 <template>
-  <div :class="$style.modalOverlay" @click="handleOverlayClick">
+  <div :class="$style.modalOverlay">
     <div 
       :class="$style.modalContainer" 
       :data-theme="currentTheme" 
@@ -876,13 +876,6 @@ const selectedCountryCode = ref('+971') // Default to UAE
 const showCountryDropdown = ref(false)
 const searchQuery = ref('')
 const defaultCountry = countryCodes.find(country => country.dialCode === '+971') || countryCodes[0]
-
-// Methods
-const handleOverlayClick = () => {
-  if (!isSaving.value) {
-    emit('cancel')
-  }
-}
 
 const handleAccessChange = (access: SurveyVisibility) => {
   selectedAccess.value = access

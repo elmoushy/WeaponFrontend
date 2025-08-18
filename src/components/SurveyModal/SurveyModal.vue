@@ -1,5 +1,5 @@
 <template>
-  <div :class="$style.modalOverlay" @click="handleOverlayClick">
+  <div :class="$style.modalOverlay">
     <div 
       :class="$style.modalContainer" 
       :data-theme="currentTheme" 
@@ -695,12 +695,6 @@ const handleSubmit = async () => {
     })
   } finally {
     isLoading.value = false
-  }
-}
-
-const handleOverlayClick = () => {
-  if (!isLoading.value) {
-    emit('cancel')
   }
 }
 
