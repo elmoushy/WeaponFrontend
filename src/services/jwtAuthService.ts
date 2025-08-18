@@ -218,14 +218,15 @@ const isSurveyContext = (url?: string): boolean => {
                         currentPath.includes('/survey/password/') ||
                         currentPath.includes('/survey/auth/')
   
-  // Check API request URL (if provided)
+  // Check API request URL (if provided) - only for PUBLIC survey endpoints
   const isSurveyApiCall = url ? (
-    url.includes('/surveys/') || 
-    url.includes('/survey/') ||
+    url.includes('/survey/public/') ||
     url.includes('password-access') ||
     url.includes('public-link/') ||
     url.includes('/api/surveys/public/') ||
-    url.includes('/api/surveys/password/')
+    url.includes('/api/surveys/password/') ||
+    url.includes('/surveys/password-surveys/') ||
+    url.includes('/surveys/public/')
   ) : false
   
   return isOnSurveyPage || isSurveyApiCall
@@ -444,7 +445,8 @@ apiClient.interceptors.response.use(
       if (newToken) {
         originalRequest.headers = originalRequest.headers || {}
         originalRequest.headers.Authorization = `Bearer ${newToken}`
-        return apiClient(originalRequest)
+        // Ensure the config is properly cloned for retry
+        return apiClient.request(originalRequest)
       } else {
         // Failed to refresh token, redirect to login
         clearTokens()
