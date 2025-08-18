@@ -263,7 +263,7 @@ router.beforeEach(async (to, from, next) => {
 // Update page title on route change - Always set to "Survey"
 router.beforeEach(() => {
   // Always set title to "Survey" regardless of route
-  document.title = "Survey"
+  document.title = "WHSO Survey"
 })
 
 export default router
