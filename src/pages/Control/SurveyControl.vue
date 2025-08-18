@@ -72,13 +72,13 @@
       </div>
       
       <div :class="$style.viewControls">
-        <button 
+        <!-- <button 
           :class="[$style.viewToggle, { [$style.active]: viewMode === 'grid' }]"
           @click="viewMode = 'grid'"
           :title="t('files.viewGrid')"
         >
           <i class="fas fa-th"></i>
-        </button>
+        </button> -->
         <!-- <button 
           :class="[$style.viewToggle, { [$style.active]: viewMode === 'list' }]"
           @click="viewMode = 'list'"
@@ -731,7 +731,7 @@ const deleteSurvey = async (surveyId: string) => {
     try {
       await surveyService.deleteSurvey(surveyId)
       
-      await loadSurveys()
+      await Promise.all([loadSurveys(), loadAnalytics()])
       
       Swal.fire({
         icon: 'success',
@@ -757,7 +757,7 @@ const handleSurveySave = async (surveyData: any, existingSurvey?: any) => {
     // In this case, just close the modal and refresh the list
     if (existingSurvey) {
       closeModal()
-      await loadSurveys()
+      await Promise.all([loadSurveys(), loadAnalytics()])
       return
     }
     
@@ -800,7 +800,7 @@ const handleSurveySave = async (surveyData: any, existingSurvey?: any) => {
     }
     
     closeModal()
-    await loadSurveys()
+    await Promise.all([loadSurveys(), loadAnalytics()])
   } catch (error) {
     // Logging removed for production
     Swal.fire({
@@ -854,7 +854,7 @@ const performBulkOperation = async (operation: string) => {
     })
     
     selectedSurveys.value = []
-    await loadSurveys()
+    await Promise.all([loadSurveys(), loadAnalytics()])
     
     // Show success message
     let successMessage = ''
