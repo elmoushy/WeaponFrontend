@@ -271,39 +271,36 @@
 
       <!-- Form Navigation -->
       <div :class="$style.formNavigation">
-        <button 
-          :class="$style.navButton" 
-          @click="previousQuestion" 
-          :disabled="currentQuestionIndex === 0"
-          v-if="currentQuestionIndex > 0"
-        >
-          <i class="fas fa-chevron-right" v-if="isRTL"></i>
-          <i class="fas fa-chevron-left" v-if="!isRTL"></i>
-          {{ t('survey.navigation.previous') }}
-        </button>
-        
-        <div :class="$style.navSpacer"></div>
-        
-        <button 
+        <button
           v-if="currentQuestionIndex < survey.questions.length - 1"
-          :class="$style.navButton" 
-          @click="nextQuestion" 
+          :class="[$style.navButton, $style.next]"
+          @click="nextQuestion"
           :disabled="!canProceed"
         >
-          {{ t('survey.navigation.next') }}
-          <i class="fas fa-chevron-left" v-if="isRTL"></i>
-          <i class="fas fa-chevron-right" v-if="!isRTL"></i>
+          <span>السؤال التالي</span>
+          <i class="fas fa-arrow-left"></i>
         </button>
-        
-        <button 
-          v-else
-          :class="[$style.navButton, $style.submit]" 
-          @click="submitSurvey" 
+
+        <button
+          v-if="currentQuestionIndex === survey.questions.length - 1"
+          :class="[$style.navButton, $style.submit]"
+          @click="submitSurvey"
           :disabled="!canSubmit || isSubmitting"
         >
           <i v-if="isSubmitting" class="fas fa-spinner fa-spin"></i>
           <i v-else class="fas fa-paper-plane"></i>
-          {{ isSubmitting ? t('survey.submitting') : t('survey.submit') }}
+          <span>{{ isSubmitting ? 'جاري الإرسال...' : 'إرسال الاستطلاع' }}</span>
+        </button>
+
+        <div :class="$style.navSpacer"></div>
+
+        <button
+          v-if="currentQuestionIndex > 0"
+          :class="$style.navButton"
+          @click="previousQuestion"
+        >
+          <i class="fas fa-arrow-right"></i>
+          <span>السؤال السابق</span>
         </button>
       </div>
     </div>

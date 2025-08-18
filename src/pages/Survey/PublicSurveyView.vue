@@ -400,17 +400,6 @@
       <!-- Navigation -->
       <div :class="$style.formNavigation">
         <button
-          v-if="currentQuestionIndex > 0"
-          :class="$style.navButton"
-          @click="previousQuestion"
-        >
-          <i class="fas fa-arrow-right"></i>
-          <span>السؤال السابق</span>
-        </button>
-
-        <div :class="$style.navSpacer"></div>
-
-        <button
           v-if="currentQuestionIndex < survey.questions.length - 1"
           :class="[$style.navButton, $style.next]"
           @click="nextQuestion"
@@ -421,7 +410,7 @@
         </button>
 
         <button
-          v-else
+          v-if="currentQuestionIndex === survey.questions.length - 1"
           :class="[$style.navButton, $style.submit]"
           @click="submitSurvey"
           :disabled="!canSubmit || isSubmitting || !hasValidContactForSubmission"
@@ -429,6 +418,17 @@
           <i v-if="isSubmitting" class="fas fa-spinner fa-spin"></i>
           <i v-else class="fas fa-paper-plane"></i>
           <span>{{ isSubmitting ? 'جاري الإرسال...' : 'إرسال الاستطلاع' }}</span>
+        </button>
+
+        <div :class="$style.navSpacer"></div>
+
+        <button
+          v-if="currentQuestionIndex > 0"
+          :class="$style.navButton"
+          @click="previousQuestion"
+        >
+          <i class="fas fa-arrow-right"></i>
+          <span>السؤال السابق</span>
         </button>
       </div>
     </div>
