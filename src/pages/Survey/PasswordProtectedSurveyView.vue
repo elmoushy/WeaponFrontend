@@ -1,5 +1,5 @@
 <template>
-  <div :class="$style.passwordSurveyContainer" :data-theme="currentTheme" dir="rtl">
+  <div :class="$style.publicSurveyContainer" :data-theme="currentTheme" dir="rtl">
     <!-- Loading State -->
     <div v-if="isLoading" :class="$style.loadingContainer">
       <div :class="$style.loadingSpinner"></div>
@@ -145,8 +145,7 @@
     </div>
 
     <!-- Survey Content (reuse from PublicSurveyView) -->
-    <div v-else-if="survey && !surveyStarted" :class="$style.surveyContentWrapper">
-      <div :class="$style.surveyContent">
+    <div v-else-if="survey && !surveyStarted" :class="$style.surveyContent">
       <!-- Survey Header -->
       <div :class="$style.surveyHeader">
         <div :class="$style.surveyBranding">
@@ -188,12 +187,10 @@
           بدء الاستطلاع
         </button>
       </div>
-      </div>
     </div>
 
     <!-- Survey Form (When Started) -->
-    <div v-else-if="survey && surveyStarted" :class="$style.surveyFormWrapper">
-      <div :class="$style.surveyForm">
+    <div v-else-if="survey && surveyStarted" :class="$style.surveyForm">
       <!-- Survey Form Header -->
       <div :class="$style.formHeader">
         <div :class="$style.formTitleSection">
@@ -209,111 +206,162 @@
         </div>
       </div>
 
-      <!-- Current Question (reuse question rendering logic from PublicSurveyView) -->
+      <!-- Current Question -->
       <div :class="$style.questionContainer">
         <div :class="$style.currentQuestion" v-if="currentQuestion">
           <div :class="$style.questionHeader">
-            <h3 :class="$style.questionText">
+            <div :class="$style.questionBadge">
+              <span :class="$style.questionIndex">{{ currentQuestionIndex + 1 }}</span>
+            </div>
+            <h2 :class="$style.questionTitle">
               {{ currentQuestion.text }}
-              <span v-if="currentQuestion.is_required" :class="$style.requiredIndicator">*</span>
-            </h3>
-            <div v-if="questionError" :class="$style.questionError">
-              <i class="fas fa-exclamation-triangle"></i>
-              {{ questionError }}
+              <span v-if="currentQuestion.is_required" :class="$style.required">*</span>
+            </h2>
+            <div v-if="currentQuestion.is_required" :class="$style.requiredNote">
+              <i class="fas fa-star"></i>
+              <span>هذا السؤال مطلوب</span>
             </div>
           </div>
 
           <!-- Question Input Based on Type -->
           <div :class="$style.questionInput">
             <!-- Text Input -->
-            <div v-if="currentQuestion.question_type === 'text'">
-              <input
-                type="text"
-                v-model="answers[currentQuestion.id]"
-                :class="$style.textInput"
-                :placeholder="currentQuestion.is_required ? 'إجابة مطلوبة...' : 'اكتب إجابتك هنا...'"
-              />
+            <div v-if="currentQuestion.question_type === 'text'" :class="$style.inputContainer">
+              <div :class="$style.inputWrapper">
+                <input
+                  type="text"
+                  v-model="answers[currentQuestion.id]"
+                  :class="$style.textInput"
+                  placeholder="اكتب إجابتك هنا..."
+                />
+                <i class="fas fa-pen" :class="$style.inputIcon"></i>
+              </div>
             </div>
 
             <!-- Textarea -->
-            <div v-else-if="currentQuestion.question_type === 'textarea'">
-              <textarea
-                v-model="answers[currentQuestion.id]"
-                :class="$style.textareaInput"
-                :placeholder="currentQuestion.is_required ? 'إجابة مطلوبة...' : 'اكتب إجابتك هنا...'"
-                rows="4"
-              ></textarea>
+            <div v-else-if="currentQuestion.question_type === 'textarea'" :class="$style.inputContainer">
+              <div :class="$style.inputWrapper">
+                <textarea
+                  v-model="answers[currentQuestion.id]"
+                  :class="$style.textArea"
+                  placeholder="اكتب إجابتك المفصلة هنا... يمكنك كتابة عدة أسطر"
+                  rows="4"
+                ></textarea>
+                <i class="fas fa-align-right" :class="$style.inputIcon"></i>
+              </div>
             </div>
 
             <!-- Single Choice -->
-            <div v-else-if="currentQuestion.question_type === 'single_choice'" :class="$style.choiceOptions">
+            <div v-else-if="currentQuestion.question_type === 'single_choice'" :class="$style.choicesContainer">
+              <div :class="$style.choicesTitle">
+                <i class="fas fa-dot-circle"></i>
+                <span>اختر إجابة واحدة:</span>
+              </div>
               <div 
                 v-for="option in getQuestionOptions(currentQuestion.options)" 
                 :key="option"
                 :class="[$style.choiceOption, { [$style.selected]: answers[currentQuestion.id] === option }]"
                 @click="answers[currentQuestion.id] = option"
               >
-                <div :class="$style.optionRadio">
+                <div :class="$style.choiceRadio">
                   <div v-if="answers[currentQuestion.id] === option" :class="$style.radioSelected"></div>
                 </div>
-                <span :class="$style.optionText">{{ option }}</span>
+                <span :class="$style.choiceText">{{ option }}</span>
+                <div :class="$style.choiceCheck" v-if="answers[currentQuestion.id] === option">
+                  <i class="fas fa-check"></i>
+                </div>
               </div>
             </div>
 
             <!-- Multiple Choice -->
-            <div v-else-if="currentQuestion.question_type === 'multiple_choice'" :class="$style.choiceOptions">
+            <div v-else-if="currentQuestion.question_type === 'multiple_choice'" :class="$style.choicesContainer">
+              <div :class="$style.choicesTitle">
+                <i class="fas fa-check-square"></i>
+                <span>يمكنك اختيار أكثر من إجابة:</span>
+              </div>
               <div 
                 v-for="option in getQuestionOptions(currentQuestion.options)" 
                 :key="option"
                 :class="[$style.choiceOption, { [$style.selected]: isOptionSelected(currentQuestion.id, option) }]"
                 @click="toggleMultipleChoice(currentQuestion.id, option)"
               >
-                <div :class="$style.optionCheckbox">
+                <div :class="$style.choiceCheckbox">
                   <i v-if="isOptionSelected(currentQuestion.id, option)" class="fas fa-check"></i>
                 </div>
-                <span :class="$style.optionText">{{ option }}</span>
-              </div>
-            </div>
-
-            <!-- Yes/No -->
-            <div v-else-if="currentQuestion.question_type === 'yes_no'" :class="$style.yesNoOptions">
-              <div 
-                :class="[$style.yesNoOption, { [$style.selected]: answers[currentQuestion.id] === 'نعم' }]"
-                @click="answers[currentQuestion.id] = 'نعم'"
-              >
-                <div :class="$style.optionRadio">
-                  <div v-if="answers[currentQuestion.id] === 'نعم'" :class="$style.radioSelected"></div>
+                <span :class="$style.choiceText">{{ option }}</span>
+                <div :class="$style.choiceCheck" v-if="isOptionSelected(currentQuestion.id, option)">
+                  <i class="fas fa-check-circle"></i>
                 </div>
-                <span :class="$style.optionText">نعم</span>
-              </div>
-              <div 
-                :class="[$style.yesNoOption, { [$style.selected]: answers[currentQuestion.id] === 'لا' }]"
-                @click="answers[currentQuestion.id] = 'لا'"
-              >
-                <div :class="$style.optionRadio">
-                  <div v-if="answers[currentQuestion.id] === 'لا'" :class="$style.radioSelected"></div>
-                </div>
-                <span :class="$style.optionText">لا</span>
               </div>
             </div>
 
             <!-- Rating -->
-            <div v-else-if="currentQuestion.question_type === 'rating'" :class="$style.ratingOptions">
+            <div v-else-if="currentQuestion.question_type === 'rating'" :class="$style.ratingContainer">
+              <div :class="$style.ratingTitle">
+                <i class="fas fa-star"></i>
+                <span>قيم من {{ getRatingRange(currentQuestion.options) }}:</span>
+              </div>
               <div :class="$style.ratingScale">
-                <span :class="$style.ratingLabel">{{ getRatingLabel('min') }}</span>
-                <div :class="$style.ratingButtons">
-                  <button
-                    v-for="rating in getRatingOptions(currentQuestion.options)"
-                    :key="rating"
-                    :class="[$style.ratingButton, { [$style.selected]: answers[currentQuestion.id] == rating }]"
-                    @click="answers[currentQuestion.id] = rating"
-                  >
-                    {{ rating }}
-                  </button>
-                </div>
-                <span :class="$style.ratingLabel">{{ getRatingLabel('max') }}</span>
+                <button
+                  v-for="rating in getRatingOptions(currentQuestion.options)"
+                  :key="rating"
+                  :class="[$style.ratingButton, { [$style.selected]: answers[currentQuestion.id] === rating }]"
+                  @click="answers[currentQuestion.id] = rating"
+                >
+                  <span :class="$style.ratingNumber">{{ rating }}</span>
+                  <i class="fas fa-star" :class="$style.ratingIcon"></i>
+                </button>
+              </div>
+              <div :class="$style.ratingLabels">
+                <span>{{ getRatingLabel('min') }}</span>
+                <span>{{ getRatingLabel('max') }}</span>
               </div>
             </div>
+
+            <!-- Yes/No -->
+            <div v-else-if="currentQuestion.question_type === 'yes_no'" :class="$style.yesNoWrapper">
+              <div :class="$style.yesNoTitle">
+                <div :class="$style.yesNoTitleIcon">
+                  <i class="fas fa-question-circle"></i>
+                </div>
+                <h3 :class="$style.yesNoTitleText">اختر إجابتك:</h3>
+                <p :class="$style.yesNoSubtitle">اختر الخيار الذي يناسب رأيك</p>
+              </div>
+              <div :class="$style.yesNoContainer">
+                <div :class="$style.yesNoButtons">
+                  <button
+                    :class="[$style.yesNoButton, $style.yes, { [$style.selected]: answers[currentQuestion.id] === 'yes' }]"
+                    @click="answers[currentQuestion.id] = 'yes'"
+                  >
+                    <div :class="$style.yesNoButtonIcon">
+                      <i class="fas fa-check"></i>
+                    </div>
+                    <span :class="$style.yesNoButtonText">نعم</span>
+                    <div :class="$style.yesNoButtonBadge" v-if="answers[currentQuestion.id] === 'yes'">
+                      <i class="fas fa-check-circle"></i>
+                    </div>
+                  </button>
+                  <button
+                    :class="[$style.yesNoButton, $style.no, { [$style.selected]: answers[currentQuestion.id] === 'no' }]"
+                    @click="answers[currentQuestion.id] = 'no'"
+                  >
+                    <div :class="$style.yesNoButtonIcon">
+                      <i class="fas fa-times"></i>
+                    </div>
+                    <span :class="$style.yesNoButtonText">لا</span>
+                    <div :class="$style.yesNoButtonBadge" v-if="answers[currentQuestion.id] === 'no'">
+                      <i class="fas fa-check-circle"></i>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Validation Error -->
+          <div v-if="questionError" :class="$style.errorMessage">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>{{ questionError }}</span>
           </div>
         </div>
       </div>
@@ -398,37 +446,36 @@
       <!-- Navigation -->
       <div :class="$style.formNavigation">
         <button
-          @click="previousQuestion"
-          :class="[$style.navButton, $style.prevButton]"
-          :disabled="currentQuestionIndex === 0"
+          v-if="currentQuestionIndex < survey.questions.length - 1"
+          :class="[$style.navButton, $style.next]"
+          @click="nextQuestion"
+          :disabled="!canProceed"
         >
-          <i class="fas fa-arrow-right"></i>
-          السابق
+          <span>السؤال التالي</span>
+          <i class="fas fa-arrow-left"></i>
+        </button>
+
+        <button
+          v-if="currentQuestionIndex === survey.questions.length - 1"
+          :class="[$style.navButton, $style.submit]"
+          @click="submitSurvey"
+          :disabled="!canSubmit || isSubmitting || (!hasValidContactForSubmission && !isContactRestricted)"
+        >
+          <i v-if="isSubmitting" class="fas fa-spinner fa-spin"></i>
+          <i v-else class="fas fa-paper-plane"></i>
+          <span>{{ isSubmitting ? 'جاري الإرسال...' : 'إرسال الاستطلاع' }}</span>
         </button>
 
         <div :class="$style.navSpacer"></div>
 
         <button
-          @click="nextQuestion"
-          :class="[$style.navButton, $style.prevButton]"
-          :disabled="!canProceed"
-          v-if="currentQuestionIndex < survey.questions.length - 1"
+          v-if="currentQuestionIndex > 0"
+          :class="$style.navButton"
+          @click="previousQuestion"
         >
-          التالي
-          <i class="fas fa-arrow-left"></i>
+          <i class="fas fa-arrow-right"></i>
+          <span>السؤال السابق</span>
         </button>
-
-        <button
-          @click="submitSurvey"
-          :class="[$style.navButton, $style.submitButton]"
-          :disabled="!canSubmit || isSubmitting || (!hasValidContactForSubmission && !isContactRestricted)"
-          v-else
-        >
-          <div v-if="isSubmitting" :class="$style.loadingSpinner"></div>
-          <i v-else class="fas fa-paper-plane"></i>
-          إرسال الإجابات
-        </button>
-      </div>
       </div>
     </div>
 
@@ -445,22 +492,8 @@
       </p>
       <button 
         v-if="isTimeoutError" 
-        :class="$style.refreshButton" 
+        :class="$style.secondaryButton" 
         @click="refreshPage"
-        style="
-          background: #007bff;
-          color: white;
-          border: none;
-          padding: 12px 24px;
-          border-radius: 8px;
-          font-size: 16px;
-          cursor: pointer;
-          margin-top: 20px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          transition: background-color 0.2s;
-        "
       >
         <i class="fas fa-sync-alt"></i>
         تحديث الصفحة
@@ -483,22 +516,8 @@
       </p>
       <button 
         v-if="isTimeoutError" 
-        :class="$style.refreshButton" 
+        :class="$style.secondaryButton" 
         @click="refreshPage"
-        style="
-          background: #007bff;
-          color: white;
-          border: none;
-          padding: 12px 24px;
-          border-radius: 8px;
-          font-size: 16px;
-          cursor: pointer;
-          margin-top: 20px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          transition: background-color 0.2s;
-        "
       >
         <i class="fas fa-sync-alt"></i>
         تحديث الصفحة
@@ -507,8 +526,7 @@
 
     <!-- Thank You Modal -->
     <ThankYouModal 
-      :isVisible="showThankYouModal" 
-      :isFromPublicSurvey="true"
+      :isVisible="showThankYouModal"
       @close="handleModalClose" 
     />
   </div>
@@ -1111,6 +1129,32 @@ const getRatingLabel = (type: 'min' | 'max'): string => {
     }
   } catch (error) {
     return type === 'min' ? 'ضعيف' : 'ممتاز'
+  }
+}
+
+const getRatingRange = (options: string | undefined): string => {
+  if (!options) return '1 إلى 5'
+  
+  try {
+    // Parse the JSON string to get the actual options array
+    const optionsArray = typeof options === 'string' ? JSON.parse(options) : options
+    
+    if (!Array.isArray(optionsArray) || optionsArray.length === 0) return '1 إلى 5'
+    
+    // Convert options to numbers for proper sorting
+    const numericOptions = optionsArray
+      .map((opt: any) => Number(opt))
+      .filter((num: number) => !isNaN(num))
+    
+    if (numericOptions.length === 0) return '1 إلى 5'
+    
+    const min = Math.min(...numericOptions)
+    const max = Math.max(...numericOptions)
+    
+    return `${min} إلى ${max}`
+  } catch (error) {
+    // Logging removed for production
+    return '1 إلى 5'
   }
 }
 

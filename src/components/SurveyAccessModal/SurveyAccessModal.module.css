@@ -1,5 +1,25 @@
 /* Modern Glassmorphism Survey Access Modal Styles */
 
+/*
+=== BRAND COLOR PALETTE ===
+Primary Gold: #A17D23 (161, 125, 35)
+Secondary Gold: #B78A41 (183, 138, 65) 
+Tertiary Gold: #CEA55B (206, 165, 91)
+Light Gold: #D3B079 (211, 176, 121)
+
+Gray Scale:
+Dark: #231F20 (35, 31, 32)
+Medium Dark: #4D4D4F (77, 77, 79)
+Medium: #808285 (128, 130, 133)
+Light: #E5E8E1 (229, 232, 225)
+
+Beige Tones:
+Dark Beige: #C2BA98 (194, 186, 152)
+Medium Beige: #D1C6AC (209, 198, 172)
+Light Beige: #D8CFBB (216, 207, 187)
+Warm Beige: #D6CDBD (214, 205, 189)
+*/
+
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -7,7 +27,7 @@
   right: 0;
   bottom: 0;
   background: 
-    radial-gradient(circle at 50% 50%, rgba(153, 122, 81, 0.15) 0%, transparent 70%);
+    radial-gradient(circle at 50% 50%, rgba(161, 125, 35, 0.15) 0%, transparent 70%);
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
   display: flex;
@@ -29,7 +49,7 @@
   max-height: 90vh;
   overflow: hidden;
   box-shadow: 
-    0 25px 50px rgba(153, 122, 81, 0.2),
+    0 25px 50px rgba(161, 125, 35, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   display: flex;
   flex-direction: column;
@@ -45,21 +65,21 @@
   right: 0;
   bottom: 0;
   background: 
-    linear-gradient(135deg, rgba(153, 122, 81, 0.05) 0%, rgba(207, 163, 101, 0.08) 100%);
+    linear-gradient(135deg, rgba(161, 125, 35, 0.05) 0%, rgba(183, 138, 65, 0.08) 100%);
   z-index: -1;
 }
 
 .modalContainer[data-theme="night"] {
   background: rgba(66, 64, 59, 0.25);
-  border: 1px solid rgba(153, 122, 81, 0.3);
+  border: 1px solid rgba(161, 125, 35, 0.3);
   box-shadow: 
-    0 25px 50px rgba(153, 122, 81, 0.3),
-    inset 0 1px 0 rgba(153, 122, 81, 0.2);
+    0 25px 50px rgba(161, 125, 35, 0.3),
+    inset 0 1px 0 rgba(161, 125, 35, 0.2);
 }
 
 .modalContainer[data-theme="night"]::before {
   background: 
-    linear-gradient(135deg, rgba(153, 122, 81, 0.1) 0%, rgba(207, 163, 101, 0.15) 100%);
+    linear-gradient(135deg, rgba(161, 125, 35, 0.1) 0%, rgba(183, 138, 65, 0.15) 100%);
 }
 
 @keyframes overlayFadeIn {
@@ -88,12 +108,12 @@
   justify-content: space-between;
   align-items: center;
   padding: 32px 40px 24px 40px;
-  border-bottom: 1px solid rgba(153, 122, 81, 0.1);
+  border-bottom: 1px solid rgba(161, 125, 35, 0.1);
   position: relative;
 }
 
 .modalContainer[data-theme="night"] .modalHeader {
-  border-bottom: 1px solid rgba(153, 122, 81, 0.2);
+  border-bottom: 1px solid rgba(161, 125, 35, 0.2);
 }
 
 .modalTitle {
@@ -112,21 +132,21 @@
 }
 
 .modalIcon {
-  color: #997A51;
+  color: #A17D23;
   font-size: 1.5rem;
-  filter: drop-shadow(0 2px 4px rgba(153, 122, 81, 0.3));
+  filter: drop-shadow(0 2px 4px rgba(161, 125, 35, 0.3));
 }
 
 .modalContainer[data-theme="night"] .modalIcon {
-  color: #CFA365;
-  filter: drop-shadow(0 2px 4px rgba(207, 163, 101, 0.4));
+  color: #B78A41;
+  filter: drop-shadow(0 2px 4px rgba(183, 138, 65, 0.4));
 }
 
 .closeButton {
   background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(153, 122, 81, 0.2);
+  border: 2px solid rgba(161, 125, 35, 0.2);
   font-size: 1.2rem;
-  color: #997A51;
+  color: #A17D23;
   cursor: pointer;
   padding: 12px;
   border-radius: 12px;
@@ -146,10 +166,10 @@
 }
 
 .closeButton:hover {
-  background: rgba(153, 122, 81, 0.15);
-  border-color: rgba(153, 122, 81, 0.4);
+  background: rgba(161, 125, 35, 0.15);
+  border-color: rgba(161, 125, 35, 0.4);
   transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 6px 20px rgba(153, 122, 81, 0.3);
+  box-shadow: 0 6px 20px rgba(161, 125, 35, 0.3);
 }
 
 .modalContainer[data-theme="night"] .closeButton:hover {
@@ -171,7 +191,7 @@
 .surveyInfo {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(15px);
-  border: 2px solid rgba(153, 122, 81, 0.15);
+  border: 2px solid rgba(161, 125, 35, 0.15);
   border-radius: 20px;
   padding: 24px;
   position: relative;
@@ -180,7 +200,7 @@
 
 .modalContainer[data-theme="night"] .surveyInfo {
   background: rgba(66, 64, 59, 0.15);
-  border-color: rgba(153, 122, 81, 0.25);
+  border-color: rgba(161, 125, 35, 0.25);
 }
 
 .surveyInfo::before {
@@ -191,7 +211,7 @@
   right: 0;
   bottom: 0;
   background: 
-    linear-gradient(135deg, rgba(153, 122, 81, 0.03) 0%, rgba(207, 163, 101, 0.05) 100%);
+    linear-gradient(135deg, rgba(161, 125, 35, 0.03) 0%, rgba(183, 138, 65, 0.05) 100%);
   z-index: -1;
 }
 
@@ -241,13 +261,13 @@
 }
 
 .sectionIcon {
-  color: #997A51;
+  color: #A17D23;
   font-size: 1.2rem;
-  filter: drop-shadow(0 2px 4px rgba(153, 122, 81, 0.3));
+  filter: drop-shadow(0 2px 4px rgba(161, 125, 35, 0.3));
 }
 
 .modalContainer[data-theme="night"] .sectionIcon {
-  color: #CFA365;
+  color: #B78A41;
 }
 
 /* Access Options */
@@ -258,7 +278,7 @@
 }
 
 .accessOption {
-  border: 2px solid rgba(153, 122, 81, 0.2);
+  border: 2px solid rgba(161, 125, 35, 0.2);
   border-radius: 20px;
   padding: 24px;
   cursor: pointer;
@@ -271,7 +291,7 @@
 
 .modalContainer[data-theme="night"] .accessOption {
   background: rgba(66, 64, 59, 0.15);
-  border-color: rgba(153, 122, 81, 0.3);
+  border-color: rgba(161, 125, 35, 0.3);
 }
 
 .accessOption::before {
@@ -281,7 +301,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(153, 122, 81, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(161, 125, 35, 0.1), transparent);
   transition: left 0.6s ease;
 }
 
@@ -290,10 +310,10 @@
 }
 
 .accessOption:hover {
-  border-color: rgba(153, 122, 81, 0.4);
+  border-color: rgba(161, 125, 35, 0.4);
   background: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(153, 122, 81, 0.2);
+  box-shadow: 0 8px 25px rgba(161, 125, 35, 0.2);
 }
 
 .modalContainer[data-theme="night"] .accessOption:hover {
@@ -347,15 +367,15 @@
 }
 
 .optionIcon.public {
-  background: linear-gradient(135deg, #997A51, #CFA365);
+  background: linear-gradient(135deg, #A17D23, #B78A41);
 }
 
 .optionIcon.auth {
-  background: linear-gradient(135deg, #AE5D5A, #997A51);
+  background: linear-gradient(135deg, #AE5D5A, #A17D23);
 }
 
 .optionIcon.private {
-  background: linear-gradient(135deg, #CFA365, #997A51);
+  background: linear-gradient(135deg, #B78A41, #A17D23);
 }
 
 .optionText {
@@ -388,7 +408,7 @@
 .optionRadio {
   width: 24px;
   height: 24px;
-  border: 2px solid rgba(153, 122, 81, 0.4);
+  border: 2px solid rgba(161, 125, 35, 0.4);
   border-radius: 50%;
   position: relative;
   background: rgba(255, 255, 255, 0.2);
@@ -397,8 +417,8 @@
 }
 
 .accessOption.selected .optionRadio {
-  border-color: #997A51;
-  background: rgba(153, 122, 81, 0.1);
+  border-color: #A17D23;
+  background: rgba(161, 125, 35, 0.1);
 }
 
 .accessOption.selected .optionRadio::after {
@@ -409,23 +429,23 @@
   transform: translate(-50%, -50%);
   width: 12px;
   height: 12px;
-  background: #997A51;
+  background: #A17D23;
   border-radius: 50%;
 }
 
 .modalContainer[data-theme="night"] .accessOption.selected .optionRadio::after {
-  background: #CFA365;
+  background: #B78A41;
 }
 
 /* Public Link Section */
 .publicLinkSection {
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid rgba(153, 122, 81, 0.2);
+  border-top: 1px solid rgba(161, 125, 35, 0.2);
 }
 
 .modalContainer[data-theme="night"] .publicLinkSection {
-  border-top: 1px solid rgba(153, 122, 81, 0.3);
+  border-top: 1px solid rgba(161, 125, 35, 0.3);
 }
 
 .linkContainer {
@@ -483,7 +503,7 @@
   display: flex;
   gap: 8px;
   margin-bottom: 16px;
-  background: rgba(153, 122, 81, 0.1);
+  background: rgba(161, 125, 35, 0.1);
   border-radius: 12px;
   padding: 4px;
 }
@@ -502,26 +522,26 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  color: #997A51;
+  color: #A17D23;
 }
 
 .toggleButton.active {
-  background: rgba(153, 122, 81, 0.15);
-  color: #997A51;
-  box-shadow: 0 2px 8px rgba(153, 122, 81, 0.2);
+  background: rgba(161, 125, 35, 0.15);
+  color: #A17D23;
+  box-shadow: 0 2px 8px rgba(161, 125, 35, 0.2);
 }
 
 .toggleButton:hover:not(.active) {
-  background: rgba(153, 122, 81, 0.05);
+  background: rgba(161, 125, 35, 0.05);
 }
 
 .modalContainer[data-theme="night"] .toggleButton {
-  color: #CFA365;
+  color: #B78A41;
 }
 
 .modalContainer[data-theme="night"] .toggleButton.active {
-  background: rgba(207, 163, 101, 0.15);
-  color: #CFA365;
+  background: rgba(183, 138, 65, 0.15);
+  color: #B78A41;
 }
 
 /* QR Code Display */
@@ -563,8 +583,8 @@
 }
 
 .qrActionButton {
-  background: rgba(153, 122, 81, 0.1);
-  border: 1px solid rgba(153, 122, 81, 0.3);
+  background: rgba(161, 125, 35, 0.1);
+  border: 1px solid rgba(161, 125, 35, 0.3);
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;
@@ -573,7 +593,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #997A51;
+  color: #A17D23;
   font-weight: 600;
   flex: 1;
   min-width: 80px;
@@ -581,17 +601,17 @@
 }
 
 .qrActionButton:hover {
-  background: rgba(153, 122, 81, 0.15);
+  background: rgba(161, 125, 35, 0.15);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(153, 122, 81, 0.2);
+  box-shadow: 0 4px 12px rgba(161, 125, 35, 0.2);
 }
 
 .modalContainer[data-theme="night"] .qrActionButton {
-  color: #CFA365;
+  color: #B78A41;
 }
 
 .modalContainer[data-theme="night"] .qrActionButton:hover {
-  background: rgba(207, 163, 101, 0.15);
+  background: rgba(183, 138, 65, 0.15);
 }
 
 /* Share Actions */
@@ -654,14 +674,14 @@
 }
 
 .shareButton:nth-child(3) {
-  background: linear-gradient(135deg, rgba(153, 122, 81, 0.1) 0%, rgba(153, 122, 81, 0.1) 100%);
-  border-color: rgba(153, 122, 81, 0.3);
-  color: #997A51;
+  background: linear-gradient(135deg, rgba(161, 125, 35, 0.1) 0%, rgba(161, 125, 35, 0.1) 100%);
+  border-color: rgba(161, 125, 35, 0.3);
+  color: #A17D23;
 }
 
 .shareButton:nth-child(3):hover {
-  background: linear-gradient(135deg, rgba(153, 122, 81, 0.15) 0%, rgba(153, 122, 81, 0.15) 100%);
-  box-shadow: 0 4px 12px rgba(153, 122, 81, 0.2);
+  background: linear-gradient(135deg, rgba(161, 125, 35, 0.15) 0%, rgba(161, 125, 35, 0.15) 100%);
+  box-shadow: 0 4px 12px rgba(161, 125, 35, 0.2);
 }
 
 /* Disabled state for share buttons */
@@ -684,7 +704,7 @@
 }
 
 .modalContainer[data-theme="night"] .shareButton:nth-child(3) {
-  color: #CFA365;
+  color: #B78A41;
 }
 
 .regenerateButton,
@@ -1032,14 +1052,14 @@
   justify-content: flex-end;
   gap: 20px;
   padding: 32px 40px;
-  border-top: 1px solid rgba(153, 122, 81, 0.1);
+  border-top: 1px solid rgba(161, 125, 35, 0.1);
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(15px);
 }
 
 .modalContainer[data-theme="night"] .modalFooter {
   background: rgba(66, 64, 59, 0.15);
-  border-top: 1px solid rgba(153, 122, 81, 0.2);
+  border-top: 1px solid rgba(161, 125, 35, 0.2);
 }
 
 .footerButton {
@@ -1074,8 +1094,8 @@
 
 .cancelButton {
   background: rgba(255, 255, 255, 0.2);
-  color: #997A51;
-  border: 2px solid rgba(153, 122, 81, 0.3);
+  color: #A17D23;
+  border: 2px solid rgba(161, 125, 35, 0.3);
 }
 
 .modalContainer[data-theme="night"] .cancelButton {
@@ -1085,10 +1105,10 @@
 }
 
 .cancelButton:hover {
-  background: rgba(153, 122, 81, 0.15);
-  border-color: rgba(153, 122, 81, 0.5);
+  background: rgba(161, 125, 35, 0.15);
+  border-color: rgba(161, 125, 35, 0.5);
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 25px rgba(153, 122, 81, 0.3);
+  box-shadow: 0 8px 25px rgba(161, 125, 35, 0.3);
 }
 
 .modalContainer[data-theme="night"] .cancelButton:hover {
@@ -1097,18 +1117,18 @@
 }
 
 .saveButton {
-  background: linear-gradient(135deg, #997A51 0%, #CFA365 100%);
+  background: linear-gradient(135deg, #A17D23 0%, #B78A41 100%);
   color: #FFFFFF;
   border: none;
   box-shadow: 
-    0 8px 25px rgba(153, 122, 81, 0.4),
+    0 8px 25px rgba(161, 125, 35, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .saveButton:hover:not(:disabled) {
   transform: translateY(-3px) scale(1.02);
   box-shadow: 
-    0 12px 35px rgba(153, 122, 81, 0.5),
+    0 12px 35px rgba(161, 125, 35, 0.5),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
@@ -1117,7 +1137,7 @@
   cursor: not-allowed;
   transform: none;
   box-shadow: 
-    0 4px 15px rgba(153, 122, 81, 0.2),
+    0 4px 15px rgba(161, 125, 35, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
@@ -1366,7 +1386,7 @@
 .radioButton {
   width: 18px; /* Reduced from 24px */
   height: 18px;
-  border: 2px solid rgba(153, 122, 81, 0.4);
+  border: 2px solid rgba(161, 125, 35, 0.4);
   border-radius: 50%;
   position: relative;
   background: rgba(255, 255, 255, 0.2);
@@ -1375,8 +1395,8 @@
 }
 
 .accessOption.selected .radioButton {
-  border-color: #997A51;
-  background: rgba(153, 122, 81, 0.1);
+  border-color: #A17D23;
+  background: rgba(161, 125, 35, 0.1);
 }
 
 .accessOption.selected .radioButton::after {
@@ -1387,19 +1407,19 @@
   transform: translate(-50%, -50%);
   width: 8px; /* Reduced from 12px */
   height: 8px;
-  background: #997A51;
+  background: #A17D23;
   border-radius: 50%;
 }
 
 .modalContainer[data-theme="night"] .accessOption.selected .radioButton::after {
-  background: #CFA365;
+  background: #B78A41;
 }
 
 /* Compact Public Link Section */
 .publicLinkSection {
   margin-top: 12px; /* Reduced from 20px */
   padding-top: 12px;
-  border-top: 1px solid rgba(153, 122, 81, 0.2);
+  border-top: 1px solid rgba(161, 125, 35, 0.2);
 }
 
 .linkDisplay {
@@ -1411,14 +1431,14 @@
 .linkInput {
   flex: 1;
   padding: 8px 12px; /* Reduced from 12px 16px */
-  border: 1px solid rgba(153, 122, 81, 0.3);
+  border: 1px solid rgba(161, 125, 35, 0.3);
   border-radius: 6px;
   font-size: 0.85rem;
   background: rgba(255, 255, 255, 0.8);
 }
 
 .copyButton {
-  background: #997A51;
+  background: #A17D23;
   color: white;
   border: none;
   border-radius: 6px;
@@ -1439,18 +1459,18 @@
 }
 
 .actionButton {
-  background: rgba(153, 122, 81, 0.1);
-  border: 1px solid rgba(153, 122, 81, 0.3);
+  background: rgba(161, 125, 35, 0.1);
+  border: 1px solid rgba(161, 125, 35, 0.3);
   border-radius: 6px;
   padding: 6px 8px; /* Compact buttons */
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 0.8rem;
-  color: #997A51;
+  color: #A17D23;
 }
 
 .actionButton:hover {
-  background: rgba(153, 122, 81, 0.2);
+  background: rgba(161, 125, 35, 0.2);
 }
 
 .actionButton.danger {
@@ -1463,7 +1483,7 @@
 }
 
 .generateButton {
-  background: #997A51;
+  background: #A17D23;
   color: white;
   border: none;
   border-radius: 6px;
@@ -1491,7 +1511,7 @@
 .privateUsersSection {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid rgba(153, 122, 81, 0.2);
+  border-top: 1px solid rgba(161, 125, 35, 0.2);
 }
 
 .userManagement {
@@ -1507,7 +1527,7 @@
 .searchInput {
   width: 100%;
   padding: 8px 12px 8px 35px; /* Compact padding */
-  border: 1px solid rgba(153, 122, 81, 0.3);
+  border: 1px solid rgba(161, 125, 35, 0.3);
   border-radius: 6px;
   font-size: 0.85rem;
   background: rgba(255, 255, 255, 0.8);
@@ -1518,7 +1538,7 @@
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #997A51;
+  color: #A17D23;
   opacity: 0.6;
   font-size: 0.8rem;
 }
@@ -1532,7 +1552,7 @@
   backdrop-filter: blur(20px);
   border: 1px solid rgba(153, 122, 81, 0.2);
   border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(153, 122, 81, 0.15);
+  box-shadow: 0 4px 12px rgba(161, 125, 35, 0.15);
   z-index: 100;
   max-height: 120px; /* Compact height */
   overflow-y: auto;
@@ -1549,7 +1569,7 @@
 }
 
 .searchResultItem:hover {
-  background: rgba(153, 122, 81, 0.1);
+  background: rgba(161, 125, 35, 0.1);
 }
 
 .userName {
@@ -1567,7 +1587,7 @@
   gap: 6px;
   font-size: 0.8rem;
   color: rgba(38, 38, 38, 0.7);
-  background: rgba(153, 122, 81, 0.1);
+  background: rgba(161, 125, 35, 0.1);
   padding: 6px 10px;
   border-radius: 12px;
   width: fit-content;
@@ -1575,7 +1595,7 @@
 
 .modalContainer[data-theme="night"] .usersCount {
   color: rgba(245, 243, 238, 0.7);
-  background: rgba(153, 122, 81, 0.2);
+  background: rgba(161, 125, 35, 0.2);
 }
 
 /* Groups Section */
@@ -1831,7 +1851,7 @@
 }
 
 .modalContainer[data-theme="night"] .adminLevel {
-  color: rgba(207, 163, 101, 0.9);
+  color: rgba(183, 138, 65, 0.9);
 }
 
 .modalContainer[data-theme="night"] .customCheckbox {
@@ -1842,7 +1862,7 @@
 .modalContainer[data-theme="night"] .bulkActionButton {
   background: rgba(0, 123, 255, 0.15);
   border-color: rgba(0, 123, 255, 0.3);
-  color: rgba(207, 163, 101, 0.9);
+  color: rgba(183, 138, 65, 0.9);
 }
 
 .modalContainer[data-theme="night"] .bulkActionButton:hover:not(:disabled) {
@@ -1946,8 +1966,8 @@
 .contactMethodSection {
   margin-bottom: 24px;
   padding: 20px;
-  background: rgba(153, 122, 81, 0.05);
-  border: 1px solid rgba(153, 122, 81, 0.1);
+  background: rgba(161, 125, 35, 0.05);
+  border: 1px solid rgba(161, 125, 35, 0.1);
   border-radius: 12px;
 }
 
@@ -1966,7 +1986,7 @@
 }
 
 .contactMethodTitle i {
-  color: #997A51;
+  color: #A17D23;
 }
 
 .contactMethodDescription {
@@ -1988,20 +2008,20 @@
   gap: 12px;
   padding: 16px;
   background: white;
-  border: 2px solid rgba(153, 122, 81, 0.2);
+  border: 2px solid rgba(161, 125, 35, 0.2);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .contactMethodOption:hover {
-  background: rgba(153, 122, 81, 0.05);
-  border-color: rgba(153, 122, 81, 0.3);
+  background: rgba(161, 125, 35, 0.05);
+  border-color: rgba(161, 125, 35, 0.3);
 }
 
 .contactMethodOption.selected {
-  background: rgba(153, 122, 81, 0.1);
-  border-color: #997A51;
+  background: rgba(161, 125, 35, 0.1);
+  border-color: #A17D23;
 }
 
 .contactMethodRadio {
@@ -2015,7 +2035,7 @@
 }
 
 .contactMethodOption.selected .contactMethodRadio {
-  border-color: #997A51;
+  border-color: #A17D23;
 }
 
 .radioSelected2 {
@@ -2025,7 +2045,7 @@
   transform: translate(-50%, -50%);
   width: 10px;
   height: 10px;
-  background: #997A51;
+  background: #A17D23;
   border-radius: 50%;
 }
 
@@ -2037,7 +2057,7 @@
 }
 
 .contactMethodIcon {
-  color: #997A51;
+  color: #A17D23;
   font-size: 1rem;
   width: 20px;
   text-align: center;

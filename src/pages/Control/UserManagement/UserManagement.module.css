@@ -10,7 +10,7 @@
   --glass-border: 1px solid rgba(255, 255, 255, 0.2);
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
   --glass-blur: blur(12px);
-  --glass-glow: 0 0 30px rgba(207, 163, 101, 0.3);
+  --glass-glow: 0 0 30px rgba(161, 125, 35, 0.3);
   
   /* Animation Variables */
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -22,16 +22,16 @@
 [data-theme="light"] {
   --bg-primary: #F5F3EE;
   --bg-secondary: #FFFFFF;
-  --bg-glass: rgba(245, 243, 238, 0.25);
-  --bg-glass-hover: rgba(245, 243, 238, 0.35);
+  --bg-glass: rgba(161, 125, 35, 0.05);
+  --bg-glass-hover: rgba(161, 125, 35, 0.1);
   --bg-card: rgba(255, 255, 255, 0.8);
   --text-primary: #262626;
   --text-secondary: #5E4E3F;
-  --text-muted: #997A51;
-  --accent-primary: #CFA365;
-  --accent-secondary: #997A51;
+  --text-muted: rgba(161, 125, 35, 0.8);
+  --accent-primary: #A17D23;
+  --accent-secondary: #B78A41;
   --accent-danger: #AE5D5A;
-  --border-color: rgba(151, 122, 81, 0.2);
+  --border-color: rgba(161, 125, 35, 0.2);
   --shadow-color: rgba(38, 38, 38, 0.1);
   --shadow-hover: rgba(38, 38, 38, 0.15);
 }
@@ -39,16 +39,16 @@
 [data-theme="dark"] {
   --bg-primary: #262626;
   --bg-secondary: #42403B;
-  --bg-glass: rgba(66, 64, 59, 0.25);
-  --bg-glass-hover: rgba(66, 64, 59, 0.35);
+  --bg-glass: rgba(161, 125, 35, 0.1);
+  --bg-glass-hover: rgba(161, 125, 35, 0.15);
   --bg-card: rgba(94, 78, 63, 0.4);
   --text-primary: #F5F3EE;
   --text-secondary: #E5D2BA;
-  --text-muted: #CFA365;
-  --accent-primary: #CFA365;
-  --accent-secondary: #997A51;
+  --text-muted: rgba(161, 125, 35, 0.9);
+  --accent-primary: #A17D23;
+  --accent-secondary: #B78A41;
   --accent-danger: #AE5D5A;
-  --border-color: rgba(207, 163, 101, 0.3);
+  --border-color: rgba(161, 125, 35, 0.3);
   --shadow-color: rgba(0, 0, 0, 0.3);
   --shadow-hover: rgba(0, 0, 0, 0.4);
 }
@@ -140,13 +140,13 @@
 
 .primaryBtn {
   background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
-  color: var(--text-primary);
-  border: 1px solid rgba(207, 163, 101, 0.3);
+  color: white;
+  border: 1px solid rgba(161, 125, 35, 0.3);
 }
 
 .primaryBtn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(207, 163, 101, 0.4);
+  box-shadow: 0 8px 25px rgba(161, 125, 35, 0.4);
 }
 
 .secondaryBtn {
@@ -240,7 +240,7 @@
   font-size: 1.5rem;
   color: white;
   background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
-  box-shadow: 0 4px 16px rgba(207, 163, 101, 0.3);
+  box-shadow: 0 4px 16px rgba(161, 125, 35, 0.3);
 }
 
 .statContent {
@@ -263,19 +263,19 @@
 
 /* Stat card variants */
 .totalUsers .statIcon {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: linear-gradient(135deg, #A17D23 0%, #B78A41 100%);
 }
 
 .activeUsers .statIcon {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  background: linear-gradient(135deg, #B78A41 0%, #CEA55B 100%);
 }
 
 .totalGroups .statIcon {
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  background: linear-gradient(135deg, #CEA55B 0%, #D3B079 100%);
 }
 
 .admins .statIcon {
-  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  background: linear-gradient(135deg, #D3B079 0%, #A17D23 100%);
 }
 
 /* === MAIN CONTENT === */

@@ -1,5 +1,5 @@
 <template>
-  <div :class="$style.authSurveyContainer" :data-theme="currentTheme" :dir="isRTL ? 'rtl' : 'ltr'">
+  <div :class="$style.publicSurveyContainer" :data-theme="currentTheme" :dir="isRTL ? 'rtl' : 'ltr'">
     <!-- Loading State -->
     <div v-if="isLoading" :class="$style.loadingContainer">
       <div :class="$style.loadingSpinner"></div>
@@ -11,9 +11,9 @@
       <div :class="$style.deniedIcon">
         <i class="fas fa-lock"></i>
       </div>
-      <h2 :class="$style.deniedTitle">{{ t('survey.auth.accessDenied') }}</h2>
+      <h2 :class="$style.deniedTitle">الوصول مرفوض</h2>
       <p :class="$style.deniedMessage">{{ accessMessage }}</p>
-      <button :class="$style.backButton" @click="goBack">
+      <button :class="$style.secondaryButton" @click="goBack">
         <i class="fas fa-arrow-left"></i>
         {{ t('common.goBack') }}
       </button>
@@ -26,7 +26,7 @@
       </div>
       <h2 :class="$style.errorTitle">خطأ</h2>
       <p :class="$style.errorMessage">{{ error }}</p>
-      <button :class="$style.retryButton" @click="loadSurvey">
+      <button :class="$style.secondaryButton" @click="loadSurvey">
         <i class="fas fa-redo"></i>
         إعادة المحاولة
       </button>
@@ -40,11 +40,11 @@
       <h2 :class="$style.errorTitle">انتهت مهلة الطلب</h2>
       <p :class="$style.errorMessage">فشل في تحميل الاستطلاع خلال 15 ثانية</p>
       <div :class="$style.errorActions">
-        <button :class="$style.retryButton" @click="loadSurvey">
+        <button :class="$style.secondaryButton" @click="loadSurvey">
           <i class="fas fa-redo"></i>
           إعادة المحاولة
         </button>
-        <button :class="$style.refreshButton" @click="refreshPage">
+        <button :class="$style.secondaryButton" @click="refreshPage">
           <i class="fas fa-sync-alt"></i>
           تحديث الصفحة
         </button>
@@ -66,11 +66,11 @@
         <div :class="$style.surveyMeta">
           <div :class="$style.metaItem">
             <i class="fas fa-question-circle"></i>
-            <span>{{ survey.questions_count || survey.questions.length }} {{ t('survey.auth.questionsCount') }}</span>
+            <span>{{ survey.questions_count || survey.questions.length }} سؤال</span>
           </div>
           <div :class="$style.metaItem">
             <i class="fas fa-user-shield"></i>
-            <span>{{ t('survey.auth.authenticatedSurvey') }}</span>
+            <span>استطلاع محمي</span>
           </div>
         </div>
       </div>
@@ -81,8 +81,8 @@
           <div :class="$style.welcomeIcon">
             <i class="fas fa-heart"></i>
           </div>
-          <h3 :class="$style.welcomeTitle">{{ t('survey.auth.welcomeTitle') }}</h3>
-          <p :class="$style.welcomeText">{{ t('survey.auth.welcomeText') }}</p>
+          <h3 :class="$style.welcomeTitle">أهلاً وسهلاً بك في الاستطلاع المحمي</h3>
+          <p :class="$style.welcomeText">نقدر وقتك وآرائك القيمة. هذا الاستطلاع محمي ويتطلب المصادقة للوصول إليه. إجاباتك ستساعدنا في تحسين خدماتنا وتطوير تجربة أفضل للجميع.</p>
         </div>
       </div>
 
@@ -91,13 +91,13 @@
       <div :class="$style.actionButtons">
         <button :class="$style.startButton" @click="startSurvey">
           <i class="fas fa-play"></i>
-          {{ t('survey.auth.startSurvey') }}
+          <span>ابدأ الاستطلاع الآن</span>
         </button>
         
         <div :class="$style.secondaryActions">
           <button :class="$style.secondaryButton" @click="goBack">
             <i class="fas fa-arrow-left"></i>
-            {{ t('common.goBack') }}
+            <span>العودة</span>
           </button>
         </div>
       </div>
@@ -111,7 +111,7 @@
           <h1 :class="$style.formTitle">{{ survey.title }}</h1>
           <div :class="$style.formSubtitle">
             <i class="fas fa-user-edit"></i>
-            <span>{{ t('survey.auth.pleaseAnswer') }}</span>
+            <span>يرجى الإجابة على الأسئلة التالية بعناية</span>
           </div>
         </div>
         
@@ -121,7 +121,7 @@
           </div>
           <div :class="$style.progressInfo">
             <span :class="$style.progressText">
-              {{ t('survey.progress.currentQuestion') }}: {{ currentQuestionIndex + 1 }}/{{ survey.questions.length }}
+              السؤال {{ currentQuestionIndex + 1 }} من {{ survey.questions.length }}
             </span>
           </div>
         </div>
@@ -140,7 +140,7 @@
             </h2>
             <div v-if="currentQuestion.is_required" :class="$style.requiredNote">
               <i class="fas fa-star"></i>
-              <span>{{ t('survey.requiredField') }}</span>
+              <span>هذا السؤال مطلوب</span>
             </div>
           </div>
 
@@ -151,7 +151,7 @@
                 type="text"
                 :class="$style.textInput"
                 v-model="answers[currentQuestion.id]"
-                :placeholder="t('survey.placeholders.shortText')"
+                placeholder="اكتب إجابتك هنا..."
               />
               <i class="fas fa-pen" :class="$style.inputIcon"></i>
             </div>
@@ -163,7 +163,7 @@
               <textarea
                 :class="$style.textArea"
                 v-model="answers[currentQuestion.id]"
-                :placeholder="t('survey.placeholders.longText')"
+                placeholder="اكتب إجابتك المفصلة هنا... يمكنك كتابة عدة أسطر"
                 rows="4"
               ></textarea>
               <i class="fas fa-align-right" :class="$style.inputIcon"></i>
@@ -174,10 +174,10 @@
           <div v-else-if="currentQuestion.question_type === 'single_choice'" :class="$style.choicesContainer">
             <div :class="$style.choicesTitle">
               <i class="fas fa-dot-circle"></i>
-              <span>{{ t('survey.singleChoice.instruction') }}</span>
+              <span>اختر إجابة واحدة:</span>
             </div>
             <div
-              v-for="(option, index) in currentQuestion.options"
+              v-for="(option, index) in getQuestionOptions(currentQuestion.options)"
               :key="index"
               :class="[$style.choiceOption, { [$style.selected]: answers[currentQuestion.id] === option }]"
               @click="answers[currentQuestion.id] = option"
@@ -196,10 +196,10 @@
           <div v-else-if="currentQuestion.question_type === 'multiple_choice'" :class="$style.choicesContainer">
             <div :class="$style.choicesTitle">
               <i class="fas fa-check-square"></i>
-              <span>{{ t('survey.multipleChoice.instruction') }}</span>
+              <span>يمكنك اختيار أكثر من إجابة:</span>
             </div>
             <div
-              v-for="(option, index) in currentQuestion.options"
+              v-for="(option, index) in getQuestionOptions(currentQuestion.options)"
               :key="index"
               :class="[$style.choiceOption, { [$style.selected]: isOptionSelected(currentQuestion.id, option) }]"
               @click="toggleMultipleChoice(currentQuestion.id, option)"
@@ -218,11 +218,11 @@
           <div v-else-if="currentQuestion.question_type === 'rating'" :class="$style.ratingContainer">
             <div :class="$style.ratingTitle">
               <i class="fas fa-star"></i>
-              <span>{{ t('survey.rating.instruction') }}</span>
+              <span>قيم من {{ getRatingRange(currentQuestion.options) }}:</span>
             </div>
             <div :class="$style.ratingScale">
               <button
-                v-for="rating in currentQuestion.options"
+                v-for="rating in getRatingOptions(currentQuestion.options)"
                 :key="rating"
                 :class="[$style.ratingButton, { [$style.selected]: answers[currentQuestion.id] === rating }]"
                 @click="answers[currentQuestion.id] = rating"
@@ -232,38 +232,53 @@
               </button>
             </div>
             <div :class="$style.ratingLabels">
-              <span>{{ t('survey.rating.poor') }}</span>
-              <span>{{ t('survey.rating.excellent') }}</span>
+              <span>{{ getRatingLabel('min') }}</span>
+              <span>{{ getRatingLabel('max') }}</span>
             </div>
           </div>
 
           <!-- Yes/No -->
-          <div v-else-if="currentQuestion.question_type === 'yes_no'" :class="$style.yesNoContainer">
+          <div v-else-if="currentQuestion.question_type === 'yes_no'" :class="$style.yesNoWrapper">
             <div :class="$style.yesNoTitle">
-              <i class="fas fa-question-circle"></i>
-              <span>{{ t('survey.yesNo.instruction') }}</span>
+              <div :class="$style.yesNoTitleIcon">
+                <i class="fas fa-question-circle"></i>
+              </div>
+              <h3 :class="$style.yesNoTitleText">اختر إجابتك:</h3>
+              <p :class="$style.yesNoSubtitle">اختر الخيار الذي يناسب رأيك</p>
             </div>
-            <div :class="$style.yesNoButtons">
-              <button
-                :class="[$style.yesNoButton, $style.yes, { [$style.selected]: answers[currentQuestion.id] === 'yes' }]"
-                @click="answers[currentQuestion.id] = 'yes'"
-              >
-                <i class="fas fa-check"></i>
-                <span>{{ t('survey.yesNo.yes') }}</span>
-              </button>
-              <button
-                :class="[$style.yesNoButton, $style.no, { [$style.selected]: answers[currentQuestion.id] === 'no' }]"
-                @click="answers[currentQuestion.id] = 'no'"
-              >
-                <i class="fas fa-times"></i>
-                <span>{{ t('survey.yesNo.no') }}</span>
-              </button>
+            <div :class="$style.yesNoContainer">
+              <div :class="$style.yesNoButtons">
+                <button
+                  :class="[$style.yesNoButton, $style.yes, { [$style.selected]: answers[currentQuestion.id] === 'yes' }]"
+                  @click="answers[currentQuestion.id] = 'yes'"
+                >
+                  <div :class="$style.yesNoButtonIcon">
+                    <i class="fas fa-check"></i>
+                  </div>
+                  <span :class="$style.yesNoButtonText">نعم</span>
+                  <div :class="$style.yesNoButtonBadge" v-if="answers[currentQuestion.id] === 'yes'">
+                    <i class="fas fa-check-circle"></i>
+                  </div>
+                </button>
+                <button
+                  :class="[$style.yesNoButton, $style.no, { [$style.selected]: answers[currentQuestion.id] === 'no' }]"
+                  @click="answers[currentQuestion.id] = 'no'"
+                >
+                  <div :class="$style.yesNoButtonIcon">
+                    <i class="fas fa-times"></i>
+                  </div>
+                  <span :class="$style.yesNoButtonText">لا</span>
+                  <div :class="$style.yesNoButtonBadge" v-if="answers[currentQuestion.id] === 'no'">
+                    <i class="fas fa-check-circle"></i>
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
 
           <!-- Validation Error -->
           <div v-if="questionError" :class="$style.errorMessage">
-            <i class="fas fa-exclamation-circle"></i>
+            <i class="fas fa-exclamation-triangle"></i>
             <span>{{ questionError }}</span>
           </div>
         </div>
@@ -626,10 +641,109 @@ const toggleMultipleChoice = (questionId: string, option: string) => {
   }
 }
 
+const getRatingRange = (options: string | undefined): string => {
+  if (!options) return '1 إلى 5'
+  
+  try {
+    // Parse the JSON string to get the actual options array
+    const optionsArray = typeof options === 'string' ? JSON.parse(options) : options
+    
+    if (!Array.isArray(optionsArray) || optionsArray.length === 0) return '1 إلى 5'
+    
+    // Convert options to numbers for proper sorting
+    const numericOptions = optionsArray
+      .map((opt: any) => Number(opt))
+      .filter((num: number) => !isNaN(num))
+    
+    if (numericOptions.length === 0) return '1 إلى 5'
+    
+    const min = Math.min(...numericOptions)
+    const max = Math.max(...numericOptions)
+    
+    return `${min} إلى ${max}`
+  } catch (error) {
+    // Logging removed for production
+    return '1 إلى 5'
+  }
+}
+
+const getQuestionOptions = (options: string | undefined): string[] => {
+  if (!options) return []
+  
+  try {
+    // Parse the JSON string to get the actual options array
+    const optionsArray = typeof options === 'string' ? JSON.parse(options) : options
+    
+    if (!Array.isArray(optionsArray)) {
+      return []
+    }
+    
+    return optionsArray.map((opt: any) => String(opt))
+  } catch (error) {
+    // Logging removed for production
+    return []
+  }
+}
+
+const getRatingOptions = (options: string | undefined): any[] => {
+  if (!options) return [1, 2, 3, 4, 5]
+  
+  try {
+    // Parse the JSON string to get the actual options array
+    const optionsArray = typeof options === 'string' ? JSON.parse(options) : options
+    
+    if (!Array.isArray(optionsArray) || optionsArray.length === 0) {
+      return [1, 2, 3, 4, 5]
+    }
+    
+    // Sort the options numerically if they are numbers
+    const numericOptions = optionsArray
+      .map((opt: any) => Number(opt))
+      .filter((num: number) => !isNaN(num))
+      .sort((a: number, b: number) => a - b)
+    
+    return numericOptions.length > 0 ? numericOptions : optionsArray
+  } catch (error) {
+    // Logging removed for production
+    return [1, 2, 3, 4, 5]
+  }
+}
+
+const getRatingLabel = (type: 'min' | 'max'): string => {
+  if (!currentQuestion.value || !currentQuestion.value.options) {
+    return type === 'min' ? 'ضعيف' : 'ممتاز'
+  }
+  
+  try {
+    // Parse the JSON string to get the actual options array
+    const optionsArray = typeof currentQuestion.value.options === 'string' 
+      ? JSON.parse(currentQuestion.value.options) 
+      : currentQuestion.value.options
+      
+    if (!Array.isArray(optionsArray) || optionsArray.length === 0) {
+      return type === 'min' ? 'ضعيف' : 'ممتاز'
+    }
+    
+    // Convert options to numbers for proper sorting
+    const numericOptions = optionsArray
+      .map((opt: any) => Number(opt))
+      .filter((num: number) => !isNaN(num))
+      .sort((a: number, b: number) => a - b)
+    
+    if (numericOptions.length === 0) {
+      return type === 'min' ? 'ضعيف' : 'ممتاز'
+    }
+    
+    return type === 'min' ? `${numericOptions[0]}` : `${numericOptions[numericOptions.length - 1]}`
+  } catch (error) {
+    return type === 'min' ? 'ضعيف' : 'ممتاز'
+  }
+}
+
 // Lifecycle
 onMounted(() => {
   loadSurvey()
 })
 </script>
 
-<style module src="./AuthSurveyView.module.css"></style>
+<style module src="./PublicSurveyView.module.css"></style>

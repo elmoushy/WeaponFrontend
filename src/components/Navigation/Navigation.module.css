@@ -1,4 +1,24 @@
 /* Modern Navigation Styles */
+/* 
+=== BRAND COLOR PALETTE ===
+Gold/Bronze Shades:
+  #A17D23 (161, 125, 35)
+  #B78A41 (183, 138, 65)
+  #CEA55B (206, 165, 91)
+  #D3B079 (211, 176, 121)
+
+Gray/Neutral Shades:
+  #231F20 (35, 31, 32)
+  #4D4D4F (77, 77, 79)
+  #808285 (128, 130, 133)
+  #E5E8E1 (229, 232, 225)
+
+Beige/Tan Shades:
+  #C2BA98 (194, 186, 152)
+  #D1C6AC (209, 198, 172)
+  #D8CFBB (216, 207, 187)
+  #D6CDBD (214, 205, 189)
+*/
 
 /* Header Container */
 .header {
@@ -15,8 +35,8 @@
 }
 
 .header[data-theme="night"] {
-  background: rgba(38, 38, 38, 0.95);
-  border-bottom: 1px solid rgba(94, 78, 63, 0.3);
+  background: rgba(35, 31, 32, 0.95);
+  border-bottom: 1px solid rgba(161, 125, 35, 0.3);
 }
 
 /* Navigation Container */
@@ -38,13 +58,13 @@
   gap: 0.75rem;
   font-weight: 700;
   font-size: 1.5rem;
-  color: #1e293b;
+  color: #231F20;
   text-decoration: none;
   transition: all 0.3s ease;
 }
 
 .header[data-theme="night"] .logo {
-  color: #F5F3EE;
+  color: #E5E8E1;
 }
 
 .logoIcon {
@@ -56,7 +76,7 @@
 }
 
 .logoText {
-  background: linear-gradient(135deg, #CFA365, #997A51);
+  background: linear-gradient(135deg, #B78A41, #A17D23);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -65,7 +85,7 @@
 }
 
 .header[data-theme="night"] .logoText {
-  background: linear-gradient(135deg, #CFA365, #997A51);
+  background: linear-gradient(135deg, #B78A41, #A17D23);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -85,7 +105,7 @@
   padding: 0.75rem 1rem;
   border-radius: 12px;
   text-decoration: none;
-  color: #64748b;
+  color: #4D4D4F;
   font-weight: 500;
   font-size: 0.9rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -100,14 +120,14 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #997A51, #CFA365);
+  background: linear-gradient(135deg, #A17D23, #B78A41);
   opacity: 0;
   transition: opacity 0.3s ease;
   border-radius: 12px;
 }
 
 .navLink:hover {
-  color: #1e293b;
+  color: #231F20;
   transform: translateY(-1px);
 }
 
@@ -116,9 +136,9 @@
 }
 
 .navLink.active {
-  background: linear-gradient(135deg, #997A51, #CFA365);
-  color: #F5F3EE;
-  box-shadow: 0 4px 20px rgba(174, 93, 90, 0.3);
+  background: linear-gradient(135deg, #A17D23, #B78A41);
+  color: #E5E8E1;
+  box-shadow: 0 4px 20px rgba(161, 125, 35, 0.3);
 }
 
 .navLink.active::before {
@@ -126,11 +146,11 @@
 }
 
 .header[data-theme="night"] .navLink {
-  color: #909090;
+  color: #808285;
 }
 
 .header[data-theme="night"] .navLink:hover {
-  color: #F5F3EE;
+  color: #E5E8E1;
 }
 
 .navLink i {
@@ -153,26 +173,26 @@
   cursor: pointer;
   padding: 0.75rem;
   border-radius: 12px;
-  color: #64748b;
+  color: #4D4D4F;
   transition: all 0.3s ease;
-  background: rgba(229, 210, 186, 0.1);
+  background: rgba(194, 186, 152, 0.1);
 }
 
 .notifications:hover {
-  background: rgba(229, 210, 186, 0.2);
+  background: rgba(194, 186, 152, 0.2);
   transform: scale(1.05);
 }
 
 .header[data-theme="night"] .notifications {
-  color: #909090;
-  background: rgba(94, 78, 63, 0.2);
+  color: #808285;
+  background: rgba(161, 125, 35, 0.2);
 }
 
 .badge {
   position: absolute;
   top: 0.25rem;
   right: 0.25rem;
-  background: linear-gradient(135deg, #AE5D5A, #997A51);
+  background: linear-gradient(135deg, #A17D23, #B78A41);
   color: #F5F3EE;
   font-size: 0.7rem;
   font-weight: 600;
@@ -211,14 +231,14 @@
 }
 
 .header[data-theme="night"] .userInfo:hover {
-  background: rgba(94, 78, 63, 0.3);
+  background: rgba(161, 125, 35, 0.3);
 }
 
 .userAvatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #997A51, #CFA365);
+  background: linear-gradient(135deg, #A17D23, #B78A41);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -233,7 +253,7 @@
   position: absolute;
   inset: -2px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #997A51, #CFA365);
+  background: linear-gradient(135deg, #A17D23, #B78A41);
   z-index: -1;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -252,7 +272,7 @@
 
 .username {
   font-weight: 600;
-  color: #1e293b;
+  color: #231F20;
   font-size: 0.9rem;
 }
 
@@ -282,7 +302,7 @@
   background: #42403B;
   box-shadow: 
     0 25px 50px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(94, 78, 63, 0.3);
+    0 0 0 1px rgba(161, 125, 35, 0.3);
 }
 
 @keyframes userDropdownSlide {
@@ -299,7 +319,7 @@
 /* User Profile Header Section */
 .userDropdownHeader {
   padding: 1.5rem;
-  background: linear-gradient(135deg, #997A51, #CFA365);
+  background: linear-gradient(135deg, #A17D23, #B78A41);
   background-size: 200% 200%;
   animation: gradientShift 6s ease infinite;
   position: relative;
@@ -407,7 +427,7 @@
   gap: 1rem;
   padding: 1rem 1.5rem;
   text-decoration: none;
-  color: #1e293b;
+  color: #231F20;
   background: none;
   border: none;
   width: 100%;
@@ -425,7 +445,7 @@
   top: 0;
   bottom: 0;
   width: 4px;
-  background: linear-gradient(135deg, #997A51, #CFA365);
+  background: linear-gradient(135deg, #A17D23, #B78A41);
   transform: scaleY(0);
   transition: transform 0.3s ease;
 }
@@ -435,8 +455,8 @@
 }
 
 .userDropdownLink:hover {
-  background: rgba(153, 122, 81, 0.08);
-  color: #997A51;
+  background: rgba(161, 125, 35, 0.08);
+  color: #A17D23;
   transform: translateX(4px);
 }
 
@@ -445,31 +465,31 @@
 }
 
 .header[data-theme="night"] .userDropdownLink:hover {
-  background: rgba(153, 122, 81, 0.15);
-  color: #CFA365;
+  background: rgba(161, 125, 35, 0.15);
+  color: #B78A41;
 }
 
 .linkIcon {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: rgba(153, 122, 81, 0.1);
+  background: rgba(161, 125, 35, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #997A51;
+  color: #A17D23;
   font-size: 1rem;
   transition: all 0.3s ease;
 }
 
 .userDropdownLink:hover .linkIcon {
-  background: rgba(153, 122, 81, 0.2);
+  background: rgba(161, 125, 35, 0.2);
   transform: scale(1.1);
 }
 
 .header[data-theme="night"] .linkIcon {
-  background: rgba(153, 122, 81, 0.2);
-  color: #CFA365;
+  background: rgba(161, 125, 35, 0.2);
+  color: #B78A41;
 }
 
 .linkContent {

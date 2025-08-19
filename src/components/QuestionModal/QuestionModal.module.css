@@ -1,5 +1,25 @@
 /* Modern Glassmorphism Question Modal Styles */
 
+/*
+Brand Color Palette:
+Primary Gold: #A17D23 (161, 125, 35)
+Secondary Gold: #B78A41 (183, 138, 65) 
+Tertiary Gold: #CEA55B (206, 165, 91)
+Light Gold: #D3B079 (211, 176, 121)
+
+Gray Scale:
+Dark: #231F20 (35, 31, 32)
+Medium Dark: #4D4D4F (77, 77, 79)
+Medium: #808285 (128, 130, 133)
+Light: #E5E8E1 (229, 232, 225)
+
+Beige Tones:
+Dark Beige: #C2BA98 (194, 186, 152)
+Medium Beige: #D1C6AC (209, 198, 172)
+Light Beige: #D8CFBB (216, 207, 187)
+Warm Beige: #D6CDBD (214, 205, 189)
+*/
+
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -7,7 +27,7 @@
   right: 0;
   bottom: 0;
   background: 
-    radial-gradient(circle at 50% 50%, rgba(153, 122, 81, 0.15) 0%, transparent 70%);
+    radial-gradient(circle at 50% 50%, rgba(161, 125, 35, 0.15) 0%, transparent 70%);
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
   display: flex;
@@ -15,7 +35,6 @@
   justify-content: center;
   z-index: 1100;
   padding: 20px;
-  animation: overlayFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modalContainer {
@@ -28,10 +47,9 @@
   max-height: 85vh;
   overflow: hidden;
   box-shadow: 
-    0 25px 50px rgba(153, 122, 81, 0.2),
+    0 25px 50px rgba(161, 125, 35, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.25);
-  animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
 
@@ -43,21 +61,21 @@
   right: 0;
   bottom: 0;
   background: 
-    linear-gradient(135deg, rgba(153, 122, 81, 0.05) 0%, rgba(207, 163, 101, 0.08) 100%);
+    linear-gradient(135deg, rgba(161, 125, 35, 0.05) 0%, rgba(183, 138, 65, 0.08) 100%);
   z-index: -1;
 }
 
 .modalContainer[data-theme="night"] {
   background: rgba(66, 64, 59, 0.85);
-  border: 1px solid rgba(153, 122, 81, 0.3);
+  border: 1px solid rgba(161, 125, 35, 0.3);
   box-shadow: 
-    0 25px 50px rgba(153, 122, 81, 0.3),
-    inset 0 1px 0 rgba(153, 122, 81, 0.2);
+    0 25px 50px rgba(161, 125, 35, 0.3),
+    inset 0 1px 0 rgba(161, 125, 35, 0.2);
 }
 
 .modalContainer[data-theme="night"]::before {
   background: 
-    linear-gradient(135deg, rgba(153, 122, 81, 0.1) 0%, rgba(207, 163, 101, 0.15) 100%);
+    linear-gradient(135deg, rgba(161, 125, 35, 0.1) 0%, rgba(183, 138, 65, 0.15) 100%);
 }
 
 @keyframes overlayFadeIn {
@@ -82,7 +100,7 @@
 
 .modalHeader {
   padding: 20px 24px 16px 24px;
-  border-bottom: 1px solid rgba(153, 122, 81, 0.1);
+  border-bottom: 1px solid rgba(161, 125, 35, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -90,7 +108,7 @@
 }
 
 .modalContainer[data-theme="night"] .modalHeader {
-  border-bottom: 1px solid rgba(153, 122, 81, 0.2);
+  border-bottom: 1px solid rgba(161, 125, 35, 0.2);
 }
 
 .modalTitle {
@@ -109,21 +127,21 @@
 }
 
 .modalIcon {
-  color: #997A51;
+  color: #A17D23;
   font-size: 1.5rem;
-  filter: drop-shadow(0 2px 4px rgba(153, 122, 81, 0.3));
+  filter: drop-shadow(0 2px 4px rgba(161, 125, 35, 0.3));
 }
 
 .modalContainer[data-theme="night"] .modalIcon {
-  color: #CFA365;
-  filter: drop-shadow(0 2px 4px rgba(207, 163, 101, 0.4));
+  color: #B78A41;
+  filter: drop-shadow(0 2px 4px rgba(183, 138, 65, 0.4));
 }
 
 .closeButton {
   background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(153, 122, 81, 0.2);
+  border: 2px solid rgba(161, 125, 35, 0.2);
   font-size: 1.2rem;
-  color: #997A51;
+  color: #A17D23;
   cursor: pointer;
   padding: 12px;
   border-radius: 12px;
@@ -143,10 +161,10 @@
 }
 
 .closeButton:hover {
-  background: rgba(153, 122, 81, 0.15);
-  border-color: rgba(153, 122, 81, 0.4);
+  background: rgba(161, 125, 35, 0.15);
+  border-color: rgba(161, 125, 35, 0.4);
   transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 6px 20px rgba(153, 122, 81, 0.3);
+  box-shadow: 0 6px 20px rgba(161, 125, 35, 0.3);
 }
 
 .modalContainer[data-theme="night"] .closeButton:hover {
@@ -187,7 +205,7 @@
 .formInput {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid rgba(153, 122, 81, 0.2);
+  border: 2px solid rgba(161, 125, 35, 0.2);
   border-radius: 12px;
   font-size: 0.95rem;
   background: rgba(255, 255, 255, 0.8);
@@ -200,26 +218,26 @@
 
 .modalContainer[data-theme="night"] .formInput {
   background: rgba(66, 64, 59, 0.8);
-  border-color: rgba(153, 122, 81, 0.3);
+  border-color: rgba(161, 125, 35, 0.3);
   color: #F5F3EE;
-  box-shadow: inset 0 1px 0 rgba(153, 122, 81, 0.1);
+  box-shadow: inset 0 1px 0 rgba(161, 125, 35, 0.1);
 }
 
 .formInput:focus {
   outline: none;
-  border-color: #997A51;
+  border-color: #A17D23;
   box-shadow: 
-    0 0 0 4px rgba(153, 122, 81, 0.1),
+    0 0 0 4px rgba(161, 125, 35, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.9);
   transform: translateY(-1px);
 }
 
 .modalContainer[data-theme="night"] .formInput:focus {
-  border-color: #CFA365;
+  border-color: #B78A41;
   box-shadow: 
-    0 0 0 4px rgba(207, 163, 101, 0.15),
-    inset 0 1px 0 rgba(153, 122, 81, 0.2);
+    0 0 0 4px rgba(183, 138, 65, 0.15),
+    inset 0 1px 0 rgba(161, 125, 35, 0.2);
   background: rgba(66, 64, 59, 0.9);
 }
 
@@ -245,7 +263,7 @@
 }
 
 .questionTypeOption {
-  border: 2px solid rgba(153, 122, 81, 0.2);
+  border: 2px solid rgba(161, 125, 35, 0.2);
   border-radius: 12px;
   padding: 16px;
   cursor: pointer;
@@ -259,7 +277,7 @@
 
 .modalContainer[data-theme="night"] .questionTypeOption {
   background: rgba(66, 64, 59, 0.7);
-  border-color: rgba(153, 122, 81, 0.3);
+  border-color: rgba(161, 125, 35, 0.3);
 }
 
 .questionTypeOption::before {
@@ -269,7 +287,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(153, 122, 81, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(161, 125, 35, 0.1), transparent);
   transition: left 0.6s ease;
 }
 
@@ -278,40 +296,40 @@
 }
 
 .questionTypeOption:hover {
-  border-color: rgba(153, 122, 81, 0.4);
+  border-color: rgba(161, 125, 35, 0.4);
   background: rgba(255, 255, 255, 0.8);
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 25px rgba(153, 122, 81, 0.2);
+  box-shadow: 0 8px 25px rgba(161, 125, 35, 0.2);
 }
 
 .modalContainer[data-theme="night"] .questionTypeOption:hover {
   background: rgba(66, 64, 59, 0.8);
-  border-color: rgba(153, 122, 81, 0.5);
+  border-color: rgba(161, 125, 35, 0.5);
 }
 
 .questionTypeOption.selected {
-  border-color: #997A51;
-  background: rgba(153, 122, 81, 0.3);
+  border-color: #A17D23;
+  background: rgba(161, 125, 35, 0.3);
   box-shadow: 
-    0 8px 25px rgba(153, 122, 81, 0.25),
+    0 8px 25px rgba(161, 125, 35, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .modalContainer[data-theme="night"] .questionTypeOption.selected {
-  border-color: #CFA365;
-  background: rgba(153, 122, 81, 0.5);
+  border-color: #B78A41;
+  background: rgba(161, 125, 35, 0.5);
 }
 
 .typeIcon {
   font-size: 1.5rem;
-  color: #997A51;
+  color: #A17D23;
   margin-bottom: 8px;
   display: block;
-  filter: drop-shadow(0 2px 4px rgba(153, 122, 81, 0.3));
+  filter: drop-shadow(0 2px 4px rgba(161, 125, 35, 0.3));
 }
 
 .modalContainer[data-theme="night"] .typeIcon {
-  color: #CFA365;
+  color: #B78A41;
 }
 
 .typeName {
@@ -328,7 +346,7 @@
 .optionsSection {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(15px);
-  border: 2px solid rgba(153, 122, 81, 0.2);
+  border: 2px solid rgba(161, 125, 35, 0.2);
   border-radius: 16px;
   padding: 20px;
   margin-top: 16px;
@@ -336,7 +354,7 @@
 
 .modalContainer[data-theme="night"] .optionsSection {
   background: rgba(66, 64, 59, 0.7);
-  border-color: rgba(153, 122, 81, 0.3);
+  border-color: rgba(161, 125, 35, 0.3);
 }
 
 .optionsHeader {
@@ -359,7 +377,7 @@
 }
 
 .addOptionButton {
-  background: linear-gradient(135deg, #997A51 0%, #CFA365 100%);
+  background: linear-gradient(135deg, #A17D23 0%, #B78A41 100%);
   color: #FFFFFF;
   border: none;
   padding: 10px 16px;
@@ -372,14 +390,14 @@
   align-items: center;
   gap: 6px;
   box-shadow: 
-    0 4px 15px rgba(153, 122, 81, 0.3),
+    0 4px 15px rgba(161, 125, 35, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .addOptionButton:hover {
   transform: translateY(-2px) scale(1.02);
   box-shadow: 
-    0 6px 20px rgba(153, 122, 81, 0.4),
+    0 6px 20px rgba(161, 125, 35, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
@@ -598,7 +616,7 @@
 
 .modalFooter {
   padding: 1px 24px;
-  border-top: 1px solid rgba(153, 122, 81, 0.1);
+  border-top: 1px solid rgba(161, 125, 35, 0.1);
   display: flex;
   justify-content: flex-end;
   gap: 12px;
@@ -608,7 +626,7 @@
 
 .modalContainer[data-theme="night"] .modalFooter {
   background: rgba(66, 64, 59, 0.8);
-  border-top: 1px solid rgba(153, 122, 81, 0.2);
+  border-top: 1px solid rgba(161, 125, 35, 0.2);
 }
 
 .footerButton {
@@ -643,8 +661,8 @@
 
 .cancelButton {
   background: rgba(255, 255, 255, 0.2);
-  color: #997A51;
-  border: 2px solid rgba(153, 122, 81, 0.3);
+  color: #A17D23;
+  border: 2px solid rgba(161, 125, 35, 0.3);
 }
 
 .modalContainer[data-theme="night"] .cancelButton {
@@ -654,10 +672,10 @@
 }
 
 .cancelButton:hover {
-  background: rgba(153, 122, 81, 0.15);
-  border-color: rgba(153, 122, 81, 0.5);
+  background: rgba(161, 125, 35, 0.15);
+  border-color: rgba(161, 125, 35, 0.5);
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 25px rgba(153, 122, 81, 0.3);
+  box-shadow: 0 8px 25px rgba(161, 125, 35, 0.3);
 }
 
 .modalContainer[data-theme="night"] .cancelButton:hover {
@@ -666,18 +684,18 @@
 }
 
 .saveButton {
-  background: linear-gradient(135deg, #997A51 0%, #CFA365 100%);
+  background: linear-gradient(135deg, #A17D23 0%, #B78A41 100%);
   color: #FFFFFF;
   border: none;
   box-shadow: 
-    0 8px 25px rgba(153, 122, 81, 0.4),
+    0 8px 25px rgba(161, 125, 35, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .saveButton:hover:not(:disabled) {
   transform: translateY(-3px) scale(1.02);
   box-shadow: 
-    0 12px 35px rgba(153, 122, 81, 0.5),
+    0 12px 35px rgba(161, 125, 35, 0.5),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
@@ -686,7 +704,7 @@
   cursor: not-allowed;
   transform: none;
   box-shadow: 
-    0 4px 15px rgba(153, 122, 81, 0.2),
+    0 4px 15px rgba(161, 125, 35, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
