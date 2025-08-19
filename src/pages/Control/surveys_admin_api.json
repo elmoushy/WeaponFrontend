@@ -1,0 +1,1060 @@
+{
+  "api_info": {
+    "title": "WeaponPowerCloud Surveys Admin API",
+    "version": "1.0.0",
+    "description": "Admin REST API for survey management, analytics, and response monitoring",
+    "base_url": "/api/surveys/",
+    "authentication": {
+      "type": "Bearer Token (JWT)",
+      "provider": "Azure Active Directory",
+      "header": "Authorization: Bearer <jwt_token>",
+      "description": "All endpoints require a valid Azure AD JWT token with admin or manager role"
+    },
+    "required_roles": ["admin", "manager"],
+    "contact": {
+      "name": "WeaponPowerCloud API Support",
+      "email": "support@weaponpowercloud.com"
+    }
+  },
+  "endpoints": [
+    {
+      "name": "List All Surveys (Admin)",
+      "path": "/api/surveys/surveys/",
+      "method": "GET",
+      "description": "Retrieve all surveys in the system with full administrative details",
+      "authentication_required": true,
+      "required_roles": ["admin", "manager"],
+      "parameters": {
+        "query": {
+          "visibility": {
+            "type": "string",
+            "enum": ["PRIVATE", "AUTH", "PUBLIC"],
+            "description": "Filter by survey visibility",
+            "example": "PRIVATE"
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Filter by active status",
+            "example": true
+          },
+          "creator": {
+            "type": "integer",
+            "description": "Filter by creator user ID",
+            "example": 1
+          },
+          "search": {
+            "type": "string",
+            "description": "Search in title and description",
+            "example": "employee satisfaction"
+          },
+          "ordering": {
+            "type": "string",
+            "description": "Order results by field",
+            "example": "-created_at"
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Surveys retrieved successfully",
+          "content": {
+            "application/json": {
+              "example": {
+                "status": "success",
+                "message": "Surveys retrieved successfully",
+                "data": [
+                  {
+                    "id": "123e4567-e89b-12d3-a456-426614174000",
+                    "title": "Employee Satisfaction Survey 2025",
+                    "description": "Annual employee satisfaction and feedback survey",
+                    "visibility": "AUTH",
+                    "creator": 1,
+                    "creator_email": "admin@weaponpowercloud.com",
+                    "is_locked": false,
+                    "is_active": true,
+                    "questions": [
+                      {
+                        "id": "456e7890-e89b-12d3-a456-426614174001",
+                        "text": "How satisfied are you with your current role?",
+                        "question_type": "single_choice",
+                        "options": "[\"Very satisfied\", \"Satisfied\", \"Neutral\", \"Dissatisfied\", \"Very dissatisfied\"]",
+                        "is_required": true,
+                        "order": 1
+                      }
+                    ],
+                    "response_count": 45,
+                    "shared_with_emails": [],
+                    "created_at": "2025-08-01T10:00:00Z",
+                    "updated_at": "2025-08-02T14:30:00Z"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Create Survey",
+      "path": "/api/surveys/surveys/",
+      "method": "POST",
+      "description": "Create a new survey with questions",
+      "authentication_required": true,
+      "required_roles": ["admin", "manager"],
+      "parameters": {
+        "body": {
+          "type": "object",
+          "required": ["title"],
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "Survey title",
+              "example": "Q3 Performance Review Survey"
+            },
+            "description": {
+              "type": "string",
+              "description": "Survey description",
+              "example": "Quarterly performance review and goal setting survey"
+            },
+            "visibility": {
+              "type": "string",
+              "enum": ["PRIVATE", "AUTH", "PUBLIC"],
+              "default": "PRIVATE",
+              "description": "Survey visibility level"
+            },
+            "is_active": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether survey accepts responses"
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Survey created successfully",
+          "content": {
+            "application/json": {
+              "example": {
+                "status": "success",
+                "message": "Survey created successfully",
+                "data": {
+                  "id": "789e0123-e89b-12d3-a456-426614174002",
+                  "title": "Q3 Performance Review Survey",
+                  "description": "Quarterly performance review and goal setting survey",
+                  "visibility": "PRIVATE",
+                  "creator": 1,
+                  "creator_email": "admin@weaponpowercloud.com",
+                  "is_locked": false,
+                  "is_active": true,
+                  "questions": [],
+                  "response_count": 0,
+                  "shared_with_emails": [],
+                  "created_at": "2025-08-02T15:00:00Z",
+                  "updated_at": "2025-08-02T15:00:00Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Get Survey Details",
+      "path": "/api/surveys/surveys/{survey_id}/",
+      "method": "GET",
+      "description": "Retrieve detailed information about a specific survey",
+      "authentication_required": true,
+      "required_roles": ["admin", "manager"],
+      "parameters": {
+        "path": {
+          "survey_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Survey UUID",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Survey retrieved successfully",
+          "content": {
+            "application/json": {
+              "example": {
+                "status": "success",
+                "message": "Survey retrieved successfully",
+                "data": {
+                  "id": "123e4567-e89b-12d3-a456-426614174000",
+                  "title": "Employee Satisfaction Survey 2025",
+                  "description": "Annual employee satisfaction and feedback survey",
+                  "visibility": "AUTH",
+                  "creator": 1,
+                  "creator_email": "admin@weaponpowercloud.com",
+                  "is_locked": false,
+                  "is_active": true,
+                  "questions": [],
+                  "response_count": 45,
+                  "shared_with_emails": [],
+                  "created_at": "2025-08-01T10:00:00Z",
+                  "updated_at": "2025-08-02T14:30:00Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Update Survey",
+      "path": "/api/surveys/surveys/{survey_id}/",
+      "method": "PATCH",
+      "description": "Update survey details (only by creator unless admin)",
+      "authentication_required": true,
+      "required_roles": ["admin", "manager"],
+      "parameters": {
+        "path": {
+          "survey_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Survey UUID",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          }
+        },
+        "body": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "Survey title"
+            },
+            "description": {
+              "type": "string",
+              "description": "Survey description"
+            },
+            "is_active": {
+              "type": "boolean",
+              "description": "Whether survey accepts responses"
+            },
+            "is_locked": {
+              "type": "boolean",
+              "description": "Lock survey to prevent further modifications"
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Survey updated successfully"
+        },
+        "403": {
+          "description": "Access denied - only survey creator or admin can modify"
+        },
+        "409": {
+          "description": "Cannot modify locked survey"
+        }
+      }
+    },
+    {
+      "name": "Delete Survey",
+      "path": "/api/surveys/surveys/{survey_id}/",
+      "method": "DELETE",
+      "description": "Soft delete a survey (only by creator unless admin)",
+      "authentication_required": true,
+      "required_roles": ["admin", "manager"],
+      "parameters": {
+        "path": {
+          "survey_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Survey UUID"
+          }
+        }
+      },
+      "responses": {
+        "204": {
+          "description": "Survey deleted successfully"
+        },
+        "403": {
+          "description": "Access denied - only survey creator or admin can delete"
+        }
+      }
+    },
+    {
+      "name": "Set Survey Audience",
+      "path": "/api/surveys/surveys/{survey_id}/audience/",
+      "method": "POST",
+      "description": "Configure survey visibility and sharing settings",
+      "authentication_required": true,
+      "required_roles": ["admin", "manager"],
+      "parameters": {
+        "path": {
+          "survey_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Survey UUID"
+          }
+        },
+        "body": {
+          "type": "object",
+          "required": ["visibility"],
+          "properties": {
+            "visibility": {
+              "type": "string",
+              "enum": ["PRIVATE", "AUTH", "PUBLIC"],
+              "description": "Survey visibility level"
+            },
+            "user_ids": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "User IDs to share with (only for PRIVATE surveys)",
+              "example": [5, 10, 15]
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Survey audience updated successfully",
+          "content": {
+            "application/json": {
+              "example": {
+                "status": "success",
+                "message": "Survey audience updated successfully",
+                "data": {
+                  "visibility": "PRIVATE",
+                  "shared_count": 3
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Clone Survey",
+      "path": "/api/surveys/surveys/{survey_id}/clone/",
+      "method": "POST",
+      "description": "Create a duplicate copy of an existing survey",
+      "authentication_required": true,
+      "required_roles": ["admin", "manager"],
+      "parameters": {
+        "path": {
+          "survey_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Survey UUID to clone"
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Survey cloned successfully",
+          "content": {
+            "application/json": {
+              "example": {
+                "status": "success",
+                "message": "Survey cloned successfully",
+                "data": {
+                  "id": "new-uuid-here",
+                  "title": "Employee Satisfaction Survey 2025 (Copy)",
+                  "visibility": "PRIVATE",
+                  "is_active": false,
+                  "questions": []
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Get Survey Responses",
+      "path": "/api/surveys/surveys/{survey_id}/responses/",
+      "method": "GET",
+      "description": "Retrieve all responses for a survey with detailed analytics",
+      "authentication_required": true,
+      "required_roles": ["admin", "manager"],
+      "parameters": {
+        "path": {
+          "survey_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Survey UUID"
+          }
+        },
+        "query": {
+          "is_complete": {
+            "type": "boolean",
+            "description": "Filter by completion status"
+          },
+          "respondent": {
+            "type": "integer",
+            "description": "Filter by respondent user ID"
+          },
+          "ordering": {
+            "type": "string",
+            "description": "Order results",
+            "example": "-submitted_at"
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Survey responses retrieved successfully",
+          "content": {
+            "application/json": {
+              "example": {
+                "status": "success",
+                "message": "Survey responses retrieved successfully",
+                "data": [
+                  {
+                    "id": "response-uuid-1",
+                    "survey": "survey-uuid",
+                    "respondent": 5,
+                    "respondent_email": "employee@weaponpowercloud.com",
+                    "submitted_at": "2025-08-02T14:30:00Z",
+                    "is_complete": true,
+                    "answers": [
+                      {
+                        "id": 1,
+                        "question": "question-uuid-1",
+                        "answer_text": "Very satisfied",
+                        "created_at": "2025-08-02T14:30:00Z"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Access denied - only survey creator or admin can view responses"
+        }
+      }
+    },
+    {
+      "name": "Submit Survey Response",
+      "path": "/api/surveys/surveys/{survey_id}/submit/",
+      "method": "POST",
+      "description": "Submit responses to a survey (admin can submit on behalf of others)",
+      "authentication_required": true,
+      "required_roles": ["admin", "manager"],
+      "parameters": {
+        "path": {
+          "survey_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Survey UUID"
+          }
+        },
+        "body": {
+          "type": "object",
+          "required": ["answers"],
+          "properties": {
+            "answers": {
+              "type": "array",
+              "description": "Array of answers to survey questions",
+              "items": {
+                "type": "object",
+                "required": ["question_id", "answer_text"],
+                "properties": {
+                  "question_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Question UUID"
+                  },
+                  "answer_text": {
+                    "type": "string",
+                    "description": "Answer content"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Response submitted successfully",
+          "content": {
+            "application/json": {
+              "example": {
+                "status": "success",
+                "message": "Response submitted successfully",
+                "data": {
+                  "response_id": "abc12345-e89b-12d3-a456-426614174003",
+                  "submitted_at": "2025-08-02T14:30:00Z",
+                  "answer_count": 2
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Add Question to Survey",
+      "path": "/api/surveys/surveys/{survey_id}/questions/",
+      "method": "POST",
+      "description": "Add a new question to an existing survey",
+      "authentication_required": true,
+      "required_roles": ["admin", "manager"],
+      "parameters": {
+        "path": {
+          "survey_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Survey UUID",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          }
+        },
+        "body": {
+          "type": "object",
+          "required": ["text", "question_type"],
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "Question text",
+              "example": "How would you rate your overall job satisfaction?"
+            },
+            "question_type": {
+              "type": "string",
+              "enum": ["text", "textarea", "single_choice", "multiple_choice", "rating", "yes_no"],
+              "description": "Type of question",
+              "example": "single_choice"
+            },
+            "options": {
+              "type": "string",
+              "description": "JSON array of options for choice questions",
+              "example": "[\"Excellent\", \"Good\", \"Fair\", \"Poor\"]"
+            },
+            "is_required": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether the question is required"
+            },
+            "order": {
+              "type": "integer",
+              "description": "Question order (auto-incremented if not provided)"
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Question added successfully",
+          "content": {
+            "application/json": {
+              "example": {
+                "status": "success",
+                "message": "Question added successfully",
+                "data": {
+                  "id": "456e7890-e89b-12d3-a456-426614174001",
+                  "text": "How would you rate your overall job satisfaction?",
+                  "question_type": "single_choice",
+                  "options": "[\"Excellent\", \"Good\", \"Fair\", \"Poor\"]",
+                  "is_required": true,
+                  "order": 1,
+                  "survey": "123e4567-e89b-12d3-a456-426614174000",
+                  "created_at": "2025-08-03T14:30:00Z",
+                  "updated_at": "2025-08-03T14:30:00Z"
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Invalid question data",
+          "content": {
+            "application/json": {
+              "example": {
+                "status": "error",
+                "message": "Invalid question data",
+                "data": {
+                  "text": ["This field is required."]
+                }
+              }
+            }
+          }
+        },
+        "409": {
+          "description": "Cannot add questions to locked survey",
+          "content": {
+            "application/json": {
+              "example": {
+                "status": "error",
+                "message": "Cannot add questions to locked survey"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Update Survey Question",
+      "path": "/api/surveys/surveys/{survey_id}/questions/{question_id}/",
+      "method": "PATCH",
+      "description": "Update a specific question in a survey",
+      "authentication_required": true,
+      "required_roles": ["admin", "manager"],
+      "parameters": {
+        "path": {
+          "survey_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Survey UUID",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "question_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Question UUID",
+            "example": "456e7890-e89b-12d3-a456-426614174001"
+          }
+        },
+        "body": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "Question text"
+            },
+            "question_type": {
+              "type": "string",
+              "enum": ["text", "textarea", "single_choice", "multiple_choice", "rating", "yes_no"],
+              "description": "Type of question"
+            },
+            "options": {
+              "type": "string",
+              "description": "JSON array of options for choice questions"
+            },
+            "is_required": {
+              "type": "boolean",
+              "description": "Whether the question is required"
+            },
+            "order": {
+              "type": "integer",
+              "description": "Question order"
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Question updated successfully",
+          "content": {
+            "application/json": {
+              "example": {
+                "status": "success",
+                "message": "Question updated successfully",
+                "data": {
+                  "id": "456e7890-e89b-12d3-a456-426614174001",
+                  "text": "How would you rate your overall job satisfaction?",
+                  "question_type": "rating",
+                  "options": "[\"1\", \"2\", \"3\", \"4\", \"5\"]",
+                  "is_required": true,
+                  "order": 1,
+                  "survey": "123e4567-e89b-12d3-a456-426614174000",
+                  "updated_at": "2025-08-03T14:35:00Z"
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Question not found"
+        },
+        "409": {
+          "description": "Cannot update questions in locked survey"
+        }
+      }
+    },
+    {
+      "name": "Delete Survey Question",
+      "path": "/api/surveys/surveys/{survey_id}/questions/{question_id}/",
+      "method": "DELETE",
+      "description": "Delete a specific question from a survey",
+      "authentication_required": true,
+      "required_roles": ["admin", "manager"],
+      "parameters": {
+        "path": {
+          "survey_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Survey UUID",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "question_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Question UUID",
+            "example": "456e7890-e89b-12d3-a456-426614174001"
+          }
+        }
+      },
+      "responses": {
+        "204": {
+          "description": "Question deleted successfully",
+          "content": {
+            "application/json": {
+              "example": {
+                "status": "success",
+                "message": "Question deleted successfully"
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Question not found"
+        },
+        "409": {
+          "description": "Cannot delete questions from locked survey"
+        }
+      }
+    },
+    {
+      "name": "Export Survey Data",
+      "path": "/api/surveys/surveys/{survey_id}/export/",
+      "method": "GET",
+      "description": "Export survey responses in CSV or JSON format",
+      "authentication_required": true,
+      "required_roles": ["admin", "manager"],
+      "parameters": {
+        "path": {
+          "survey_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Survey UUID",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          }
+        },
+        "query": {
+          "format": {
+            "type": "string",
+            "enum": ["csv", "json"],
+            "default": "csv",
+            "description": "Export format",
+            "example": "csv"
+          },
+          "include_personal_data": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include respondent personal information",
+            "example": false
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Survey data exported successfully",
+          "content": {
+            "text/csv": {
+              "description": "CSV file download with survey responses"
+            },
+            "application/json": {
+              "description": "JSON file download with survey responses",
+              "example": {
+                "survey": {
+                  "id": "123e4567-e89b-12d3-a456-426614174000",
+                  "title": "Employee Satisfaction Survey 2025",
+                  "description": "Annual employee satisfaction and feedback survey",
+                  "exported_at": "2025-08-03T14:30:00Z",
+                  "total_responses": 45
+                },
+                "responses": [
+                  {
+                    "id": "response-uuid-1",
+                    "submitted_at": "2025-08-02T14:30:00Z",
+                    "is_complete": true,
+                    "answers": [
+                      {
+                        "question_id": "456e7890-e89b-12d3-a456-426614174001",
+                        "question_text": "How satisfied are you with your current role?",
+                        "question_type": "single_choice",
+                        "answer_text": "Very satisfied"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Unsupported export format"
+        },
+        "403": {
+          "description": "Access denied - only survey creator or admin can export"
+        }
+      }
+    },
+    {
+      "name": "Bulk Survey Operations",
+      "path": "/api/surveys/bulk-operations/",
+      "method": "POST",
+      "description": "Perform bulk operations on multiple surveys (admin only)",
+      "authentication_required": true,
+      "required_roles": ["admin"],
+      "parameters": {
+        "body": {
+          "type": "object",
+          "required": ["operation", "survey_ids"],
+          "properties": {
+            "operation": {
+              "type": "string",
+              "enum": ["activate", "deactivate", "lock", "unlock", "delete"],
+              "description": "Bulk operation to perform",
+              "example": "activate"
+            },
+            "survey_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "description": "Array of survey UUIDs to operate on",
+              "example": [
+                "123e4567-e89b-12d3-a456-426614174000",
+                "789e0123-e89b-12d3-a456-426614174002"
+              ]
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Bulk operation completed",
+          "content": {
+            "application/json": {
+              "example": {
+                "status": "success",
+                "message": "Bulk operation completed",
+                "data": {
+                  "operation": "activate",
+                  "successful": 2,
+                  "failed": 0,
+                  "errors": []
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Invalid operation or missing survey IDs"
+        },
+        "403": {
+          "description": "Only administrators can perform bulk operations"
+        }
+      }
+    },
+    {
+      "name": "Service Health Check",
+      "path": "/api/surveys/health/",
+      "method": "GET",
+      "description": "Check if the surveys service is operational",
+      "authentication_required": false,
+      "responses": {
+        "200": {
+          "description": "Service is healthy",
+          "content": {
+            "application/json": {
+              "example": {
+                "status": "success",
+                "message": "Surveys service is healthy",
+                "data": {
+                  "timestamp": "2025-08-03T14:30:00Z",
+                  "version": "1.0.0",
+                  "encryption": "active"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "data_models": {
+    "Survey": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Survey unique identifier"
+        },
+        "title": {
+          "type": "string",
+          "description": "Survey title (encrypted in database)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Survey description (encrypted in database)"
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["PRIVATE", "AUTH", "PUBLIC"],
+          "description": "Survey visibility level"
+        },
+        "creator": {
+          "type": "integer",
+          "description": "Creator user ID"
+        },
+        "creator_email": {
+          "type": "string",
+          "description": "Creator email address"
+        },
+        "is_locked": {
+          "type": "boolean",
+          "description": "Whether survey is locked for editing"
+        },
+        "is_active": {
+          "type": "boolean",
+          "description": "Whether survey accepts responses"
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/data_models/Question"
+          }
+        },
+        "response_count": {
+          "type": "integer",
+          "description": "Total number of responses"
+        },
+        "shared_with_emails": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Emails of users survey is shared with"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "Question": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "text": {
+          "type": "string",
+          "description": "Question text (encrypted in database)"
+        },
+        "question_type": {
+          "type": "string",
+          "enum": ["text", "textarea", "single_choice", "multiple_choice", "rating", "yes_no"]
+        },
+        "options": {
+          "type": "string",
+          "description": "JSON array of options (encrypted in database)"
+        },
+        "is_required": {
+          "type": "boolean"
+        },
+        "order": {
+          "type": "integer"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "Response": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "survey": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "respondent": {
+          "type": "integer",
+          "nullable": true,
+          "description": "User ID of respondent (null for anonymous)"
+        },
+        "respondent_email": {
+          "type": "string",
+          "description": "Email of respondent or 'Anonymous'"
+        },
+        "submitted_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "is_complete": {
+          "type": "boolean"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/data_models/Answer"
+          }
+        }
+      }
+    },
+    "Answer": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "question": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "answer_text": {
+          "type": "string",
+          "description": "Answer content (encrypted in database)"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "security_features": {
+    "encryption": {
+      "description": "All sensitive data encrypted with AES-256",
+      "encrypted_fields": ["title", "description", "question_text", "answer_text", "options"]
+    },
+    "access_control": {
+      "description": "Role-based access control with three visibility levels",
+      "roles": ["admin", "manager", "employee"],
+      "visibility_levels": ["PRIVATE", "AUTH", "PUBLIC"]
+    },
+    "audit_logging": {
+      "description": "All administrative actions are logged",
+      "logged_actions": ["create", "update", "delete", "clone", "export", "bulk_operations", "add_question", "update_question", "delete_question"]
+    }
+  },
+  "rate_limiting": {
+    "description": "Rate limiting applied per user per endpoint",
+    "limits": {
+      "default": "100 requests per minute",
+      "export": "10 requests per minute",
+      "bulk_operations": "5 requests per minute",
+      "question_operations": "50 requests per minute"
+    }
+  }
+}
