@@ -97,9 +97,9 @@
     </section>
 
     <!-- Bulk Actions Bar -->
-    <div v-if="selectedSurveys.length > 0" :class="$style.bulkActionsBar">
+    <div v-if="selectedSurveys?.length > 0" :class="$style.bulkActionsBar">
       <div :class="$style.bulkInfo">
-        <span :class="$style.selectedCount">{{ selectedSurveys.length }}</span>
+        <span :class="$style.selectedCount">{{ selectedSurveys?.length || 0 }}</span>
         <span>{{ t('survey.list.selectedItems') }}</span>
       </div>
       
@@ -124,20 +124,20 @@
     </div>
 
     <!-- Surveys Grid/List -->
-    <section v-if="!isLoading && surveys.length > 0" :class="$style.surveysSection">
+    <section v-if="!isLoading && surveys?.length > 0" :class="$style.surveysSection">
       <!-- Grid View -->
       <div :class="$style.surveysGrid" v-if="viewMode === 'grid'">
         <div
           v-for="survey in paginatedSurveys"
           :key="survey.id"
-          :class="[$style.surveyCard, { [$style.selected]: selectedSurveys.includes(survey.id) }]"
+          :class="[$style.surveyCard, { [$style.selected]: selectedSurveys?.includes(survey.id) }]"
           @click="selectSurvey(survey.id)"
         >
           <div :class="$style.cardHeader">
             <input
               type="checkbox"
               :class="$style.cardCheckbox"
-              :checked="selectedSurveys.includes(survey.id)"
+              :checked="selectedSurveys?.includes(survey.id)"
               @click.stop="toggleSurveySelection(survey.id)"
             />
             <div :class="$style.cardStatus">
@@ -174,7 +174,7 @@
             </div>
             <div :class="$style.statItem">
               <i class="fas fa-question-circle" :class="$style.statIcon"></i>
-              <span>{{ survey.questions.length }} {{ t('survey.questions.title').toLowerCase() }}</span>
+              <span>{{ survey.questions?.length || 0 }} {{ t('survey.questions.title').toLowerCase() }}</span>
             </div>
           </div>
           
@@ -219,7 +219,7 @@
             <input
               type="checkbox"
               :class="$style.headerCheckbox"
-              :checked="selectedSurveys.length === paginatedSurveys.length && paginatedSurveys.length > 0"
+              :checked="selectedSurveys?.length === paginatedSurveys?.length && paginatedSurveys?.length > 0"
               @change="toggleSelectAll"
             />
           </div>
@@ -233,14 +233,14 @@
         <div
           v-for="survey in paginatedSurveys"
           :key="survey.id"
-          :class="[$style.listItem, { [$style.selected]: selectedSurveys.includes(survey.id) }]"
+          :class="[$style.listItem, { [$style.selected]: selectedSurveys?.includes(survey.id) }]"
           @click="selectSurvey(survey.id)"
         >
           <div :class="$style.listItemCheckbox">
             <input
               type="checkbox"
               :class="$style.itemCheckbox"
-              :checked="selectedSurveys.includes(survey.id)"
+              :checked="selectedSurveys?.includes(survey.id)"
               @click.stop="toggleSurveySelection(survey.id)"
             />
           </div>
@@ -260,7 +260,7 @@
             </div>
             <div :class="$style.listStatItem">
               <i class="fas fa-question-circle" :class="$style.listStatIcon"></i>
-              <span>{{ survey.questions.length }}</span>
+              <span>{{ survey.questions?.length || 0 }}</span>
             </div>
           </div>
           
@@ -320,7 +320,7 @@
     </section>
 
     <!-- Empty State -->
-    <div v-if="!isLoading && surveys.length === 0" :class="$style.emptyState">
+    <div v-if="!isLoading && surveys?.length === 0" :class="$style.emptyState">
       <div :class="$style.emptyIcon">
         <i class="fas fa-poll-h"></i>
       </div>
@@ -423,14 +423,14 @@ const itemsPerPage = ref(12)
 
 // Computed
 const filteredSurveys = computed(() => {
-  let filtered = [...surveys.value]
+  let filtered = [...(surveys.value || [])]
   
   // Apply search filter
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(survey => 
-      survey.title.toLowerCase().includes(query) ||
-      survey.description.toLowerCase().includes(query)
+      survey.title?.toLowerCase().includes(query) ||
+      survey.description?.toLowerCase().includes(query)
     )
   }
   
@@ -457,7 +457,7 @@ const filteredSurveys = computed(() => {
 })
 
 const sortedSurveys = computed(() => {
-  const sorted = [...filteredSurveys.value]
+  const sorted = [...(filteredSurveys.value || [])]
   
   switch (selectedSort.value) {
     case 'newest':
@@ -465,11 +465,11 @@ const sortedSurveys = computed(() => {
     case 'oldest':
       return sorted.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
     case 'titleAZ':
-      return sorted.sort((a, b) => a.title.localeCompare(b.title))
+      return sorted.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
     case 'titleZA':
-      return sorted.sort((a, b) => b.title.localeCompare(a.title))
+      return sorted.sort((a, b) => (b.title || '').localeCompare(a.title || ''))
     case 'mostResponses':
-      return sorted.sort((a, b) => b.response_count - a.response_count)
+      return sorted.sort((a, b) => (b.response_count || 0) - (a.response_count || 0))
     default:
       return sorted
   }
@@ -478,7 +478,7 @@ const sortedSurveys = computed(() => {
 const paginatedSurveys = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
-  return sortedSurveys.value.slice(start, end)
+  return (sortedSurveys.value || []).slice(start, end)
 })
 
 // Methods
@@ -489,9 +489,15 @@ const loadSurveys = async () => {
     
     // Handle paginated response structure from Django API
     if (response && 'results' in response && Array.isArray(response.results)) {
-      surveys.value = response.results
+      surveys.value = response.results.map(survey => ({
+        ...survey,
+        questions: survey.questions || [] // Ensure questions is always an array
+      }))
     } else if (response && Array.isArray(response)) {
-      surveys.value = response
+      surveys.value = response.map(survey => ({
+        ...survey,
+        questions: survey.questions || [] // Ensure questions is always an array
+      }))
     } else {
       // Logging removed for production
       surveys.value = []
@@ -639,6 +645,10 @@ const selectSurvey = (_surveyId: string) => {
 }
 
 const toggleSurveySelection = (surveyId: string) => {
+  if (!selectedSurveys.value) {
+    selectedSurveys.value = []
+  }
+  
   const index = selectedSurveys.value.indexOf(surveyId)
   if (index > -1) {
     selectedSurveys.value.splice(index, 1)
@@ -832,10 +842,11 @@ const bulkDeactivate = async () => {
 }
 
 const bulkDelete = async () => {
+  const selectedCount = selectedSurveys.value?.length || 0
   const result = await Swal.fire({
     icon: 'warning',
     title: 'تأكيد الحذف الجماعي',
-    text: `هل أنت متأكد من أنك تريد حذف ${selectedSurveys.value.length} استطلاع؟`,
+    text: `هل أنت متأكد من أنك تريد حذف ${selectedCount} استطلاع؟`,
     showCancelButton: true,
     confirmButtonText: 'نعم، احذف الكل',
     cancelButtonText: 'إلغاء',
@@ -853,7 +864,7 @@ const performBulkOperation = async (operation: string) => {
     bulkOperationLoading.value = true
     await surveyService.performBulkOperation({
       operation: operation as any,
-      survey_ids: selectedSurveys.value
+      survey_ids: selectedSurveys.value || []
     })
     
     selectedSurveys.value = []
@@ -899,10 +910,13 @@ const formatDate = (dateString: string) => {
 }
 
 const toggleSelectAll = () => {
-  if (selectedSurveys.value.length === paginatedSurveys.value.length && paginatedSurveys.value.length > 0) {
+  const currentSurveys = paginatedSurveys.value || []
+  const currentSelected = selectedSurveys.value || []
+  
+  if (currentSelected.length === currentSurveys.length && currentSurveys.length > 0) {
     selectedSurveys.value = []
   } else {
-    selectedSurveys.value = paginatedSurveys.value.map(survey => survey.id)
+    selectedSurveys.value = currentSurveys.map(survey => survey.id)
   }
 }
 

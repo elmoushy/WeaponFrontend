@@ -252,7 +252,7 @@ const isRTL = computed(() => store.currentLanguage === 'ar')
 const t = computed(() => store.t)
 
 const isAllSelected = computed(() => {
-  return props.users.length > 0 && props.selectedUsers.length === props.users.length
+  return (props.users?.length || 0) > 0 && (props.selectedUsers?.length || 0) === (props.users?.length || 0)
 })
 
 // Methods

@@ -40,7 +40,7 @@
         <div :class="$style.surveyMeta">
           <div :class="$style.metaItem">
             <i class="fas fa-question-circle"></i>
-            <span>{{ survey.questions.length }} سؤال</span>
+            <span>{{ survey.questions?.length || 0 }} سؤال</span>
           </div>
           <div :class="$style.metaItem">
             <i class="fas fa-users"></i>
@@ -125,7 +125,7 @@
           </div>
           <div :class="$style.progressInfo">
             <span :class="$style.progressText">
-              السؤال {{ currentQuestionIndex + 1 }} من {{ survey.questions.length }}
+              السؤال {{ currentQuestionIndex + 1 }} من {{ survey.questions?.length || 0 }}
             </span>
           </div>
         </div>
@@ -289,7 +289,7 @@
       </div>
 
       <!-- Email Collection Section -->
-      <div v-if="currentQuestionIndex === survey.questions.length - 1 || showContactForm" :class="$style.contactSection">
+      <div v-if="currentQuestionIndex === (survey.questions?.length || 0) - 1 || showContactForm" :class="$style.contactSection">
         <div :class="$style.contactContainer">
           <div :class="$style.contactHeader">
             <h3 :class="$style.contactTitle">
@@ -400,7 +400,7 @@
       <!-- Navigation -->
       <div :class="$style.formNavigation">
         <button
-          v-if="currentQuestionIndex < survey.questions.length - 1"
+          v-if="currentQuestionIndex < (survey.questions?.length || 0) - 1"
           :class="[$style.navButton, $style.next]"
           @click="nextQuestion"
           :disabled="!canProceed"
@@ -410,7 +410,7 @@
         </button>
 
         <button
-          v-if="currentQuestionIndex === survey.questions.length - 1"
+          v-if="currentQuestionIndex === (survey.questions?.length || 0) - 1"
           :class="[$style.navButton, $style.submit]"
           @click="submitSurvey"
           :disabled="!canSubmit || isSubmitting || !hasValidContactForSubmission"
@@ -534,7 +534,7 @@ const currentQuestion = computed(() => {
 
 const progressPercentage = computed(() => {
   if (!survey.value) return 0
-  return ((currentQuestionIndex.value + 1) / survey.value.questions.length) * 100
+  return ((currentQuestionIndex.value + 1) / (survey.value.questions?.length || 1)) * 100
 })
 
 const canProceed = computed(() => {

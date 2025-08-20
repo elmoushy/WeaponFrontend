@@ -66,7 +66,7 @@
         <div :class="$style.surveyMeta">
           <div :class="$style.metaItem">
             <i class="fas fa-question-circle"></i>
-            <span>{{ survey.questions_count || survey.questions.length }} سؤال</span>
+            <span>{{ survey.questions_count || survey.questions?.length || 0 }} سؤال</span>
           </div>
           <div :class="$style.metaItem">
             <i class="fas fa-user-shield"></i>
@@ -121,7 +121,7 @@
           </div>
           <div :class="$style.progressInfo">
             <span :class="$style.progressText">
-              السؤال {{ currentQuestionIndex + 1 }} من {{ survey.questions.length }}
+              السؤال {{ currentQuestionIndex + 1 }} من {{ survey.questions?.length || 0 }}
             </span>
           </div>
         </div>
@@ -287,7 +287,7 @@
       <!-- Form Navigation -->
       <div :class="$style.formNavigation">
         <button
-          v-if="currentQuestionIndex < survey.questions.length - 1"
+          v-if="currentQuestionIndex < (survey.questions?.length || 0) - 1"
           :class="[$style.navButton, $style.next]"
           @click="nextQuestion"
           :disabled="!canProceed"
@@ -297,7 +297,7 @@
         </button>
 
         <button
-          v-if="currentQuestionIndex === survey.questions.length - 1"
+          v-if="currentQuestionIndex === (survey.questions?.length || 0) - 1"
           :class="[$style.navButton, $style.submit]"
           @click="submitSurvey"
           :disabled="!canSubmit || isSubmitting"
@@ -367,7 +367,7 @@ const currentQuestion = computed(() => {
 
 const progressPercentage = computed(() => {
   if (!survey.value) return 0
-  return ((currentQuestionIndex.value + 1) / survey.value.questions.length) * 100
+  return ((currentQuestionIndex.value + 1) / (survey.value.questions?.length || 1)) * 100
 })
 
 const canProceed = computed(() => {
@@ -517,7 +517,7 @@ const nextQuestion = () => {
   }
   
   questionError.value = ''
-  if (currentQuestionIndex.value < survey.value!.questions.length - 1) {
+  if (currentQuestionIndex.value < (survey.value!.questions?.length || 0) - 1) {
     currentQuestionIndex.value++
   }
 }

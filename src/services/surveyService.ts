@@ -562,8 +562,8 @@ class SurveyService {
       if (response.data.status === 'success') {
         return {
           data: {
-            users: response.data.data.users,
-            total: response.data.data.users.length
+            users: response.data.data.users || [],
+            total: response.data.data.users?.length || 0
           },
           message: response.data.message,
           status: response.data.status

@@ -160,7 +160,7 @@
           </div>
           <div :class="$style.metaItem">
             <i class="fas fa-questions"></i>
-            <span>{{ survey.questions.length }} سؤال</span>
+            <span>{{ survey.questions?.length || 0 }} سؤال</span>
           </div>
         </div>
       </div>
@@ -174,7 +174,7 @@
           </p>
           <ul :class="$style.welcomePoints">
             <li><i class="fas fa-check-circle"></i> جميع إجاباتك آمنة ومحمية</li>
-            <li><i class="fas fa-clock"></i> سيستغرق الاستطلاع حوالي {{ Math.ceil(survey.questions.length * 0.5) }} دقائق</li>
+            <li><i class="fas fa-clock"></i> سيستغرق الاستطلاع حوالي {{ Math.ceil((survey.questions?.length || 0) * 0.5) }} دقائق</li>
             <li><i class="fas fa-user-shield"></i> المشاركة بموافقتك الكاملة</li>
           </ul>
         </div>
@@ -202,7 +202,7 @@
           <div :class="$style.progressBar">
             <div :class="$style.progressFill" :style="{ width: `${progressPercentage}%` }"></div>
           </div>
-          <span :class="$style.progressText">{{ currentQuestionIndex + 1 }} من {{ survey.questions.length }}</span>
+          <span :class="$style.progressText">{{ currentQuestionIndex + 1 }} من {{ survey.questions?.length || 0 }}</span>
         </div>
       </div>
 
@@ -367,7 +367,7 @@
       </div>
 
       <!-- Email/Phone Collection Section (if needed) -->
-      <div v-if="(currentQuestionIndex === survey.questions.length - 1 || showContactForm) && !isContactRestricted" :class="$style.contactSection">
+      <div v-if="(currentQuestionIndex === (survey.questions?.length || 0) - 1 || showContactForm) && !isContactRestricted" :class="$style.contactSection">
         <div :class="$style.contactContainer">
           <div :class="$style.contactHeader">
             <h3 :class="$style.contactTitle">
@@ -446,7 +446,7 @@
       <!-- Navigation -->
       <div :class="$style.formNavigation">
         <button
-          v-if="currentQuestionIndex < survey.questions.length - 1"
+          v-if="currentQuestionIndex < (survey.questions?.length || 0) - 1"
           :class="[$style.navButton, $style.next]"
           @click="nextQuestion"
           :disabled="!canProceed"
@@ -456,7 +456,7 @@
         </button>
 
         <button
-          v-if="currentQuestionIndex === survey.questions.length - 1"
+          v-if="currentQuestionIndex === (survey.questions?.length || 0) - 1"
           :class="[$style.navButton, $style.submit]"
           @click="submitSurvey"
           :disabled="!canSubmit || isSubmitting || (!hasValidContactForSubmission && !isContactRestricted)"
@@ -599,7 +599,7 @@ const currentQuestion = computed(() => {
 
 const progressPercentage = computed(() => {
   if (!survey.value) return 0
-  return ((currentQuestionIndex.value + 1) / survey.value.questions.length) * 100
+  return ((currentQuestionIndex.value + 1) / (survey.value.questions?.length || 1)) * 100
 })
 
 const isFormValid = computed(() => {

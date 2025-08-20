@@ -181,7 +181,7 @@
             <div :class="$style.responsePreview">
               <div :class="$style.answersSummary">
                 <span :class="$style.answersCount">
-                  {{ response.answer_count || response.answers.length }} {{ t('survey.responses.answersProvided') }}
+                  {{ response.answer_count || response.answers?.length || 0 }} {{ t('survey.responses.answersProvided') }}
                 </span>
                 <span :class="$style.progressBar">
                   <div :class="$style.progressFill" :style="{ width: getCompletionPercentage(response) + '%' }"></div>
@@ -195,7 +195,7 @@
                   </div>
                   <h4 :class="$style.detailsHeaderTitle">الإجابات التفصيلية</h4>
                   <div :class="$style.detailsHeaderBadge">
-                    {{ response.answers.length }} {{ t('survey.responses.answers') }}
+                    {{ response.answers?.length || 0 }} {{ t('survey.responses.answers') }}
                   </div>
                 </div>
                 <div :class="$style.answersGrid">
@@ -588,7 +588,7 @@ const isExpanded = (id: string | number) => expanded.value.has(id)
 
   const getCompletionPercentage = (response: any) => {
     if (!survey.value || !survey.value.total_questions) return 0
-    const answered = response.answer_count || response.answers.length
+    const answered = response.answer_count || response.answers?.length || 0
     return Math.round((answered / survey.value.total_questions) * 100)
   }
 

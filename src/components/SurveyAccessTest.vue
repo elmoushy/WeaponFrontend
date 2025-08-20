@@ -198,7 +198,7 @@ const testSearchUsers = async () => {
     
     const response = await surveyService.searchUsers(query)
     
-    resultText.value = `✅ User search completed!\n\nFound ${response.data.users.length} users:\n\n${JSON.stringify(response, null, 2)}`
+    resultText.value = `✅ User search completed!\n\nFound ${response.data.users?.length || 0} users:\n\n${JSON.stringify(response, null, 2)}`
     
   } catch (err: any) {
     error.value = `Failed to search users: ${err.message}`
