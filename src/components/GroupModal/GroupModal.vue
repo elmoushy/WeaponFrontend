@@ -16,7 +16,7 @@
               v-model="formData.name"
               type="text" 
               required
-              :class="$style.input"
+              :class="[$style.input, !formData.name.trim() && formData.name !== '' ? $style.inputError : '']"
               :disabled="mode.type === 'view'"
             />
           </div>
@@ -84,6 +84,12 @@
             <div v-if="formData.admin_user_ids.length > 0" :class="$style.selectedCount">
               {{ formData.admin_user_ids.length }} {{ translations.selectedAdmins }}
             </div>
+            
+            <!-- Validation Error for Admins -->
+            <div v-if="props.mode.type === 'create' && formData.admin_user_ids.length === 0" :class="$style.validationError">
+              <i class="fas fa-exclamation-triangle"></i>
+              {{ isRTL ? 'يجب اختيار مدير واحد على الأقل' : 'At least one admin is required' }}
+            </div>
           </div>
         </form>
       </div>
@@ -92,7 +98,12 @@
         <button type="button" :class="[$style.btn, $style.cancelBtn]" @click="$emit('close')">
           {{ t('userManagement.buttons.cancel') }}
         </button>
-        <button type="button" :class="[$style.btn, $style.saveBtn]" @click="handleSubmit">
+        <button 
+          type="button" 
+          :class="[$style.btn, $style.saveBtn, !isFormValid ? $style.saveBtn_disabled : '']" 
+          :disabled="!isFormValid"
+          @click="handleSubmit"
+        >
           {{ t('userManagement.buttons.save') }}
         </button>
       </div>
@@ -145,6 +156,21 @@ const formData = ref({
   admin_user_ids: [] as number[]
 })
 
+// Form validation computed property
+const isFormValid = computed(() => {
+  // Group name is required
+  if (!formData.value.name.trim()) {
+    return false
+  }
+  
+  // For create mode, at least one admin is required
+  if (props.mode.type === 'create' && formData.value.admin_user_ids.length === 0) {
+    return false
+  }
+  
+  return true
+})
+
 const filteredUsers = computed(() => {
   if (!searchQuery.value) return allUsers.value
   
@@ -177,15 +203,13 @@ const loadUsers = async () => {
 }
 
 const handleSubmit = () => {
-  // Validation for create mode - at least one admin required
-  if (props.mode.type === 'create' && formData.value.admin_user_ids.length === 0) {
-    // Could emit an error or show validation message
-    // Logging removed for production
+  // Use form validation instead of manual checks
+  if (!isFormValid.value) {
     return
   }
   
   const submitData = {
-    name: formData.value.name,
+    name: formData.value.name.trim(),
     description: formData.value.description
   }
   
@@ -323,6 +347,11 @@ watch(() => props.group, (group) => {
   box-shadow: 0 0 0 3px rgba(207, 163, 101, 0.1);
 }
 
+.inputError {
+  border-color: #e74c3c !important;
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1) !important;
+}
+
 .userSelection {
   position: relative;
 }
@@ -441,6 +470,23 @@ watch(() => props.group, (group) => {
   text-align: center;
 }
 
+.validationError {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.validationError i {
+  font-size: 0.9rem;
+}
+
 .helpText {
   color: var(--text-muted);
   font-size: 0.85rem;
@@ -541,8 +587,20 @@ watch(() => props.group, (group) => {
   color: var(--text-primary);
 }
 
-.saveBtn:hover {
+.saveBtn:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(207, 163, 101, 0.3);
+}
+
+.saveBtn_disabled {
+  background: var(--bg-glass) !important;
+  color: var(--text-muted) !important;
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
+.saveBtn:disabled {
+  transform: none !important;
+  box-shadow: none !important;
 }
 </style>

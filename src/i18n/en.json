@@ -1245,7 +1245,18 @@
       "addGroup": "Add Group"
     },
     "buttons": {
-      "refresh": "Refresh"
+      "refresh": "Refresh",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "validation": {
+      "required": "This field is required",
+      "password": {
+        "minLength": "Password must be at least 8 characters long",
+        "tooCommon": "This password is too common. Please choose a more secure password",
+        "onlyNumbers": "Password cannot contain only numbers",
+        "tooSimilar": "Password is too similar to your personal information"
+      }
     },
     "dashboard": {
       "totalUsers": "Total Users",

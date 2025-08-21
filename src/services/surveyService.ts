@@ -6,7 +6,7 @@ import type {
   QuestionCreateRequest,
   SurveyResponse,
   SurveyAnalytics,
-  SurveyFilters,
+  // SurveyFilters, // Currently unused
   SurveyAudienceRequest,
   BulkOperationRequest,
   BulkOperationResult,

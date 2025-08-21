@@ -79,10 +79,13 @@
               v-model="formData.password"
               type="password" 
               required
-              :class="$style.input"
+              :class="[$style.input, validationErrors.password ? $style.inputError : '']"
               :placeholder="t('userManagement.forms.user.passwordPlaceholder')"
               autocomplete="new-password"
             />
+            <div v-if="validationErrors.password" :class="$style.errorMessage">
+              {{ validationErrors.password }}
+            </div>
           </div>
           
           <div v-if="mode.type === 'invite'" :class="$style.formGroup">
@@ -106,7 +109,12 @@
         <button type="button" :class="[$style.btn, $style.cancelBtn]" @click="$emit('close')">
           {{ t('userManagement.buttons.cancel') }}
         </button>
-        <button type="button" :class="[$style.btn, $style.saveBtn]" @click="handleSubmit">
+        <button 
+          type="button" 
+          :class="[$style.btn, $style.saveBtn, !isFormValid ? $style.saveBtn_disabled : '']" 
+          :disabled="!isFormValid"
+          @click="handleSubmit"
+        >
           {{ t('userManagement.buttons.save') }}
         </button>
       </div>
@@ -151,6 +159,143 @@ const formData = ref({
   groups: [] as number[]
 })
 
+const validationErrors = ref<Record<string, string>>({})
+
+// Form validation computed properties
+const isFormValid = computed(() => {
+  const { email, first_name, last_name, role, password, auth_type } = formData.value
+  
+  // Basic required fields
+  if (!email || !first_name || !last_name || !role) {
+    return false
+  }
+  
+  // Password validation for create mode with regular auth
+  if (props.mode.type === 'create' && auth_type === 'regular') {
+    if (!password) {
+      return false
+    }
+    // Check if password passes all validation rules
+    const passwordValidation = validatePassword(password)
+    if (passwordValidation.length > 0) {
+      return false
+    }
+  }
+  
+  // Check if there are any validation errors
+  if (Object.keys(validationErrors.value).length > 0) {
+    return false
+  }
+  
+  return true
+})
+
+// Password validation function
+const validatePassword = (password: string): string[] => {
+  const errors: string[] = []
+  const { email, first_name, last_name } = formData.value
+  
+  // Minimum length validator
+  if (password.length < 8) {
+    errors.push(t.value('userManagement.validation.password.minLength'))
+  }
+  
+  // Numeric password validator
+  if (/^\d+$/.test(password)) {
+    errors.push(t.value('userManagement.validation.password.onlyNumbers'))
+  }
+  
+  // Common password validator (basic check)
+  const commonPasswords = [
+    'password', 'password123', 'admin', '12345678', 'qwerty',
+    'abc123', 'password1', 'admin123', '123456789', 'welcome'
+  ]
+  if (commonPasswords.includes(password.toLowerCase())) {
+    errors.push(t.value('userManagement.validation.password.tooCommon'))
+  }
+  
+  // User attribute similarity validator
+  const userInfo = [email, first_name, last_name].filter(Boolean)
+  const passwordLower = password.toLowerCase()
+  
+  for (const info of userInfo) {
+    if (info && info.length > 2) {
+      const infoLower = info.toLowerCase()
+      // Simple similarity check - if password contains user info or vice versa
+      if (passwordLower.includes(infoLower) || infoLower.includes(passwordLower)) {
+        // More sophisticated similarity check could be added here
+        const similarity = calculateSimilarity(passwordLower, infoLower)
+        if (similarity > 0.7) {
+          errors.push(t.value('userManagement.validation.password.tooSimilar'))
+          break
+        }
+      }
+    }
+  }
+  
+  return errors
+}
+
+// Simple similarity calculation (Levenshtein distance based)
+const calculateSimilarity = (str1: string, str2: string): number => {
+  const longer = str1.length > str2.length ? str1 : str2
+  const shorter = str1.length > str2.length ? str2 : str1
+  
+  if (longer.length === 0) return 1.0
+  
+  const distance = levenshteinDistance(longer, shorter)
+  return (longer.length - distance) / longer.length
+}
+
+// Levenshtein distance calculation
+const levenshteinDistance = (str1: string, str2: string): number => {
+  const matrix = []
+  
+  for (let i = 0; i <= str2.length; i++) {
+    matrix[i] = [i]
+  }
+  
+  for (let j = 0; j <= str1.length; j++) {
+    matrix[0][j] = j
+  }
+  
+  for (let i = 1; i <= str2.length; i++) {
+    for (let j = 1; j <= str1.length; j++) {
+      if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1]
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1, // substitution
+          matrix[i][j - 1] + 1,     // insertion
+          matrix[i - 1][j] + 1      // deletion
+        )
+      }
+    }
+  }
+  
+  return matrix[str2.length][str1.length]
+}
+
+// Validate password on input change
+const validatePasswordField = () => {
+  if (props.mode.type === 'create' && formData.value.auth_type === 'regular' && formData.value.password) {
+    const errors = validatePassword(formData.value.password)
+    if (errors.length > 0) {
+      validationErrors.value.password = errors[0] // Show first error
+    } else {
+      delete validationErrors.value.password
+    }
+  } else {
+    delete validationErrors.value.password
+  }
+}
+
+// Watch password changes for real-time validation
+watch(() => formData.value.password, validatePasswordField)
+watch(() => formData.value.email, validatePasswordField)
+watch(() => formData.value.first_name, validatePasswordField)
+watch(() => formData.value.last_name, validatePasswordField)
+
 const getModalTitle = () => {
   switch (props.mode.type) {
     case 'create': return t.value('userManagement.modals.user.create.title')
@@ -162,7 +307,9 @@ const getModalTitle = () => {
 }
 
 const handleSubmit = () => {
-  emit('save', formData.value)
+  if (isFormValid.value) {
+    emit('save', formData.value)
+  }
 }
 
 // Initialize form data when user prop changes
@@ -188,6 +335,8 @@ watch(() => props.user, (user) => {
       groups: []
     }
   }
+  // Clear validation errors when user changes
+  validationErrors.value = {}
 }, { immediate: true })
 </script>
 
@@ -291,6 +440,25 @@ watch(() => props.user, (user) => {
   box-shadow: 0 0 0 3px rgba(207, 163, 101, 0.1);
 }
 
+.inputError {
+  border-color: #e74c3c !important;
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1) !important;
+}
+
+.errorMessage {
+  margin-top: 0.5rem;
+  color: #e74c3c;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.errorMessage::before {
+  content: "⚠";
+  font-size: 0.9rem;
+}
+
 .checkboxGroup {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -341,8 +509,20 @@ watch(() => props.user, (user) => {
   color: var(--text-primary);
 }
 
-.saveBtn:hover {
+.saveBtn:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(207, 163, 101, 0.3);
+}
+
+.saveBtn_disabled {
+  background: var(--bg-glass) !important;
+  color: var(--text-muted) !important;
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
+.saveBtn:disabled {
+  transform: none !important;
+  box-shadow: none !important;
 }
 </style>

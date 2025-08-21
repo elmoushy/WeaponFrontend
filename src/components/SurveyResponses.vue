@@ -223,7 +223,7 @@
             <div :class="$style.questionAnalyticsContent">
               <!-- Single Choice Analytics -->
               <SingleChoiceAnalytics
-                v-if="selectedQuestion.question_type === 'single_choice'"
+                v-if="selectedQuestion.question_type === 'single_choice' && questionAnalytics"
                 :analytics="questionAnalytics"
                 :question="selectedQuestion"
                 :loading="questionAnalyticsLoading"
@@ -232,7 +232,7 @@
 
               <!-- Multiple Choice Analytics -->
               <MultipleChoiceAnalytics
-                v-else-if="selectedQuestion.question_type === 'multiple_choice'"
+                v-else-if="selectedQuestion.question_type === 'multiple_choice' && questionAnalytics"
                 :analytics="questionAnalytics"
                 :question="selectedQuestion"
                 :loading="questionAnalyticsLoading"
@@ -241,7 +241,7 @@
 
               <!-- Rating Analytics -->
               <RatingAnalytics
-                v-else-if="selectedQuestion.question_type === 'rating'"
+                v-else-if="selectedQuestion.question_type === 'rating' && questionAnalytics"
                 :analytics="questionAnalytics"
                 :question="selectedQuestion"
                 :loading="questionAnalyticsLoading"
@@ -250,7 +250,7 @@
 
               <!-- Yes/No Analytics -->
               <YesNoAnalytics
-                v-else-if="selectedQuestion.question_type === 'yes_no'"
+                v-else-if="selectedQuestion.question_type === 'yes_no' && questionAnalytics"
                 :analytics="questionAnalytics"
                 :question="selectedQuestion"
                 :loading="questionAnalyticsLoading"
@@ -259,12 +259,18 @@
 
               <!-- Text Analytics -->
               <TextAnalytics
-                v-else-if="['text', 'textarea'].includes(selectedQuestion.question_type)"
+                v-else-if="['text', 'textarea'].includes(selectedQuestion.question_type) && questionAnalytics"
                 :analytics="questionAnalytics"
                 :question="selectedQuestion"
                 :loading="questionAnalyticsLoading"
                 @response-click="onAnalyticsQuestionClick"
               />
+
+              <!-- Loading state -->
+              <div v-else-if="questionAnalyticsLoading" :class="$style.loadingState">
+                <div :class="$style.loadingSpinner"></div>
+                <p>{{ t('responses.loadingAnalytics') }}</p>
+              </div>
 
               <!-- Fallback for unsupported question types -->
               <div v-else :class="$style.unsupportedQuestionType">
@@ -489,15 +495,23 @@ const exportSettings = ref<ExportSettings>({
   endDate: ''
 })
 
+// Question interface for typing
+interface SurveyQuestion {
+  id: string
+  question_text: string
+  question_type: string
+  response_count?: number
+}
+
 // Tab management
 const activeTab = ref('responses')
-const selectedQuestion = ref(null)
+const selectedQuestion = ref<SurveyQuestion | null>(null)
 
 // Analytics data
 const surveyAnalytics = ref(null)
 const questionAnalytics = ref(null)
 const survey = ref(null)
-const surveyQuestions = ref([])
+const surveyQuestions = ref<SurveyQuestion[]>([])
 const analyticsLoading = ref(false)
 const questionAnalyticsLoading = ref(false)
 
@@ -708,7 +722,7 @@ const loadQuestionAnalytics = async (questionId: string) => {
   }
 }
 
-const selectQuestion = (question: any) => {
+const selectQuestion = (question: SurveyQuestion) => {
   selectedQuestion.value = question
   loadQuestionAnalytics(question.id)
 }
@@ -751,19 +765,19 @@ onMounted(() => {
 })
 
 // Watch for tab changes to load analytics when needed
-const loadAnalyticsIfNeeded = () => {
-  if (activeTab.value === 'analytics' && !surveyAnalytics.value) {
-    loadAnalytics()
-  }
-}
+// const loadAnalyticsIfNeeded = () => {
+//   if (activeTab.value === 'analytics' && !surveyAnalytics.value) {
+//     loadAnalytics()
+//   }
+// }
 
 // Expose tab change function to make analytics load when tab is clicked
-const handleTabChange = (tab: string) => {
-  activeTab.value = tab
-  if (tab === 'analytics' && !surveyAnalytics.value) {
-    loadAnalytics()
-  }
-}
+// const handleTabChange = (tab: string) => {
+//   activeTab.value = tab
+//   if (tab === 'analytics' && !surveyAnalytics.value) {
+//     loadAnalytics()
+//   }
+// }
 </script>
 
 <style module src="./SurveyResponses.module.css"></style>

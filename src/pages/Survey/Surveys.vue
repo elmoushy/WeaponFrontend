@@ -266,7 +266,7 @@
       </div>
 
       <!-- Pagination -->
-      <div v-if="pagination.total > pagination.pageSize" :class="$style.paginationSection">
+      <div :class="$style.paginationSection">
         <div :class="$style.paginationInfo">
           {{ t('common.pagination.showing') }} 
           {{ (pagination.currentPage - 1) * pagination.pageSize + 1 }} - 

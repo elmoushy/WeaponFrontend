@@ -115,7 +115,7 @@
                 <i class="fas fa-envelope"></i>
                 {{ getText('survey.access.email') }}
               </button>
-              <button 
+              <!-- <button 
                 :class="[$style.shareButton, { [$style.disabled]: !currentLinkData && !publicLink }]"
                 @click="shareByWhatsApp"
                 :disabled="!currentLinkData && !publicLink"
@@ -123,7 +123,7 @@
               >
                 <i class="fab fa-whatsapp"></i>
                 {{ getText('survey.access.whatsapp') }}
-              </button>
+              </button> -->
               <button 
                 :class="[$style.shareButton, { [$style.disabled]: !currentLinkData && !publicLink }]"
                 @click="shareBySMS"
@@ -596,32 +596,32 @@ const shareByEmail = async () => {
   }
 }
 
-const shareByWhatsApp = async () => {
-  if (!currentLinkData.value && !props.publicLink) {
-    setStatusMessage(currentLanguage.value === 'ar' ? 'يجب إنشاء رابط أولاً' : 'Please generate a link first', 'warning')
-    return
-  }
+// const shareByWhatsApp = async () => {
+//   if (!currentLinkData.value && !props.publicLink) {
+//     setStatusMessage(currentLanguage.value === 'ar' ? 'يجب إنشاء رابط أولاً' : 'Please generate a link first', 'warning')
+//     return
+//   }
   
-  try {
-    const message = getShareMessage('whatsapp')
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`
+//   try {
+//     const message = getShareMessage('whatsapp')
+//     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`
     
-    try {
-      window.open(whatsappUrl, '_blank')
-      setStatusMessage(currentLanguage.value === 'ar' ? 'تم فتح واتساب' : 'WhatsApp opened', 'success')
-    } catch (e) {
-      await navigator.clipboard.writeText(message)
-      setStatusMessage(
-        currentLanguage.value === 'ar' 
-          ? 'تم نسخ الرسالة - يمكنك لصقها في واتساب'
-          : 'Message copied - you can paste it in WhatsApp', 
-        'info'
-      )
-    }
-  } catch (error) {
-    setStatusMessage(currentLanguage.value === 'ar' ? 'فشل في مشاركة عبر واتساب' : 'Failed to share by WhatsApp', 'error')
-  }
-}
+//     try {
+//       window.open(whatsappUrl, '_blank')
+//       setStatusMessage(currentLanguage.value === 'ar' ? 'تم فتح واتساب' : 'WhatsApp opened', 'success')
+//     } catch (e) {
+//       await navigator.clipboard.writeText(message)
+//       setStatusMessage(
+//         currentLanguage.value === 'ar' 
+//           ? 'تم نسخ الرسالة - يمكنك لصقها في واتساب'
+//           : 'Message copied - you can paste it in WhatsApp', 
+//         'info'
+//       )
+//     }
+//   } catch (error) {
+//     setStatusMessage(currentLanguage.value === 'ar' ? 'فشل في مشاركة عبر واتساب' : 'Failed to share by WhatsApp', 'error')
+//   }
+// }
 
 const shareBySMS = async () => {
   if (!currentLinkData.value && !props.publicLink) {

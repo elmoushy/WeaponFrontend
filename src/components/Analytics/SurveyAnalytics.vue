@@ -187,7 +187,6 @@
           v-for="(question, index) in questionsSummary"
           :key="question.id || index"
           :class="$style.questionSummaryCard"
-          @click="onQuestionClick(question)"
         >
           <div :class="$style.questionSummaryHeader">
             <div :class="$style.questionNumber">Q{{ index + 1 }}</div>
@@ -323,7 +322,6 @@ const props = withDefaults(defineProps<Props>(), { loading: false })
 // Emits
 const emit = defineEmits<{
   refresh: []
-  questionClick: [question: any]
   questionDetailsClick: [data: { question: any, details: any }]
   periodClick: [period: any]
   filtersChange: [filters: any]
@@ -550,7 +548,6 @@ const getResponseTrendText = (trend: number) => {
 }
 
 const refreshAnalytics = () => emit('refresh')
-const onQuestionClick = (question: any) => emit('questionClick', question)
 
 const onQuestionDetailsClick = async (question: any) => {
   try {
@@ -884,13 +881,6 @@ onMounted(() => { isMounted.value = true })
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.questionSummaryCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .questionSummaryHeader {

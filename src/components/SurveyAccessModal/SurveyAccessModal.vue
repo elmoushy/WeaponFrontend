@@ -588,6 +588,7 @@ import countryCodesData from '../../data/countryCodes.json'
 // Props
 interface Props {
   survey: Survey
+  isSubmissionFlow?: boolean
 }
 
 const props = defineProps<Props>()
@@ -1199,8 +1200,8 @@ const handleSave = async () => {
       }, 2000)
     }
 
-    // Open LinkSharingModal automatically if PUBLIC access is selected
-    if (selectedAccess.value === 'PUBLIC') {
+    // Open LinkSharingModal automatically if PUBLIC access is selected (but not in submission flow)
+    if (selectedAccess.value === 'PUBLIC' && !props.isSubmissionFlow) {
       // Handle password protection
       if (passwordProtectionEnabled.value) {
         try {
@@ -1248,12 +1249,23 @@ const handleSave = async () => {
           isLinkSharingModalVisible.value = true
         }, 100)
       }
-      // Don't emit save immediately for PUBLIC access - let the modal handle it
+      // Don't emit save immediately for PUBLIC access - let the modal handle it (unless in submission flow)
+      if (props.isSubmissionFlow) {
+        // In submission flow, emit save immediately even for PUBLIC access
+        const saveData = {
+          visibility: selectedAccess.value,
+          publicContactMethod: selectedContactMethod.value,
+          users: selectedUsers.value,
+          emails: [] as string[],
+          groups: selectedGroups.value
+        }
+        emit('save', saveData)
+      }
     } else {
-      // For non-PUBLIC access, emit save immediately
+      // For non-PUBLIC access or submission flow, emit save immediately
       const saveData = {
         visibility: selectedAccess.value,
-        publicContactMethod: undefined as PublicContactMethod | undefined,
+        publicContactMethod: selectedAccess.value === 'PUBLIC' ? selectedContactMethod.value : undefined,
         users: selectedUsers.value,
         emails: [] as string[], // Email invitations removed from compact UI
         groups: selectedGroups.value

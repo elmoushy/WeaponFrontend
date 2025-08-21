@@ -207,9 +207,9 @@
               <span :class="$style.actionButtonText">{{ isRTL ? 'إرسال' : 'Submit' }}</span>
             </button>
             
-            <!-- Share/Manage Access button - hidden for submitted surveys -->
+            <!-- Share/Manage Access button - hidden for submitted and draft surveys -->
             <button 
-              v-if="survey.status !== 'submitted'" 
+              v-if="survey.status !== 'submitted' && survey.status !== 'draft'" 
               :class="$style.actionButton" 
               @click.stop="manageSurveyAccess(survey)" 
               :title="t('survey.card.manageAccess')"
@@ -218,7 +218,7 @@
               <span :class="$style.actionButtonText">{{ t('survey.card.share') }}</span>
             </button>
             <button 
-              v-if="survey.visibility === 'PUBLIC'"
+              v-if="survey.visibility === 'PUBLIC' && survey.status !== 'draft'"
               :class="[$style.actionButton, $style.publicShare]" 
               @click.stop="openLinkSharingModal(survey)" 
               :title="t('survey.card.shareLink')"
@@ -345,7 +345,7 @@
                   {{ isRTL ? 'إرسال' : 'Submit' }}
                 </button>
                 <button 
-                  v-if="survey.status !== 'submitted'" 
+                  v-if="survey.status !== 'submitted' && survey.status !== 'draft'" 
                   :class="$style.actionMenuItem" 
                   @click.stop="manageSurveyAccess(survey)"
                 >
@@ -462,6 +462,7 @@
     <SurveyAccessModal
       v-if="showAccessModal && selectedSurveyForAccess"
       :survey="selectedSurveyForAccess"
+      :is-submission-flow="isSubmissionFlow"
       @save="handleAccessSave"
       @cancel="closeAccessModal"
     />
@@ -523,6 +524,7 @@ const selectedSurveyForEdit = ref<Survey | null>(null)
 const selectedSurveyForAccess = ref<Survey | null>(null)
 const selectedSurveyForLinkSharing = ref<Survey | null>(null)
 const publicLinkForSharing = ref<any | null>(null)
+const isSubmissionFlow = ref(false)
 
 // Enhanced Pagination and API state
 const currentPage = ref(1)
@@ -850,6 +852,7 @@ const editSurvey = (survey: Survey) => {
 
 const manageSurveyAccess = (survey: Survey) => {
   selectedSurveyForAccess.value = survey
+  isSubmissionFlow.value = false // Regular access management
   showAccessModal.value = true
 }
 
@@ -864,9 +867,20 @@ const openLinkSharingModal = async (survey: Survey) => {
 
 const handleAccessSave = async (_data: any) => {
   try {
+    const survey = selectedSurveyForAccess.value
+    
+    // Check if this was triggered from submission flow
+    if (survey && (survey as any)._isSubmissionFlow) {
+      // Clear the submission flow flag
+      delete (survey as any)._isSubmissionFlow
+      
+      // Now proceed with actual submission after access settings are saved
+      await performDraftSubmission(survey.id)
+    }
     
     showAccessModal.value = false
     selectedSurveyForAccess.value = null
+    isSubmissionFlow.value = false // Reset submission flow flag
     await loadSurveys() // Refresh the surveys list
   } catch (error) {
     // Logging removed for production
@@ -874,8 +888,62 @@ const handleAccessSave = async (_data: any) => {
 }
 
 const closeAccessModal = () => {
+  // Clear submission flow flag if user cancels
+  if (selectedSurveyForAccess.value && (selectedSurveyForAccess.value as any)._isSubmissionFlow) {
+    delete (selectedSurveyForAccess.value as any)._isSubmissionFlow
+  }
+  
   showAccessModal.value = false
   selectedSurveyForAccess.value = null
+  isSubmissionFlow.value = false // Reset submission flow flag
+}
+
+// New method to handle the actual draft submission
+const performDraftSubmission = async (surveyId: string) => {
+  try {
+    const isArabic = store.currentLanguage === 'ar'
+    
+    const result = await Swal.fire({
+      title: isArabic ? 'تأكيد الإرسال' : 'Confirm Submission',
+      text: isArabic ? 'هل أنت متأكد من إرسال هذا الاستطلاع؟ بعد الإرسال لن يمكنك تعديله.' : 'Are you sure you want to submit this survey? Once submitted, you cannot edit it.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#28a745',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: isArabic ? 'نعم، أرسل!' : 'Yes, submit it!',
+      cancelButtonText: isArabic ? 'إلغاء' : 'Cancel'
+    })
+
+    if (result.isConfirmed) {
+      // Show loading
+      Swal.fire({
+        title: isArabic ? 'جاري الإرسال...' : 'Submitting...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        }
+      })
+
+      await surveyService.submitSurvey(surveyId)
+      
+      await Swal.fire({
+        title: isArabic ? 'تم الإرسال!' : 'Submitted!',
+        text: isArabic ? 'تم إرسال الاستطلاع بنجاح. الآن أصبح نهائياً ومتاح للإجابة عليه.' : 'The survey has been submitted successfully. It is now final and ready for responses.',
+        icon: 'success',
+        confirmButtonText: isArabic ? 'موافق' : 'OK'
+      })
+
+      await refreshData()
+    }
+  } catch (error: any) {
+    const isArabic = store.currentLanguage === 'ar'
+    Swal.fire({
+      title: isArabic ? 'خطأ في الإرسال' : 'Submission Error',
+      text: error.message || (isArabic ? 'فشل في إرسال الاستطلاع' : 'Failed to submit survey'),
+      icon: 'error',
+      confirmButtonText: isArabic ? 'موافق' : 'OK'
+    })
+  }
 }
 
 const closeLinkSharingModal = () => {
@@ -954,43 +1022,26 @@ const submitDraftSurvey = async (surveyId: string) => {
   try {
     const isArabic = store.currentLanguage === 'ar'
     
-    const result = await Swal.fire({
-      title: isArabic ? 'تأكيد الإرسال' : 'Confirm Submission',
-      text: isArabic ? 'هل أنت متأكد من إرسال هذا الاستطلاع؟ بعد الإرسال لن يمكنك تعديله.' : 'Are you sure you want to submit this survey? Once submitted, you cannot edit it.',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#28a745',
-      cancelButtonColor: '#6c757d',
-      confirmButtonText: isArabic ? 'نعم، أرسل!' : 'Yes, submit it!',
-      cancelButtonText: isArabic ? 'إلغاء' : 'Cancel'
-    })
-
-    if (result.isConfirmed) {
-      // Show loading
-      Swal.fire({
-        title: isArabic ? 'جاري الإرسال...' : 'Submitting...',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading()
-        }
-      })
-
-      await surveyService.submitSurvey(surveyId)
-      
-      await Swal.fire({
-        title: isArabic ? 'تم الإرسال!' : 'Submitted!',
-        text: isArabic ? 'تم إرسال الاستطلاع بنجاح. الآن أصبح نهائياً ومتاح للإجابة عليه.' : 'The survey has been submitted successfully. It is now final and ready for responses.',
-        icon: 'success',
-        confirmButtonText: isArabic ? 'موافق' : 'OK'
-      })
-
-      await refreshData()
+    // Find the survey first
+    const survey = surveys.value.find(s => s.id === surveyId)
+    if (!survey) {
+      throw new Error(isArabic ? 'لم يتم العثور على الاستطلاع' : 'Survey not found')
     }
+    
+    // Open the access modal to let user choose sharing options before submitting
+    selectedSurveyForAccess.value = survey
+    isSubmissionFlow.value = true // Mark as submission flow
+    showAccessModal.value = true
+    
+    // Store the intent that this is for submission so the access modal can handle it differently
+    // We'll use a flag to indicate this is submission flow
+    ;(survey as any)._isSubmissionFlow = true
+    
   } catch (error: any) {
     const isArabic = store.currentLanguage === 'ar'
     Swal.fire({
-      title: isArabic ? 'خطأ في الإرسال' : 'Submission Error',
-      text: error.message || (isArabic ? 'فشل في إرسال الاستطلاع' : 'Failed to submit survey'),
+      title: isArabic ? 'خطأ' : 'Error',
+      text: error.message || (isArabic ? 'حدث خطأ' : 'An error occurred'),
       icon: 'error',
       confirmButtonText: isArabic ? 'موافق' : 'OK'
     })
