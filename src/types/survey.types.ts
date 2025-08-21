@@ -7,12 +7,35 @@ export interface ApiResponse<T> {
   data: T
 }
 
-// Paginated API Response interface
+// Enhanced Paginated API Response interface for new surveys endpoint
 export interface PaginatedApiResponse<T> {
   count: number
+  total_pages: number
+  current_page: number
+  per_page: number
   next: string | null
   previous: string | null
   results: T[]
+  applied_filters?: {
+    search?: string
+    survey_status?: string
+    sort_by?: string
+    visibility?: string
+    is_active?: string
+    status?: string
+  }
+  available_filters?: {
+    sort_options: Array<{
+      value: string
+      label: string
+      label_en: string
+    }>
+    status_options: Array<{
+      value: string
+      label: string
+      label_en: string
+    }>
+  }
 }
 
 // Survey visibility levels

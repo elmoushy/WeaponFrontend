@@ -112,7 +112,7 @@
                     :class="$style.formInput"
                     v-model.number="ratingSettings.min"
                     min="1"
-                    max="10"
+                    max="5"
                   />
                 </div>
                 <div>

@@ -64,32 +64,6 @@
         </div>
       </div>
 
-      <!-- Survey Questions Preview -->
-      <!-- <div :class="$style.questionsPreview">
-        <h3 :class="$style.previewTitle">نظرة سريعة على الأسئلة</h3>
-        <div :class="$style.questionsList">
-          <div 
-            v-for="(question, index) in survey.questions.slice(0, 3)" 
-            :key="question.id"
-            :class="$style.questionItem"
-          >
-            <div :class="$style.questionNumber">{{ index + 1 }}</div>
-            <div :class="$style.questionContent">
-              <h4 :class="$style.questionText">{{ question.text }}</h4>
-              <div :class="$style.questionType">
-                <i :class="getQuestionIcon(question.question_type)"></i>
-                <span>{{ getQuestionTypeLabel(question.question_type) }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div :class="$style.previewNote">
-          <i class="fas fa-info-circle"></i>
-          <span>هذه عينة من الأسئلة المتاحة في الاستطلاع</span>
-        </div>
-      </div> -->
-
       <!-- Action Buttons -->
       <div :class="$style.actionButtons">
         <button :class="$style.startButton" @click="startSurvey">
@@ -232,7 +206,6 @@
                 @click="answers[currentQuestion.id] = rating"
               >
                 <span :class="$style.ratingNumber">{{ rating }}</span>
-                <i class="fas fa-star" :class="$style.ratingIcon"></i>
               </button>
             </div>
             <div :class="$style.ratingLabels">
@@ -244,36 +217,34 @@
           <!-- Yes/No -->
           <div v-else-if="currentQuestion.question_type === 'yes_no'" :class="$style.yesNoWrapper">
             <div :class="$style.yesNoTitle">
-              <div :class="$style.yesNoTitleIcon">
-                <i class="fas fa-question-circle"></i>
-              </div>
-              <h3 :class="$style.yesNoTitleText">اختر إجابتك:</h3>
-              <p :class="$style.yesNoSubtitle">اختر الخيار الذي يناسب رأيك</p>
+              <i class="fas fa-question-circle" :class="$style.yesNoTitleIcon"></i>
+              <span :class="$style.yesNoTitleText">سؤال اختيار</span>
             </div>
+            <div :class="$style.yesNoSubtitle">اختر الخيار الذي يناسب رأيك</div>
             <div :class="$style.yesNoContainer">
               <div :class="$style.yesNoButtons">
                 <button
                   :class="[$style.yesNoButton, $style.yes, { [$style.selected]: answers[currentQuestion.id] === 'yes' }]"
                   @click="answers[currentQuestion.id] = 'yes'"
+                  type="button"
+                  :aria-pressed="answers[currentQuestion.id] === 'yes'"
                 >
-                  <div :class="$style.yesNoButtonIcon">
-                    <i class="fas fa-check"></i>
-                  </div>
+                  <i class="fas fa-check" :class="$style.yesNoButtonIcon"></i>
                   <span :class="$style.yesNoButtonText">نعم</span>
-                  <div :class="$style.yesNoButtonBadge" v-if="answers[currentQuestion.id] === 'yes'">
-                    <i class="fas fa-check-circle"></i>
+                  <div :class="$style.yesNoButtonBadge">
+                    <i class="fas fa-check"></i>
                   </div>
                 </button>
                 <button
                   :class="[$style.yesNoButton, $style.no, { [$style.selected]: answers[currentQuestion.id] === 'no' }]"
                   @click="answers[currentQuestion.id] = 'no'"
+                  type="button"
+                  :aria-pressed="answers[currentQuestion.id] === 'no'"
                 >
-                  <div :class="$style.yesNoButtonIcon">
-                    <i class="fas fa-times"></i>
-                  </div>
+                  <i class="fas fa-times" :class="$style.yesNoButtonIcon"></i>
                   <span :class="$style.yesNoButtonText">لا</span>
-                  <div :class="$style.yesNoButtonBadge" v-if="answers[currentQuestion.id] === 'no'">
-                    <i class="fas fa-check-circle"></i>
+                  <div :class="$style.yesNoButtonBadge">
+                    <i class="fas fa-times"></i>
                   </div>
                 </button>
               </div>

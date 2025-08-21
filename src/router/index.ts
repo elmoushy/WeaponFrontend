@@ -24,15 +24,10 @@ const JWTLogin = () => import("../pages/Auth/JWTLogin.vue");
 // const Register = () => import('../pages/Auth/Register.vue') 
 
 // Core
-const Welcome = () => import("../pages/Welcome/Welcome.vue");
-const Dashboard = () => import("../pages/Dashboard/Dashboard.vue");
-const Projects = () => import("../pages/Projects/Projects.vue");
-const Analytics = () => import("../pages/Analytics/Analytics.vue");
 const Profile = () => import("../pages/Profile/Profile.vue");
 
 // Control
 const Control = () => import("../pages/Control/Control.vue");
-const NewsControl = () => import("../pages/Control/NewsControl.vue");
 const SurveyControl = () => import("../pages/Control/SurveyControl.vue");
 const UserManagement = () =>
   import("../pages/Control/UserManagement/UserManagement.vue");
@@ -40,13 +35,11 @@ const UserManagement = () =>
 // Surveys
 const Surveys = () => import("../pages/Survey/Surveys.vue");
 const SurveyResponses = () => import("../pages/Survey/SurveyResponses.vue");
+const SurveyAnalytics = () => import("../pages/Survey/SurveyAnalytics.vue");
 const PublicSurveyView = () => import("../pages/Survey/PublicSurveyView.vue");
 const PasswordProtectedSurveyView = () =>
   import("../pages/Survey/PasswordProtectedSurveyView.vue");
 const AuthSurveyView = () => import("../pages/Survey/AuthSurveyView.vue");
-
-// Dev / Testing
-const SurveyAccessTest = () => import("../components/SurveyAccessTest.vue");
 
 /* =========================
    Routes
@@ -85,30 +78,6 @@ const routes: RouteRecordRaw[] = [
 
   // Authenticated app
   {
-    path: "/welcome",
-    name: "Welcome",
-    component: Welcome,
-    meta: { title: "Welcome - WPC | WeaponpowerCloud App", requiresAuth: true },
-  },
-  {
-    path: "/dashboard",
-    name: "Dashboard",
-    component: Dashboard,
-    meta: {
-      title: "Dashboard - WPC | WeaponpowerCloud App",
-      requiresAuth: true,
-    },
-  },
-  {
-    path: "/projects",
-    name: "Projects",
-    component: Projects,
-    meta: {
-      title: "Projects - WPC | WeaponpowerCloud App",
-      requiresAuth: true,
-    },
-  },
-  {
     path: "/surveys",
     name: "Surveys",
     component: Surveys,
@@ -131,16 +100,6 @@ const routes: RouteRecordRaw[] = [
     component: Control,
     meta: {
       title: "Control Panel - WPC | WeaponpowerCloud App",
-      requiresAuth: true,
-      requiresAdmin: true,
-    },
-  },
-  {
-    path: "/control/news",
-    name: "NewsControl",
-    component: NewsControl,
-    meta: {
-      title: "News Management - WPC | WeaponpowerCloud App",
       requiresAuth: true,
       requiresAdmin: true,
     },
@@ -176,6 +135,16 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: "/control/surveys/:surveyId/analytics",
+    name: "SurveyAnalytics",
+    component: SurveyAnalytics,
+    meta: {
+      title: "Survey Analytics - WPC | WeaponpowerCloud App",
+      requiresAuth: true,
+      requiresAdmin: true,
+    },
+  },
+  {
     path: "/control/responses",
     name: "AllSurveyResponses",
     component: SurveyResponses,
@@ -185,37 +154,12 @@ const routes: RouteRecordRaw[] = [
       requiresAdmin: true,
     },
   },
-
-  {
-    path: "/analytics",
-    name: "Analytics",
-    component: Analytics,
-    meta: {
-      title: "Analytics - WPC | WeaponpowerCloud App",
-      requiresAuth: true,
-    },
-  },
   {
     path: "/profile",
     name: "Profile",
     component: Profile,
     meta: { title: "Profile - WPC | WeaponpowerCloud App", requiresAuth: true },
   },
-
-  // Dev-only routes
-  ...(import.meta.env.DEV
-    ? [
-        {
-          path: "/test/survey-access",
-          name: "SurveyAccessTest",
-          component: SurveyAccessTest,
-          meta: {
-            title: "Survey Access Test - Development",
-            requiresAuth: true,
-          },
-        },
-      ]
-    : []),
 
   // ✅ 404 fallback
   { path: "/:pathMatch(.*)*", redirect: "/surveys" },

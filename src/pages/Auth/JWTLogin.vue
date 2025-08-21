@@ -23,7 +23,7 @@
               <span>أهلاً وسهلاً</span>
             </div>
             <h1 :class="styles.title">تسجيل الدخول</h1>
-            <p :class="styles.subtitle">ادخل إلى مساحة العمل الآمنة باستخدام بريدك الإلكتروني</p>
+<p :class="styles.subtitle">تسجيل الدخول عبر البريد الإلكتروني</p>
           </div>
 
           <div :class="styles.cardBody">
@@ -131,9 +131,7 @@
                   <span :class="styles.buttonText">تسجيل الدخول</span>
                   <div :class="styles.buttonRipple"></div>
                 </button>
-                <p :class="styles.footerText" style="text-align: center !important;">
-                  محمي بتشفير متقدم • <span :class="styles.highlight">مصادقة JWT</span>
-                </p>
+
               </form>
             </div>
 

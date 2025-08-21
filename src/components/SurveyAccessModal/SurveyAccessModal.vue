@@ -937,7 +937,11 @@ const handleStatusUpdate = (message: string, type: 'success' | 'error' | 'warnin
 // Public Link Management - Only called when user explicitly saves
 const loadPublicLink = async () => {
   try {
-    const response = await surveyService.getPublicLink(props.survey.id)
+    if (!props.survey?.id) {
+      throw new Error('Survey ID is required')
+    }
+    const surveyId = String(props.survey.id)
+    const response = await surveyService.getPublicLink(surveyId)
     publicLink.value = response.data
     
   } catch (error: any) {
@@ -1128,6 +1132,15 @@ const handleSave = async () => {
     isSaving.value = true
     clearStatusMessage()
 
+    // Validate survey ID is present
+    if (!props.survey?.id) {
+      const message = currentLanguage.value === 'ar' 
+        ? 'معرف الاستطلاع مطلوب ولا يمكن أن يكون فارغاً'
+        : 'Survey ID is required and cannot be undefined'
+      setStatusMessage(message, 'error')
+      return
+    }
+
     // Validate groups access
     if (selectedAccess.value === 'GROUPS' && availableGroups.value.length === 0) {
       const message = currentLanguage.value === 'ar' 
@@ -1158,7 +1171,8 @@ const handleSave = async () => {
 
     // Call the survey service to update using the existing updateSurveyAccess method
     const contactMethod = selectedAccess.value === 'PUBLIC' ? selectedContactMethod.value : undefined
-    await surveyService.updateSurveyAccess(props.survey.id, accessLevel, contactMethod)
+    const surveyId = String(props.survey.id) // Ensure ID is string
+    await surveyService.updateSurveyAccess(surveyId, accessLevel, contactMethod)
     
     // Handle private access sharing if needed
     if (selectedAccess.value === 'PRIVATE' && selectedUsers.value.length > 0) {
@@ -1166,7 +1180,7 @@ const handleSave = async () => {
         user_ids: selectedUsers.value.map(user => user.id),
         emails: [] // Email invitations removed from compact UI
       }
-      await surveyService.shareSurvey(props.survey.id, shareData)
+      await surveyService.shareSurvey(surveyId, shareData)
     }
 
     // Handle group access sharing if needed
@@ -1206,7 +1220,7 @@ const handleSave = async () => {
           }
           
           
-          const passwordLinkResponse = await surveyService.generatePasswordProtectedLink(props.survey.id, passwordLinkOptions)
+          const passwordLinkResponse = await surveyService.generatePasswordProtectedLink(surveyId, passwordLinkOptions)
           passwordProtectedLink.value = passwordLinkResponse.data
           
           setStatusMessage(
@@ -1271,7 +1285,11 @@ const handleSave = async () => {
 const loadSharedUsers = async () => {
   if (props.survey.visibility === 'PRIVATE') {
     try {
-      const response = await surveyService.getSharedUsers(props.survey.id)
+      if (!props.survey?.id) {
+        throw new Error('Survey ID is required')
+      }
+      const surveyId = String(props.survey.id)
+      const response = await surveyService.getSharedUsers(surveyId)
       selectedUsers.value = response.data.shared_users || []
       // Note: invited emails are not tracked separately in the current backend implementation
     } catch (error) {

@@ -35,7 +35,6 @@ Warm Beige: #D6CDBD (214, 205, 189)
   align-items: center;
   z-index: 1000;
   padding: 20px;
-  animation: overlayFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modalContainer {
@@ -54,7 +53,6 @@ Warm Beige: #D6CDBD (214, 205, 189)
   display: flex;
   flex-direction: column;
   position: relative;
-  animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modalContainer::before {
@@ -2328,7 +2326,6 @@ Warm Beige: #D6CDBD (214, 205, 189)
   border-radius: 20px;
   padding: 4px 8px 4px 12px;
   font-size: 13px;
-  animation: tagSlideIn 0.2s ease;
 }
 
 .tagText {

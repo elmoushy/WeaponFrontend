@@ -17,14 +17,13 @@
               </p>
               <div :class="$style.titleAccent"></div>
             </div>
+              <div :class="$style.headerActions">
+              <button :class="$style.refreshButton" @click="refreshData" :disabled="isLoading">
+                <i class="fas fa-sync-alt" :class="{ [$style.spinning]: isLoading }"></i>
+                {{ t('common.refresh') }}
+              </button>
+            </div>
           </div>
-        </div>
-        
-        <div :class="$style.headerActions">
-          <button :class="$style.refreshButton" @click="refreshData" :disabled="isLoading">
-            <i class="fas fa-sync-alt" :class="{ [$style.spinning]: isLoading }"></i>
-            {{ t('common.refresh') }}
-          </button>
         </div>
       </div>
     </section>

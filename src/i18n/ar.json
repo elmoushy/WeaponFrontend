@@ -533,6 +533,14 @@
       "selectedItems": "عنصر محدد",
       "noSurveys": "لا توجد استطلاعات"
     },
+    "pagination": {
+      "showing": "عرض",
+      "of": "من",
+      "items": "عنصر",
+      "previous": "السابق",
+      "next": "التالي",
+      "itemsPerPage": "عدد العناصر في الصفحة"
+    },
     "sorting": {
       "newest": "الأحدث",
       "oldest": "الأقدم",
@@ -673,7 +681,63 @@
       }
     },
     "analytics": {
-      "title": "تحليلات الاستطلاع"
+      "title": "تحليلات الاستطلاع",
+      "dashboard": "لوحة التحليلات",
+      "loadingAnalytics": "جاري تحميل التحليلات...",
+      "loadError": "فشل في تحميل التحليلات",
+      "noData": "لا توجد بيانات تحليلية",
+      "noDataDescription": "لا توجد بيانات متاحة لهذا الاستطلاع حتى الآن. تحقق مرة أخرى بمجرد إرسال الردود.",
+      "textualAnalysis": "تحليل الردود النصية",
+      "avgWords": "متوسط الكلمات",
+      "avgChars": "متوسط الأحرف",
+      "responses": "الردود",
+      "responseLengthDistribution": "توزيع أطوال الردود",
+      "wordCountAnalysis": "تحليل عدد الكلمات",
+      "averageWords": "متوسط الكلمات",
+      "averageChars": "متوسط الأحرف",
+      "perResponse": "لكل رد",
+      "verbosityLevel": "تفصيل الرد",
+      "engagementScore": "نقاط المشاركة",
+      "responseQuality": "جودة الردود",
+      "detailLevel": "مستوى التفصيل",
+      "consistencyLevel": "اتساق الردود",
+      "participation": "معدل المشاركة",
+      "providedText": "قدم ردود نصية",
+      "lengthDistribution": "توزيع الطول",
+      "lengths": {
+        "short": "قصير",
+        "medium": "متوسط",
+        "long": "طويل",
+        "shortDesc": "ردود مختصرة (1-10 كلمات)",
+        "mediumDesc": "ردود عادية (11-50 كلمة)",
+        "longDesc": "ردود مفصلة (50+ كلمة)"
+      },
+      "verbosityTypes": {
+        "brief": "مختصر",
+        "moderate": "معتدل",
+        "detailed": "مفصل",
+        "extensive": "شامل"
+      },
+      "engagementLevels": {
+        "low": "ردود منخفضة المشاركة",
+        "moderate": "مشاركة معتدلة",
+        "high": "ردود عالية المشاركة"
+      },
+      "detailTypes": {
+        "minimal": "تفصيل أدنى",
+        "basic": "تفصيل أساسي",
+        "detailed": "مفصل",
+        "comprehensive": "شامل"
+      },
+      "consistencyTypes": {
+        "high": "متسق للغاية",
+        "moderate": "متسق نوعاً ما",
+        "low": "ردود متنوعة"
+      },
+      "wordsPerResponse": "كلمة لكل رد",
+      "charsPerResponse": "حرف لكل رد",
+      "inSameCategory": "في نفس فئة الرد",
+      "unknown": "غير معروف"
     },
     "form": {
       "create": "إنشاء استطلاع",

@@ -79,37 +79,6 @@
         </div>
         
         
-        <!-- News Management Module -->
-        <div :class="[$style.moduleCard, $style.comingSoonModule]">
-          <div :class="$style.moduleHeader">
-            <div :class="$style.moduleIcon">
-              <i class="fas fa-newspaper"></i>
-            </div>
-            <div :class="$style.moduleStatus">
-              <span :class="$style.comingSoonStatus">{{ t('control.modules.settings.comingSoon') || 'Coming Soon' }}</span>
-            </div>
-          </div>
-          
-          <div :class="$style.moduleContent">
-            <h3 :class="$style.moduleTitle">{{ t('control.modules.news.title') }}</h3>
-            <p :class="$style.moduleDescription">{{ t('control.modules.news.description') }}</p>
-          </div>
-          
-          <div :class="$style.moduleFooter">
-            <button :class="[$style.moduleButton, $style.disabledButton]" disabled>
-              {{ t('control.modules.news.button') }}
-              <i class="fas fa-clock" :class="$style.buttonIcon"></i>
-            </button>
-          </div>
-          
-          <div :class="$style.comingSoonOverlay">
-            <div :class="$style.comingSoonBadge">
-              <i class="fas fa-hourglass-half"></i>
-              {{ t('control.modules.settings.comingSoon') || 'Coming Soon' }}
-            </div>
-          </div>
-        </div>
-
         <!-- System Settings Module -->
         <div :class="[$style.moduleCard, $style.comingSoonModule]">
           <div :class="$style.moduleHeader">
@@ -157,13 +126,6 @@
             <i class="fas fa-sync-alt"></i>
           </div>
           <span :class="$style.quickActionLabel">{{ t('control.refresh') }}</span>
-        </button>
-        
-        <button :class="$style.quickActionCard" @click="navigateToNews">
-          <div :class="$style.quickActionIcon">
-            <i class="fas fa-plus"></i>
-          </div>
-          <span :class="$style.quickActionLabel">{{ t('control.quickActions.addNews') || 'Add News' }}</span>
         </button>
         
         <button :class="$style.quickActionCard" @click="navigateToSurveys">

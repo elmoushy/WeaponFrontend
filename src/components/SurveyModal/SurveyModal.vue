@@ -96,10 +96,11 @@
                   <i class="fas fa-play" :class="$style.labelIcon"></i>
                   {{ t('survey.form.startDate') }}
                 </label>
-                <input
-                  type="datetime-local"
-                  :class="$style.formInput"
+                <FlatPickr
                   v-model="formData.start_date"
+                  :config="fpConfig"
+                  :class="$style.formInput"
+                  placeholder="Select start date and time"
                 />
                 <div :class="$style.fieldHelp">
                   {{ t('survey.form.startDateHelp') }}
@@ -111,10 +112,11 @@
                   <i class="fas fa-stop" :class="$style.labelIcon"></i>
                   {{ t('survey.form.endDate') }}
                 </label>
-                <input
-                  type="datetime-local"
-                  :class="$style.formInput"
+                <FlatPickr
                   v-model="formData.end_date"
+                  :config="fpConfig"
+                  :class="$style.formInput"
+                  placeholder="Select end date and time"
                 />
                 <div :class="$style.fieldHelp">
                   {{ t('survey.form.endDateHelp') }}
@@ -244,15 +246,43 @@
           {{ t('common.cancel') }}
         </button>
         
+        <!-- Draft Save Button - only show for new surveys -->
         <button
+          v-if="!isEditing"
+          type="button"
+          :class="[$style.footerButton, $style.draftButton, { [$style.loading]: isDraftLoading }]"
+          @click="handleDraftSave"
+          :disabled="isDraftLoading || !isDraftFormValid"
+        >
+          <div v-if="isDraftLoading" :class="$style.loadingSpinner"></div>
+          <i v-else class="fas fa-file-alt"></i>
+          {{ isRTL ? 'حفظ كمسودة' : 'Save as Draft' }}
+        </button>
+        
+        <!-- Update Button for editing drafts -->
+        <button
+          v-if="isEditing && props.survey?.status === 'draft'"
           type="button"
           :class="[$style.footerButton, $style.saveButton, { [$style.loading]: isLoading }]"
-          @click="handleSubmit"
+          @click="handleDraftUpdate"
           :disabled="isLoading || !isFormValid"
         >
           <div v-if="isLoading" :class="$style.loadingSpinner"></div>
           <i v-else class="fas fa-save"></i>
-          {{ isEditing ? t('survey.form.update') : t('survey.form.submit') }}
+          {{ isRTL ? 'تحديث المسودة' : 'Update Draft' }}
+        </button>
+        
+        <!-- Submit Button - only for final submission when NOT editing -->
+        <button
+          v-if="!isEditing"
+          type="button"
+          :class="[$style.footerButton, $style.submitButton, { [$style.loading]: isSubmitLoading }]"
+          @click="handleSubmit"
+          :disabled="isSubmitLoading || !isFormValid"
+        >
+          <div v-if="isSubmitLoading" :class="$style.loadingSpinner"></div>
+          <i v-else class="fas fa-paper-plane"></i>
+          {{ isRTL ? 'إرسال الاستطلاع' : 'Submit Survey' }}
         </button>
       </div>
     </div>
@@ -282,6 +312,8 @@ import { surveyService } from '../../services/surveyService'
 import type { Survey, SurveyCreateRequest, SurveyVisibility, PublicContactMethod, QuestionCreateRequest } from '../../types/survey.types'
 import QuestionModal from '../QuestionModal/QuestionModal.vue'
 import SurveyAccessModal from '../SurveyAccessModal/SurveyAccessModal.vue'
+import FlatPickr from 'vue-flatpickr-component'
+import 'flatpickr/dist/flatpickr.css'
 import Swal from 'sweetalert2'
 
 // Props
@@ -297,6 +329,8 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   save: [data: SurveyCreateRequest, survey?: Survey]
   cancel: []
+  draftSaved: [survey: Survey]
+  draftUpdated: [survey: Survey]
 }>()
 
 // Store
@@ -320,6 +354,8 @@ const inlineTranslations = computed(() => {
 
 // State
 const isLoading = ref(false)
+const isDraftLoading = ref(false)
+const isSubmitLoading = ref(false)
 const showQuestionModal = ref(false)
 const showAccessModal = ref(false)
 const savedSurvey = ref<Survey | null>(null)
@@ -357,6 +393,23 @@ const isFormValid = computed(() => {
          Object.keys(errors.value).length === 0 &&
          formData.value.questions.length > 0
 })
+
+// Draft form validation (less strict - only title required)
+const isDraftFormValid = computed(() => {
+  return formData.value.title.trim().length > 0 && 
+         Object.keys(errors.value).length === 0
+})
+
+// Flatpickr configuration
+const fpConfig = computed(() => ({
+  enableTime: true,
+  time_24hr: true,              // Force 24-hour UI (no AM/PM)
+  altInput: true,               // Show a nice 24h value to the user
+  altFormat: 'Y-m-d H:i',       // UI display format (24h)
+  dateFormat: "Y-m-d\\TH:i:S",  // Backend value format (unchanged)
+  allowInput: true,
+  minuteIncrement: 1
+}))
 
 // Visibility options
 // @ts-ignore - Used in template
@@ -523,32 +576,6 @@ const validateField = (field: string, value: string) => {
   errors.value = newErrors
 }
 
-const addQuestionsToSurvey = async (surveyId: string) => {
-  try {
-    
-    
-    // Add each question to the survey
-    for (let i = 0; i < formData.value.questions.length; i++) {
-      const question = formData.value.questions[i]
-      const questionData = {
-        text: question.text,
-        question_type: question.question_type,
-        options: question.options,
-        is_required: question.is_required || false,
-        order: i + 1 // Use index + 1 for order
-      }
-      
-      
-      await surveyService.addQuestion(surveyId, questionData)
-    }
-    
-    
-  } catch (error) {
-    // Logging removed for production
-    throw new Error(`Failed to add questions: ${error instanceof Error ? error.message : 'Unknown error'}`)
-  }
-}
-
 const updateSurveyQuestions = async (surveyId: string) => {
   // For now, we'll implement a simple approach:
   // This is a basic implementation - in production you might want to:
@@ -574,8 +601,72 @@ const updateSurveyQuestions = async (surveyId: string) => {
   }
 }
 
-const handleSubmit = async () => {
-  // Validate all fields
+const handleDraftSave = async () => {
+  // Validate required fields for draft
+  validateField('title', formData.value.title)
+  validateField('description', formData.value.description || '')
+  
+  if (!isDraftFormValid.value) {
+    return
+  }
+  
+  try {
+    isDraftLoading.value = true
+    
+    const formatDateForAPI = (dateString: string | null): string | null => {
+      if (!dateString) return null
+      return dateString.includes(':') && dateString.split(':').length === 2 
+        ? `${dateString}:00` 
+        : dateString
+    }
+    
+    const draftData = {
+      title: formData.value.title,
+      description: formData.value.description,
+      visibility: formData.value.visibility,
+      is_active: formData.value.is_active,
+      start_date: formatDateForAPI(formData.value.start_date),
+      end_date: formatDateForAPI(formData.value.end_date),
+      shared_with: formData.value.visibility === 'PRIVATE' ? formData.value.shared_with : undefined,
+      questions: formData.value.questions.length > 0 ? formData.value.questions.map(q => ({
+        text: q.text,
+        question_type: q.question_type,
+        options: q.options,
+        is_required: q.is_required || false,
+        order: q.order
+      })) : undefined
+    }
+    
+    // Create draft survey using the dedicated draft endpoint
+    const response = await surveyService.createDraft(draftData)
+    savedSurvey.value = response.data
+    
+    // Show success message
+    Swal.fire({
+      icon: 'success',
+      title: isRTL.value ? 'تم حفظ المسودة' : 'Draft Saved',
+      text: isRTL.value ? 'تم حفظ الاستطلاع كمسودة بنجاح. يمكنك تعديله لاحقاً.' : 'Survey saved as draft successfully. You can edit it later.',
+      confirmButtonText: isRTL.value ? 'موافق' : 'OK'
+    }).then(() => {
+      // Close modal and emit save event
+      emit('save', formData.value, savedSurvey.value!)
+    })
+    
+  } catch (error: any) {
+    const errorMessage = error.message || (isRTL.value ? 'فشل في حفظ المسودة' : 'Failed to save draft')
+    Swal.fire({
+      icon: 'error',
+      title: isRTL.value ? 'خطأ في الحفظ' : 'Save Error',
+      text: `${isRTL.value ? 'خطأ' : 'Error'}: ${errorMessage}`,
+      confirmButtonText: isRTL.value ? 'موافق' : 'OK'
+    })
+  } finally {
+    isDraftLoading.value = false
+  }
+}
+
+const handleDraftUpdate = async () => {
+  // Validate all fields for draft update
   validateField('title', formData.value.title)
   validateField('description', formData.value.description || '')
   
@@ -585,6 +676,76 @@ const handleSubmit = async () => {
   
   try {
     isLoading.value = true
+    
+    const formatDateForAPI = (dateString: string | null): string | null => {
+      if (!dateString) return null
+      return dateString.includes(':') && dateString.split(':').length === 2 
+        ? `${dateString}:00` 
+        : dateString
+    }
+    
+    const updateData = {
+      title: formData.value.title,
+      description: formData.value.description,
+      visibility: formData.value.visibility,
+      is_active: formData.value.is_active,
+      start_date: formatDateForAPI(formData.value.start_date),
+      end_date: formatDateForAPI(formData.value.end_date),
+      shared_with: formData.value.visibility === 'PRIVATE' ? formData.value.shared_with : undefined,
+      questions: formData.value.questions.length > 0 ? formData.value.questions.map(q => ({
+        text: q.text,
+        question_type: q.question_type,
+        options: q.options,
+        is_required: q.is_required || false,
+        order: q.order
+      })) : undefined
+    }
+    
+    // Update existing draft survey
+    const response = await surveyService.updateSurvey(props.survey!.id, updateData)
+    savedSurvey.value = response.data
+    
+    // Update questions if any changes were made
+    if (formData.value.questions.length > 0 && savedSurvey.value) {
+      await updateSurveyQuestions(savedSurvey.value.id)
+    }
+    
+    // Show success message
+    Swal.fire({
+      icon: 'success',
+      title: isRTL.value ? 'تم تحديث المسودة' : 'Draft Updated',
+      text: isRTL.value ? 'تم تحديث مسودة الاستطلاع بنجاح.' : 'Survey draft updated successfully.',
+      confirmButtonText: isRTL.value ? 'موافق' : 'OK'
+    }).then(() => {
+      // Close modal and emit save event
+      emit('save', formData.value, savedSurvey.value!)
+    })
+    
+  } catch (error: any) {
+    const errorMessage = error.message || (isRTL.value ? 'فشل في تحديث المسودة' : 'Failed to update draft')
+    Swal.fire({
+      icon: 'error',
+      title: isRTL.value ? 'خطأ في التحديث' : 'Update Error',
+      text: `${isRTL.value ? 'خطأ' : 'Error'}: ${errorMessage}`,
+      confirmButtonText: isRTL.value ? 'موافق' : 'OK'
+    })
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleSubmit = async () => {
+  // This method now handles final submission only (not drafts)
+  // Validate all fields
+  validateField('title', formData.value.title)
+  validateField('description', formData.value.description || '')
+  
+  if (!isFormValid.value) {
+    return
+  }
+  
+  try {
+    isSubmitLoading.value = true
     isTimeoutError.value = false
     
     // Create a timeout promise for 15 seconds
@@ -592,32 +753,12 @@ const handleSubmit = async () => {
       setTimeout(() => reject(new Error('TIMEOUT')), 15000)
     })
     
-    // Keep datetime-local exactly as entered without timezone conversion
     const formatDateForAPI = (dateString: string | null): string | null => {
       if (!dateString) return null
-      // Return the datetime string exactly as entered, just add seconds if missing
       return dateString.includes(':') && dateString.split(':').length === 2 
         ? `${dateString}:00` 
         : dateString
     }
-    
-    /* Alternative: Use Asia/Dubai timezone
-    const formatDateForAPI = (dateString: string | null): string | null => {
-      if (!dateString) return null
-      // Parse the datetime-local value and convert to Asia/Dubai timezone
-      const date = new Date(dateString)
-      const dubaiTime = new Intl.DateTimeFormat('sv-SE', {
-        timeZone: 'Asia/Dubai',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      }).format(date)
-      return dubaiTime.replace(' ', 'T')
-    }
-    */
     
     const submitData = {
       title: formData.value.title,
@@ -635,43 +776,24 @@ const handleSubmit = async () => {
         order: q.order
       })) : undefined
     }
+
+    // First create the survey as draft
+    const draftResponse = await Promise.race([
+      surveyService.createDraft(submitData),
+      timeoutPromise
+    ]) as any
     
-    if (isEditing.value && props.survey) {
-      // Update existing survey with timeout
-      const response = await Promise.race([
-        surveyService.updateSurvey(props.survey.id, submitData),
-        timeoutPromise
-      ]) as any
-      savedSurvey.value = response.data
+    // Then submit the draft to make it final
+    const submitResponse = await Promise.race([
+      surveyService.submitSurvey(draftResponse.data.id),
+      timeoutPromise
+    ]) as any
+    
+    savedSurvey.value = submitResponse.data
+    
+    // Show the access modal for final configuration
+    showAccessModal.value = true
       
-      // Update questions if any changes were made
-      if (formData.value.questions.length > 0 && savedSurvey.value) {
-        await Promise.race([
-          updateSurveyQuestions(savedSurvey.value.id),
-          timeoutPromise
-        ])
-      }
-      
-      showAccessModal.value = true
-    } else {
-      // Create new survey with timeout - the API now handles questions in the same request
-      const response = await Promise.race([
-        surveyService.createSurvey(submitData),
-        timeoutPromise
-      ]) as any
-      savedSurvey.value = response.data
-      
-      // Since questions are included in the create request, we don't need separate calls
-      // unless the API doesn't support it yet
-      if (formData.value.questions.length > 0 && !submitData.questions && savedSurvey.value) {
-        await Promise.race([
-          addQuestionsToSurvey(savedSurvey.value.id),
-          timeoutPromise
-        ])
-      }
-      
-      showAccessModal.value = true
-    }
   } catch (error: any) {
     // Check if it's a timeout error
     if (error.message === 'TIMEOUT') {
@@ -686,15 +808,15 @@ const handleSubmit = async () => {
     }
     
     // Show more specific error messages
-    const errorMessage = error.message || 'فشل في إنشاء الاستطلاع'
+    const errorMessage = error.message || 'فشل في إرسال الاستطلاع'
     Swal.fire({
       icon: 'error',
-      title: 'خطأ في الحفظ',
+      title: 'خطأ في الإرسال',
       text: `خطأ: ${errorMessage}`,
       confirmButtonText: 'موافق'
     })
   } finally {
-    isLoading.value = false
+    isSubmitLoading.value = false
   }
 }
 

@@ -61,16 +61,16 @@
           <option value="active">{{ t('survey.filters.active') }}</option>
           <option value="inactive">{{ t('survey.filters.inactive') }}</option>
           <option value="private">{{ t('survey.filters.private') }}</option>
-          <option value="auth">{{ t('survey.filters.auth') }}</option>
+          <option value="auth_required">{{ t('survey.filters.auth') }}</option>
           <option value="public">{{ t('survey.filters.public') }}</option>
         </select>
         
         <select :class="$style.filterSelect" v-model="selectedSort" @change="applySorting">
           <option value="newest">{{ t('survey.sorting.newest') }}</option>
           <option value="oldest">{{ t('survey.sorting.oldest') }}</option>
-          <option value="titleAZ">{{ t('survey.sorting.titleAZ') }}</option>
-          <option value="titleZA">{{ t('survey.sorting.titleZA') }}</option>
-          <option value="mostResponses">{{ t('survey.sorting.mostResponses') }}</option>
+          <option value="title_asc">{{ t('survey.sorting.titleAZ') }}</option>
+          <option value="title_desc">{{ t('survey.sorting.titleZA') }}</option>
+          <option value="most_responses">{{ t('survey.sorting.mostResponses') }}</option>
         </select>
       </div>
       
@@ -145,6 +145,12 @@
                 {{ survey.is_active ? t('survey.status.active') : t('survey.status.inactive') }}
               </span>
               <span 
+                v-if="survey.status === 'draft'"
+                :class="[$style.statusBadge, $style.draft]"
+              >
+                {{ isRTL ? 'مسودة' : 'Draft' }}
+              </span>
+              <span 
                 v-if="survey.visibility"
                 :class="[$style.statusBadge, $style[survey.visibility.toLowerCase()]]"
               >
@@ -179,11 +185,35 @@
           </div>
           
           <div :class="$style.cardActions">
-            <!-- <button :class="$style.actionButton" @click.stop="editSurvey(survey)" :title="t('survey.card.edit')">
+            <!-- Edit button - only for draft surveys -->
+            <button 
+              v-if="survey.status === 'draft'" 
+              :class="$style.actionButton" 
+              @click.stop="editSurvey(survey)" 
+              :title="t('survey.card.edit')"
+            >
               <i class="fas fa-edit"></i>
               <span :class="$style.actionButtonText">{{ t('survey.card.edit') }}</span>
-            </button> -->
-            <button :class="$style.actionButton" @click.stop="manageSurveyAccess(survey)" :title="t('survey.card.manageAccess')">
+            </button>
+            
+            <!-- Submit button - only for draft surveys -->
+            <button 
+              v-if="survey.status === 'draft'" 
+              :class="[$style.actionButton, $style.submitAction]" 
+              @click.stop="submitDraftSurvey(survey.id)" 
+              :title="isRTL ? 'إرسال الاستطلاع' : 'Submit Survey'"
+            >
+              <i class="fas fa-paper-plane"></i>
+              <span :class="$style.actionButtonText">{{ isRTL ? 'إرسال' : 'Submit' }}</span>
+            </button>
+            
+            <!-- Share/Manage Access button - hidden for submitted surveys -->
+            <button 
+              v-if="survey.status !== 'submitted'" 
+              :class="$style.actionButton" 
+              @click.stop="manageSurveyAccess(survey)" 
+              :title="t('survey.card.manageAccess')"
+            >
               <i class="fas fa-share-alt"></i>
               <span :class="$style.actionButtonText">{{ t('survey.card.share') }}</span>
             </button>
@@ -269,6 +299,12 @@
               {{ survey.is_active ? t('survey.status.active') : t('survey.status.inactive') }}
             </span>
             <span 
+              v-if="survey.status === 'draft'"
+              :class="[$style.statusBadge, $style.draft]"
+            >
+              {{ isRTL ? 'مسودة' : 'Draft' }}
+            </span>
+            <span 
               v-if="survey.visibility"
               :class="[$style.statusBadge, $style[survey.visibility.toLowerCase()]]"
             >
@@ -292,11 +328,27 @@
                 <i class="fas fa-ellipsis-v"></i>
               </button>
               <div :class="[$style.actionsMenu, { [$style.active]: activeActionMenu === survey.id }]">
-                <button :class="$style.actionMenuItem" @click.stop="editSurvey(survey)">
+                <button 
+                  v-if="survey.status === 'draft'" 
+                  :class="$style.actionMenuItem" 
+                  @click.stop="editSurvey(survey)"
+                >
                   <i class="fas fa-edit"></i>
                   {{ t('survey.card.edit') }}
                 </button>
-                <button :class="$style.actionMenuItem" @click.stop="manageSurveyAccess(survey)">
+                <button 
+                  v-if="survey.status === 'draft'" 
+                  :class="[$style.actionMenuItem, $style.submitAction]" 
+                  @click.stop="submitDraftSurvey(survey.id)"
+                >
+                  <i class="fas fa-paper-plane"></i>
+                  {{ isRTL ? 'إرسال' : 'Submit' }}
+                </button>
+                <button 
+                  v-if="survey.status !== 'submitted'" 
+                  :class="$style.actionMenuItem" 
+                  @click.stop="manageSurveyAccess(survey)"
+                >
                   <i class="fas fa-share-alt"></i>
                   {{ t('survey.card.share') }}
                 </button>
@@ -315,6 +367,61 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Pagination Controls -->
+      <div :class="$style.paginationSection">
+        <div :class="$style.paginationInfo">
+          <span>{{ t('survey.pagination.showing') }} {{ ((currentPage - 1) * itemsPerPage) + 1 }} - {{ Math.min(currentPage * itemsPerPage, totalCount) }} {{ t('survey.pagination.of') }} {{ totalCount }} {{ t('survey.pagination.items') }}</span>
+        </div>
+        
+        <div :class="$style.paginationControls">
+          <button 
+            :class="[$style.paginationButton, { [$style.disabled]: !hasPrevious }]"
+            @click="prevPage"
+            :disabled="!hasPrevious"
+          >
+            <i class="fas fa-chevron-right"></i>
+            {{ t('survey.pagination.previous') }}
+          </button>
+          
+          <div :class="$style.pageNumbers">
+            <template v-for="page in visiblePages" :key="page">
+              <span v-if="page === -1" :class="$style.ellipsis">...</span>
+              <button
+                v-else
+                :class="[$style.pageButton, { [$style.active]: page === currentPage }]"
+                @click="goToPage(page)"
+              >
+                {{ page }}
+              </button>
+            </template>
+          </div>
+          
+          <button 
+            :class="[$style.paginationButton, { [$style.disabled]: !hasNext }]"
+            @click="nextPage"
+            :disabled="!hasNext"
+          >
+            {{ t('survey.pagination.next') }}
+                        <i class="fas fa-chevron-left"></i>
+          </button>
+        </div>
+        
+        <div :class="$style.itemsPerPageControl">
+          <label for="itemsPerPage">{{ t('survey.pagination.itemsPerPage') }}:</label>
+          <select 
+            id="itemsPerPage" 
+            :class="$style.itemsPerPageSelect" 
+            :value="itemsPerPage" 
+            @change="changeItemsPerPage(Number(($event.target as HTMLSelectElement).value))"
+          >
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
         </div>
       </div>
     </section>
@@ -417,95 +524,133 @@ const selectedSurveyForAccess = ref<Survey | null>(null)
 const selectedSurveyForLinkSharing = ref<Survey | null>(null)
 const publicLinkForSharing = ref<any | null>(null)
 
-// Pagination
+// Enhanced Pagination and API state
 const currentPage = ref(1)
-const itemsPerPage = ref(12)
+const itemsPerPage = ref(10)
+const totalCount = ref(0)
+const totalPages = ref(0)
+const hasNext = ref(false)
+const hasPrevious = ref(false)
+const appliedFilters = ref<any>({})
+const availableFilters = ref<any>({})
+const debouncedSearch = ref('')
+const searchDebounceTimer = ref<NodeJS.Timeout | null>(null)
 
-// Computed
-const filteredSurveys = computed(() => {
-  let filtered = [...(surveys.value || [])]
+// Computed properties for pagination info
+const visiblePages = computed(() => {
+  const pages: number[] = []
+  const totalPagesValue = totalPages.value
+  const currentPageValue = currentPage.value
   
-  // Apply search filter
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(survey => 
-      survey.title?.toLowerCase().includes(query) ||
-      survey.description?.toLowerCase().includes(query)
-    )
+  if (totalPagesValue <= 7) {
+    // Show all pages if total is 7 or less
+    for (let i = 1; i <= totalPagesValue; i++) {
+      pages.push(i)
+    }
+  } else {
+    // Always show first page
+    pages.push(1)
+    
+    // Determine range around current page
+    let start = Math.max(2, currentPageValue - 2)
+    let end = Math.min(totalPagesValue - 1, currentPageValue + 2)
+    
+    // Add ellipsis before range if needed
+    if (start > 2) {
+      pages.push(-1) // -1 represents ellipsis
+    }
+    
+    // Add range around current page
+    for (let i = start; i <= end; i++) {
+      pages.push(i)
+    }
+    
+    // Add ellipsis after range if needed
+    if (end < totalPagesValue - 1) {
+      pages.push(-1) // -1 represents ellipsis
+    }
+    
+    // Always show last page
+    if (totalPagesValue > 1) {
+      pages.push(totalPagesValue)
+    }
   }
   
-  // Apply status filter
-  switch (selectedFilter.value) {
-    case 'active':
-      filtered = filtered.filter(survey => survey.is_active)
-      break
-    case 'inactive':
-      filtered = filtered.filter(survey => !survey.is_active)
-      break
-    case 'private':
-      filtered = filtered.filter(survey => (survey.visibility || 'PRIVATE') === 'PRIVATE')
-      break
-    case 'auth':
-      filtered = filtered.filter(survey => survey.visibility === 'AUTH')
-      break
-    case 'public':
-      filtered = filtered.filter(survey => survey.visibility === 'PUBLIC')
-      break
-  }
-  
-  return filtered
+  return pages
 })
 
-const sortedSurveys = computed(() => {
-  const sorted = [...(filteredSurveys.value || [])]
-  
-  switch (selectedSort.value) {
-    case 'newest':
-      return sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    case 'oldest':
-      return sorted.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-    case 'titleAZ':
-      return sorted.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
-    case 'titleZA':
-      return sorted.sort((a, b) => (b.title || '').localeCompare(a.title || ''))
-    case 'mostResponses':
-      return sorted.sort((a, b) => (b.response_count || 0) - (a.response_count || 0))
-    default:
-      return sorted
-  }
-})
+// Use surveys directly from API response (no client-side filtering needed)
+const paginatedSurveys = computed(() => surveys.value || [])
 
-const paginatedSurveys = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return (sortedSurveys.value || []).slice(start, end)
-})
-
-// Methods
-const loadSurveys = async () => {
+// Methods - Updated to use new API with pagination, search, and filters
+const loadSurveys = async (resetPage = false) => {
   try {
     isLoading.value = true
-    const response = await surveyService.getAllSurveys()
     
-    // Handle paginated response structure from Django API
-    if (response && 'results' in response && Array.isArray(response.results)) {
+    if (resetPage) {
+      currentPage.value = 1
+    }
+    
+    // Build query parameters for the new API
+    const params: any = {
+      page: currentPage.value,
+      per_page: itemsPerPage.value
+    }
+    
+    // Add search if present
+    if (debouncedSearch.value.trim()) {
+      params.search = debouncedSearch.value.trim()
+    }
+    
+    // Add survey status filter (custom filtering)
+    if (selectedFilter.value && selectedFilter.value !== 'all') {
+      params.survey_status = selectedFilter.value
+    }
+    
+    // Add sorting
+    if (selectedSort.value) {
+      params.sort_by = selectedSort.value
+    }
+    
+    console.log('Loading surveys with params:', params)
+    const response = await surveyService.getAllSurveys(params)
+    console.log('Survey service response:', response)
+    
+    // Handle the new paginated response structure
+    if (response && 'results' in response) {
       surveys.value = response.results.map(survey => ({
         ...survey,
-        questions: survey.questions || [] // Ensure questions is always an array
+        questions: survey.questions || []
       }))
-    } else if (response && Array.isArray(response)) {
-      surveys.value = response.map(survey => ({
-        ...survey,
-        questions: survey.questions || [] // Ensure questions is always an array
-      }))
+      
+      console.log('Mapped surveys:', surveys.value)
+      
+      // Update pagination info
+      totalCount.value = response.count || 0
+      totalPages.value = response.total_pages || 0
+      hasNext.value = !!response.next
+      hasPrevious.value = !!response.previous
+      appliedFilters.value = response.applied_filters || {}
+      availableFilters.value = response.available_filters || {}
+      
+      console.log('Pagination info updated:', {
+        totalCount: totalCount.value,
+        totalPages: totalPages.value,
+        hasNext: hasNext.value,
+        hasPrevious: hasPrevious.value
+      })
+      
     } else {
-      // Logging removed for production
+      console.log('No results in response, setting empty arrays')
       surveys.value = []
+      totalCount.value = 0
+      totalPages.value = 0
+      hasNext.value = false
+      hasPrevious.value = false
     }
     
   } catch (error) {
-    // Logging removed for production
-    
+    console.error('Error loading surveys:', error)
     // Provide demo data for UI showcase when API is not available
     surveys.value = [
       {
@@ -585,6 +730,11 @@ const loadSurveys = async () => {
       }
     ]
     
+    totalCount.value = 3
+    totalPages.value = 1
+    hasNext.value = false
+    hasPrevious.value = false
+    
   } finally {
     isLoading.value = false
   }
@@ -628,16 +778,52 @@ const refreshData = async () => {
   await Promise.all([loadSurveys(), loadAnalytics()])
 }
 
+// Enhanced search with debouncing
 const handleSearch = () => {
-  currentPage.value = 1
+  if (searchDebounceTimer.value) {
+    clearTimeout(searchDebounceTimer.value)
+  }
+  
+  searchDebounceTimer.value = setTimeout(() => {
+    debouncedSearch.value = searchQuery.value
+    loadSurveys(true) // Reset to page 1
+  }, 500) // 500ms debounce
 }
 
 const applyFilters = () => {
-  currentPage.value = 1
+  loadSurveys(true) // Reset to page 1 when filter changes
 }
 
 const applySorting = () => {
+  loadSurveys(true) // Reset to page 1 when sort changes
+}
+
+// Pagination methods
+const goToPage = (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+    loadSurveys()
+  }
+}
+
+const nextPage = () => {
+  if (hasNext.value) {
+    currentPage.value++
+    loadSurveys()
+  }
+}
+
+const prevPage = () => {
+  if (hasPrevious.value) {
+    currentPage.value--
+    loadSurveys()
+  }
+}
+
+const changeItemsPerPage = (newPerPage: number) => {
+  itemsPerPage.value = newPerPage
   currentPage.value = 1
+  loadSurveys()
 }
 
 const selectSurvey = (_surveyId: string) => {
@@ -761,6 +947,53 @@ const deleteSurvey = async (surveyId: string) => {
         confirmButtonText: 'موافق'
       })
     }
+  }
+}
+
+const submitDraftSurvey = async (surveyId: string) => {
+  try {
+    const isArabic = store.currentLanguage === 'ar'
+    
+    const result = await Swal.fire({
+      title: isArabic ? 'تأكيد الإرسال' : 'Confirm Submission',
+      text: isArabic ? 'هل أنت متأكد من إرسال هذا الاستطلاع؟ بعد الإرسال لن يمكنك تعديله.' : 'Are you sure you want to submit this survey? Once submitted, you cannot edit it.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#28a745',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: isArabic ? 'نعم، أرسل!' : 'Yes, submit it!',
+      cancelButtonText: isArabic ? 'إلغاء' : 'Cancel'
+    })
+
+    if (result.isConfirmed) {
+      // Show loading
+      Swal.fire({
+        title: isArabic ? 'جاري الإرسال...' : 'Submitting...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        }
+      })
+
+      await surveyService.submitSurvey(surveyId)
+      
+      await Swal.fire({
+        title: isArabic ? 'تم الإرسال!' : 'Submitted!',
+        text: isArabic ? 'تم إرسال الاستطلاع بنجاح. الآن أصبح نهائياً ومتاح للإجابة عليه.' : 'The survey has been submitted successfully. It is now final and ready for responses.',
+        icon: 'success',
+        confirmButtonText: isArabic ? 'موافق' : 'OK'
+      })
+
+      await refreshData()
+    }
+  } catch (error: any) {
+    const isArabic = store.currentLanguage === 'ar'
+    Swal.fire({
+      title: isArabic ? 'خطأ في الإرسال' : 'Submission Error',
+      text: error.message || (isArabic ? 'فشل في إرسال الاستطلاع' : 'Failed to submit survey'),
+      icon: 'error',
+      confirmButtonText: isArabic ? 'موافق' : 'OK'
+    })
   }
 }
 
@@ -939,6 +1172,10 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
+  // Clean up search debounce timer
+  if (searchDebounceTimer.value) {
+    clearTimeout(searchDebounceTimer.value)
+  }
 })
 </script>
 

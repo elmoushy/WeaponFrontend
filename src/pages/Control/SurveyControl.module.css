@@ -19,6 +19,65 @@ Beige/Tan Variants:
   #D6CDBD (214, 205, 189)
 */
 
+/* ========= Brand Palette (from your spec) ========= */
+:root {
+  /* Gold/Bronze */
+  --gold-700: #A17D23; /* 161,125,35  */
+  --gold-600: #B78A41; /* 183,138,65  */
+  --gold-500: #CEA55B; /* 206,165,91  */
+  --gold-400: #D3B079; /* 211,176,121 */
+
+  /* Gray/Neutral */
+  --gray-900: #231F20; /* 35,31,32   */
+  --gray-700: #4D4D4F; /* 77,77,79   */
+  --gray-500: #808285; /* 128,130,133*/
+  --gray-100: #E5E8E1; /* 229,232,225*/
+
+  /* Beige/Tan */
+  --beige-700: #C2BA98; /* 194,186,152*/
+  --beige-600: #D1C6AC; /* 209,198,172*/
+  --beige-500: #D8CFBB; /* 216,207,187*/
+  --beige-400: #D6CDBD; /* 214,205,189*/
+
+  /* ========= Semantic tokens ========= */
+  --glass-bg: rgba(255, 255, 255, 0.12);
+  --glass-stroke: rgba(255, 255, 255, 0.20);
+
+  --brand: var(--gold-700);
+  --brand-strong: var(--gold-600);
+  --brand-soft: var(--gold-500);
+
+  --ink: var(--gray-900);
+  --muted: var(--gray-700);
+  --muted-2: var(--gray-500);
+
+  --surface-contrast: rgba(255, 255, 255, 0.18);
+  --ring: color-mix(in oklab, var(--brand) 20%, transparent);
+  --shadow-lg: 0 10px 28px rgba(161, 125, 35, 0.28); /* gold-700 */
+  --shadow-sm: 0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.18);
+
+  --focus-outline: 0 0 0 3px color-mix(in oklab, var(--brand) 22%, transparent);
+}
+
+/* Night/Dark mode — ties to your palette (no alien colors) */
+.surveyPanel[data-theme="night"] {
+  --glass-bg: rgba(77, 77, 79, 0.24);       /* gray-700 with alpha */
+  --glass-stroke: color-mix(in oklab, var(--gray-100) 20%, transparent);
+
+  --brand: var(--gray-100);                  /* light ink in dark */
+  --brand-strong: var(--gold-600);           /* accents still golden */
+  --brand-soft: var(--gold-500);
+
+  --ink: var(--gray-100);
+  --muted: var(--beige-600);
+  --muted-2: color-mix(in oklab, var(--beige-700) 70%, var(--gray-500) 30%);
+
+  --surface-contrast: rgba(77, 77, 79, 0.35);/* gray-700 alpha */
+  --ring: color-mix(in oklab, var(--gray-100) 16%, transparent);
+  --shadow-lg: 0 10px 28px rgba(35,31,32,0.45); /* gray-900 */
+  --shadow-sm: 0 8px 32px rgba(0,0,0,0.30), inset 0 1px 0 rgba(229,232,225,0.10);
+}
+
 /* Modern Glassmorphism Survey Management Styles - Brand Theme Update */
 .surveyPanel {
   font-family: 'Cairo', 'Noto Kufi Arabic', sans-serif;
@@ -69,7 +128,7 @@ Beige/Tan Variants:
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
   border-radius: 28px;
-  padding: 48px;
+  padding: 28px;
   margin-bottom: 40px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -744,6 +803,12 @@ Beige/Tan Variants:
   color: #f59e0b;
 }
 
+.statusBadge.draft {
+  background: rgba(108, 117, 125, 0.15);
+  color: #6c757d;
+  font-weight: 600;
+}
+
 .cardTitle {
   font-size: 1.2rem;
   font-weight: 600;
@@ -828,6 +893,18 @@ Beige/Tan Variants:
   background: rgba(255, 71, 87, 0.1);
   border-color: rgba(255, 71, 87, 0.3);
   color: #E74C3C;
+}
+
+.actionButton.submitAction {
+  background: rgba(40, 167, 69, 0.1);
+  border-color: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+}
+
+.actionButton.submitAction:hover {
+  background: rgba(40, 167, 69, 0.15);
+  border-color: rgba(40, 167, 69, 0.3);
+  color: #218838;
 }
 
 .actionButtonText {
@@ -1044,12 +1121,194 @@ Beige/Tan Variants:
   color: #E74C3C;
 }
 
+.actionMenuItem.submitAction {
+  color: #28a745;
+}
+
+.actionMenuItem.submitAction:hover {
+  background: rgba(40, 167, 69, 0.1);
+  color: #218838;
+}
+
 .actionMenuItem:first-child {
   border-radius: 12px 12px 0 0;
 }
 
 .actionMenuItem:last-child {
   border-radius: 0 0 12px 12px;
+}
+
+/* Enhanced Pagination Section - Brand Glassmorphism */
+.paginationSection {
+  font-family: "Cairo", "Tajawal", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: var(--glass-bg);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid var(--glass-stroke);
+  border-radius: 20px;
+
+  padding-block: 24px;
+  padding-inline: 32px;
+  margin-block-start: 32px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
+}
+
+.paginationInfo {
+  font-size: 0.95rem;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.paginationButton {
+  background: var(--surface-contrast);
+  backdrop-filter: blur(15px);
+  border: 2px solid color-mix(in oklab, var(--brand) 35%, transparent);
+  border-radius: 14px;
+  padding-block: 12px;
+  padding-inline: 16px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 240ms ease, background 240ms ease, box-shadow 240ms ease, color 240ms ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: var(--brand);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.15);
+  will-change: transform;
+}
+
+.paginationButton:hover:not(.disabled):not(:disabled) {
+  background: color-mix(in oklab, var(--brand-soft) 18%, transparent);
+  border-color: color-mix(in oklab, var(--brand-strong) 60%, transparent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  color: var(--ink);
+}
+
+.paginationButton.disabled,
+.paginationButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: color-mix(in oklab, var(--gray-500) 12%, transparent);
+  border-color: color-mix(in oklab, var(--gray-500) 25%, transparent);
+  color: var(--muted-2);
+}
+
+.pageNumbers {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pageButton {
+  background: var(--surface-contrast);
+  backdrop-filter: blur(15px);
+  border: 2px solid color-mix(in oklab, var(--brand) 35%, transparent);
+  border-radius: 12px;
+  padding-block: 10px;
+  padding-inline: 14px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: transform 140ms ease, border-color 240ms ease, background 240ms ease, box-shadow 240ms ease, color 240ms ease;
+  font-weight: 700;
+  color: var(--brand);
+  min-inline-size: 44px;
+  block-size: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pageButton:hover:not(.active) {
+  background: color-mix(in oklab, var(--brand-soft) 14%, transparent);
+  border-color: color-mix(in oklab, var(--brand-strong) 60%, transparent);
+  transform: scale(1.05);
+  color: var(--ink);
+}
+
+.pageButton.active {
+  background: linear-gradient(135deg, var(--gold-700) 0%, var(--gold-600) 100%);
+  color: #fff;
+  border-color: var(--gold-700);
+  box-shadow: 0 10px 28px rgba(161, 125, 35, 0.35);
+  transform: scale(1.05);
+}
+
+.ellipsis {
+  color: var(--muted-2);
+  font-size: 1.25rem;
+  font-weight: 800;
+  padding-inline: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  block-size: 44px;
+}
+
+.itemsPerPageControl {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.itemsPerPageSelect {
+  padding-block: 8px;
+  padding-inline: 12px;
+  border: 1px solid color-mix(in oklab, var(--brand) 35%, transparent);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition: box-shadow 200ms ease, border-color 200ms ease, background 200ms ease, color 200ms ease;
+  min-inline-size: 80px;
+}
+
+.itemsPerPageSelect:focus {
+  outline: none;
+  border-color: var(--gold-700);
+  box-shadow: var(--focus-outline);
+}
+
+/* Darker surfaces in night theme (keeps your palette) */
+.surveyPanel[data-theme="night"] .paginationButton,
+.surveyPanel[data-theme="night"] .pageButton,
+.surveyPanel[data-theme="night"] .itemsPerPageSelect {
+  background: var(--surface-contrast);
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  .paginationSection {
+    padding-inline: 16px;
+    gap: 16px;
+  }
+  .paginationControls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .paginationInfo {
+    inline-size: 100%;
+    text-align: center;
+  }
 }
 
 /* Empty State - Modern Glassmorphism */

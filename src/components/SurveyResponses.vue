@@ -43,108 +43,239 @@
 
     <!-- Main Content -->
     <div v-else :class="$style.mainContent">
-      <!-- Filters and Search -->
-      <div :class="$style.filtersSection">
-        <div :class="$style.searchContainer">
-          <input
-            v-model="searchQuery"
-            :class="$style.searchInput"
-            :placeholder="t('responses.searchPlaceholder')"
-            type="text"
-          />
-        </div>
-        
-        <div :class="$style.filtersContainer">
-          <div :class="$style.filterGroup">
-            <label :class="$style.filterLabel">{{ t('responses.filterBy') }}:</label>
-            <select v-model="selectedFilter" :class="$style.filterSelect">
-              <option value="all">{{ t('responses.filters.all') }}</option>
-              <option value="completed">{{ t('responses.filters.completed') }}</option>
-              <option value="incomplete">{{ t('responses.filters.incomplete') }}</option>
-            </select>
-          </div>
-          
-          <div :class="$style.filterGroup">
-            <label :class="$style.filterLabel">{{ t('responses.sortBy') }}:</label>
-            <select v-model="selectedSort" :class="$style.filterSelect">
-              <option value="newest">{{ t('responses.sorting.newest') }}</option>
-              <option value="oldest">{{ t('responses.sorting.oldest') }}</option>
-            </select>
-          </div>
-        </div>
+      <!-- Tab Navigation -->
+      <div :class="$style.tabNavigation">
+        <button
+          :class="[$style.tabButton, activeTab === 'responses' && $style.activeTab]"
+          @click="activeTab = 'responses'"
+        >
+          <i class="fas fa-table"></i>
+          {{ t('responses.responsesTab') }}
+        </button>
+        <button
+          :class="[$style.tabButton, activeTab === 'analytics' && $style.activeTab]"
+          @click="activeTab = 'analytics'"
+        >
+          <i class="fas fa-chart-line"></i>
+          {{ t('responses.analyticsTab') }}
+        </button>
+        <button
+          :class="[$style.tabButton, activeTab === 'questionAnalytics' && $style.activeTab]"
+          @click="activeTab = 'questionAnalytics'"
+        >
+          <i class="fas fa-chart-bar"></i>
+          {{ t('responses.questionAnalyticsTab') }}
+        </button>
       </div>
 
-      <!-- Responses Table -->
-      <div :class="$style.tableContainer">
-        <div v-if="filteredResponses.length === 0" :class="$style.noResponsesContainer">
-          <h3>{{ t('responses.noResponses') }}</h3>
-          <p>{{ t('responses.noResponsesDescription') }}</p>
+      <!-- Tab Content -->
+      <div :class="$style.tabContent">
+        <!-- Responses Tab -->
+        <div v-if="activeTab === 'responses'" :class="$style.responsesTab">
+          <!-- Filters and Search -->
+          <div :class="$style.filtersSection">
+            <div :class="$style.searchContainer">
+              <input
+                v-model="searchQuery"
+                :class="$style.searchInput"
+                :placeholder="t('responses.searchPlaceholder')"
+                type="text"
+              />
+            </div>
+            
+            <div :class="$style.filtersContainer">
+              <div :class="$style.filterGroup">
+                <label :class="$style.filterLabel">{{ t('responses.filterBy') }}:</label>
+                <select v-model="selectedFilter" :class="$style.filterSelect">
+                  <option value="all">{{ t('responses.filters.all') }}</option>
+                  <option value="completed">{{ t('responses.filters.completed') }}</option>
+                  <option value="incomplete">{{ t('responses.filters.incomplete') }}</option>
+                </select>
+              </div>
+              
+              <div :class="$style.filterGroup">
+                <label :class="$style.filterLabel">{{ t('responses.sortBy') }}:</label>
+                <select v-model="selectedSort" :class="$style.filterSelect">
+                  <option value="newest">{{ t('responses.sorting.newest') }}</option>
+                  <option value="oldest">{{ t('responses.sorting.oldest') }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Responses Table -->
+          <div :class="$style.tableContainer">
+            <div v-if="filteredResponses.length === 0" :class="$style.noResponsesContainer">
+              <h3>{{ t('responses.noResponses') }}</h3>
+              <p>{{ t('responses.noResponsesDescription') }}</p>
+            </div>
+
+            <table v-else :class="$style.responsesTable">
+              <thead>
+                <tr>
+                  <th>{{ t('responses.responseId') }}</th>
+                  <th>{{ t('responses.surveyTitle') }}</th>
+                  <th>{{ t('responses.respondent') }}</th>
+                  <th>{{ t('responses.submittedAt') }}</th>
+                  <th>{{ t('responses.status') }}</th>
+                  <th :class="$style.actionsHeader">{{ t('responses.actions') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="response in paginatedResponses" :key="response.id" :class="$style.responseRow">
+                  <td :class="$style.responseId">#{{ response.id }}</td>
+                  <td :class="$style.surveyTitle">{{ response.survey_title || 'Unknown Survey' }}</td>
+                  <td :class="$style.respondent">
+                    {{ response.user_email || t('responses.anonymousUser') }}
+                  </td>
+                  <td :class="$style.submittedAt">
+                    {{ formatDate(response.submitted_at) }}
+                  </td>
+                  <td>
+                    <span 
+                      :class="[
+                        $style.statusBadge,
+                        response.is_complete ? $style.completed : $style.incomplete
+                      ]"
+                    >
+                      {{ response.is_complete ? t('responses.completed') : t('responses.incomplete') }}
+                    </span>
+                  </td>
+                  <td :class="$style.actions">
+                    <button 
+                      :class="$style.viewBtn"
+                      @click="viewResponseDetails(response)"
+                    >
+                      {{ t('responses.viewDetails') }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div v-if="totalPages > 1" :class="$style.pagination">
+              <button 
+                :class="$style.pageBtn"
+                :disabled="currentPage === 1"
+                @click="currentPage--"
+              >
+                Previous
+              </button>
+              
+              <span :class="$style.pageInfo">
+                Page {{ currentPage }} of {{ totalPages }}
+              </span>
+              
+              <button 
+                :class="$style.pageBtn"
+                :disabled="currentPage === totalPages"
+                @click="currentPage++"
+              >
+                Next
+              </button>
+            </div>
+          </div>
         </div>
 
-        <table v-else :class="$style.responsesTable">
-          <thead>
-            <tr>
-              <th>{{ t('responses.responseId') }}</th>
-              <th>{{ t('responses.surveyTitle') }}</th>
-              <th>{{ t('responses.respondent') }}</th>
-              <th>{{ t('responses.submittedAt') }}</th>
-              <th>{{ t('responses.status') }}</th>
-              <th :class="$style.actionsHeader">{{ t('responses.actions') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="response in paginatedResponses" :key="response.id" :class="$style.responseRow">
-              <td :class="$style.responseId">#{{ response.id }}</td>
-              <td :class="$style.surveyTitle">{{ response.survey_title || 'Unknown Survey' }}</td>
-              <td :class="$style.respondent">
-                {{ response.user_email || t('responses.anonymousUser') }}
-              </td>
-              <td :class="$style.submittedAt">
-                {{ formatDate(response.submitted_at) }}
-              </td>
-              <td>
-                <span 
-                  :class="[
-                    $style.statusBadge,
-                    response.is_complete ? $style.completed : $style.incomplete
-                  ]"
-                >
-                  {{ response.is_complete ? t('responses.completed') : t('responses.incomplete') }}
-                </span>
-              </td>
-              <td :class="$style.actions">
-                <button 
-                  :class="$style.viewBtn"
-                  @click="viewResponseDetails(response)"
-                >
-                  {{ t('responses.viewDetails') }}
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <!-- Survey Analytics Tab -->
+        <div v-if="activeTab === 'analytics'" :class="$style.analyticsTab">
+          <SurveyAnalytics
+            :analytics="surveyAnalytics"
+            :survey="survey"
+            :loading="analyticsLoading"
+            @period-change="onAnalyticsPeriodClick"
+            @filters-change="onAnalyticsFiltersChange"
+          />
+        </div>
 
-        <!-- Pagination -->
-        <div v-if="totalPages > 1" :class="$style.pagination">
-          <button 
-            :class="$style.pageBtn"
-            :disabled="currentPage === 1"
-            @click="currentPage--"
-          >
-            Previous
-          </button>
-          
-          <span :class="$style.pageInfo">
-            Page {{ currentPage }} of {{ totalPages }}
-          </span>
-          
-          <button 
-            :class="$style.pageBtn"
-            :disabled="currentPage === totalPages"
-            @click="currentPage++"
-          >
-            Next
-          </button>
+        <!-- Question Analytics Tab -->
+        <div v-if="activeTab === 'questionAnalytics'" :class="$style.questionAnalyticsTab">
+          <div v-if="!selectedQuestion" :class="$style.questionSelector">
+            <h3>{{ t('responses.selectQuestion') }}</h3>
+            <div :class="$style.questionsList">
+              <div
+                v-for="question in surveyQuestions"
+                :key="question.id"
+                :class="$style.questionCard"
+                @click="selectQuestion(question)"
+              >
+                <div :class="$style.questionInfo">
+                  <div :class="$style.questionTitle">{{ question.question_text }}</div>
+                  <div :class="$style.questionType">{{ getQuestionTypeLabel(question.question_type) }}</div>
+                </div>
+                <div :class="$style.questionStats">
+                  <span :class="$style.responseCount">{{ question.response_count || 0 }} responses</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-else :class="$style.questionAnalyticsContainer">
+            <div :class="$style.questionAnalyticsHeader">
+              <button :class="$style.backButton" @click="selectedQuestion = null">
+                <i class="fas fa-arrow-left"></i>
+                {{ t('responses.backToQuestions') }}
+              </button>
+              <h3>{{ selectedQuestion.question_text }}</h3>
+            </div>
+
+            <div :class="$style.questionAnalyticsContent">
+              <!-- Single Choice Analytics -->
+              <SingleChoiceAnalytics
+                v-if="selectedQuestion.question_type === 'single_choice'"
+                :analytics="questionAnalytics"
+                :question="selectedQuestion"
+                :loading="questionAnalyticsLoading"
+                @option-click="onAnalyticsQuestionClick"
+              />
+
+              <!-- Multiple Choice Analytics -->
+              <MultipleChoiceAnalytics
+                v-else-if="selectedQuestion.question_type === 'multiple_choice'"
+                :analytics="questionAnalytics"
+                :question="selectedQuestion"
+                :loading="questionAnalyticsLoading"
+                @option-click="onAnalyticsQuestionClick"
+              />
+
+              <!-- Rating Analytics -->
+              <RatingAnalytics
+                v-else-if="selectedQuestion.question_type === 'rating'"
+                :analytics="questionAnalytics"
+                :question="selectedQuestion"
+                :loading="questionAnalyticsLoading"
+                @rating-click="onAnalyticsQuestionClick"
+              />
+
+              <!-- Yes/No Analytics -->
+              <YesNoAnalytics
+                v-else-if="selectedQuestion.question_type === 'yes_no'"
+                :analytics="questionAnalytics"
+                :question="selectedQuestion"
+                :loading="questionAnalyticsLoading"
+                @segment-click="onAnalyticsQuestionClick"
+              />
+
+              <!-- Text Analytics -->
+              <TextAnalytics
+                v-else-if="['text', 'textarea'].includes(selectedQuestion.question_type)"
+                :analytics="questionAnalytics"
+                :question="selectedQuestion"
+                :loading="questionAnalyticsLoading"
+                @response-click="onAnalyticsQuestionClick"
+              />
+
+              <!-- Fallback for unsupported question types -->
+              <div v-else :class="$style.unsupportedQuestionType">
+                <div :class="$style.unsupportedIcon">
+                  <i class="fas fa-question-circle"></i>
+                </div>
+                <h4>{{ t('responses.unsupportedQuestionType') }}</h4>
+                <p>{{ t('responses.unsupportedQuestionTypeDescription') }}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -302,6 +433,12 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from '@/hooks/useI18n'
 import { apiClient } from '@/services/jwtAuthService'
+import SurveyAnalytics from './Analytics/SurveyAnalytics.vue'
+import SingleChoiceAnalytics from './Analytics/SingleChoiceAnalytics.vue'
+import MultipleChoiceAnalytics from './Analytics/MultipleChoiceAnalytics.vue'
+import RatingAnalytics from './Analytics/RatingAnalytics.vue'
+import YesNoAnalytics from './Analytics/YesNoAnalytics.vue'
+import TextAnalytics from './Analytics/TextAnalytics.vue'
 
 const { t } = useI18n()
 
@@ -351,6 +488,18 @@ const exportSettings = ref<ExportSettings>({
   startDate: '',
   endDate: ''
 })
+
+// Tab management
+const activeTab = ref('responses')
+const selectedQuestion = ref(null)
+
+// Analytics data
+const surveyAnalytics = ref(null)
+const questionAnalytics = ref(null)
+const survey = ref(null)
+const surveyQuestions = ref([])
+const analyticsLoading = ref(false)
+const questionAnalyticsLoading = ref(false)
 
 // Computed properties
 const surveyId = computed(() => route.params.surveyId as string)
@@ -524,10 +673,97 @@ const formatDate = (dateString: string) => {
   })
 }
 
+// Analytics methods
+const loadAnalytics = async () => {
+  if (!surveyId.value || surveyId.value === 'all') return
+  
+  analyticsLoading.value = true
+  try {
+    // Load survey analytics
+    const surveyResponse = await apiClient.get(`/api/surveys/admin/surveys/${surveyId.value}/dashboard/`)
+    surveyAnalytics.value = surveyResponse.data
+    
+    // Load survey details and questions
+    const surveyDetailsResponse = await apiClient.get(`/api/surveys/admin/surveys/${surveyId.value}/`)
+    survey.value = surveyDetailsResponse.data
+    surveyQuestions.value = surveyDetailsResponse.data.questions || []
+  } catch (err) {
+    console.error('Error loading analytics:', err)
+  } finally {
+    analyticsLoading.value = false
+  }
+}
+
+const loadQuestionAnalytics = async (questionId: string) => {
+  if (!surveyId.value || surveyId.value === 'all') return
+  
+  questionAnalyticsLoading.value = true
+  try {
+    const response = await apiClient.get(`/api/surveys/admin/surveys/${surveyId.value}/questions/${questionId}/dashboard/`)
+    questionAnalytics.value = response.data
+  } catch (err) {
+    console.error('Error loading question analytics:', err)
+  } finally {
+    questionAnalyticsLoading.value = false
+  }
+}
+
+const selectQuestion = (question: any) => {
+  selectedQuestion.value = question
+  loadQuestionAnalytics(question.id)
+}
+
+const getQuestionTypeLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    'single_choice': 'Single Choice',
+    'multiple_choice': 'Multiple Choice',
+    'rating': 'Rating',
+    'yes_no': 'Yes/No',
+    'text': 'Text',
+    'textarea': 'Long Text'
+  }
+  return labels[type] || type
+}
+
+// Analytics event handlers
+const onAnalyticsPeriodClick = (period: any) => {
+  console.log('Period clicked:', period)
+  // Handle period change logic here
+}
+
+const onAnalyticsFiltersChange = (filters: any) => {
+  console.log('Filters changed:', filters)
+  // Handle filters change logic here
+}
+
+const onAnalyticsQuestionClick = (data: any) => {
+  console.log('Analytics question clicked:', data)
+  // Handle analytics question click logic here
+}
+
 // Lifecycle
 onMounted(() => {
   fetchResponses()
+  // Load analytics when component is mounted
+  if (surveyId.value && surveyId.value !== 'all') {
+    loadAnalytics()
+  }
 })
+
+// Watch for tab changes to load analytics when needed
+const loadAnalyticsIfNeeded = () => {
+  if (activeTab.value === 'analytics' && !surveyAnalytics.value) {
+    loadAnalytics()
+  }
+}
+
+// Expose tab change function to make analytics load when tab is clicked
+const handleTabChange = (tab: string) => {
+  activeTab.value = tab
+  if (tab === 'analytics' && !surveyAnalytics.value) {
+    loadAnalytics()
+  }
+}
 </script>
 
 <style module src="./SurveyResponses.module.css"></style>

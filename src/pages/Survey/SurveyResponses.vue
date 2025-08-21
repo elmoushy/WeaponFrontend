@@ -4,8 +4,7 @@
       <section :class="$style.headerSection">
         <div :class="$style.headerContent">
           <div :class="$style.titleSection">
-
-                      <button :class="$style.refreshButton" @click="refreshData">
+            <button :class="$style.refreshButton" @click="refreshData">
               <i class="fas fa-sync-alt" :class="{ [$style.spinning]: isLoading }"></i>
               {{ t('common.refresh') }}
             </button>
@@ -19,189 +18,109 @@
             </button>
           </div>
         </div>
+
+        <!-- Navigation Tabs -->
+        <div :class="$style.tabNavigation">
+          <button 
+            :class="[$style.tabButton, { [$style.active]: activeTab === 'responses' }]"
+            @click="activeTab = 'responses'"
+          >
+            <i class="fas fa-list-ul"></i>
+            {{ t('survey.responses.title') }}
+            <span v-if="responses.length > 0" :class="$style.tabBadge">{{ responses.length }}</span>
+          </button>
+          <button 
+            :class="[$style.tabButton, { [$style.active]: activeTab === 'analytics' }]"
+            @click="switchToAnalytics"
+          >
+            <i class="fas fa-chart-line"></i>
+            {{ t('survey.analytics.dashboard') }}
+          </button>
+          <button 
+            :class="[$style.tabButton, { [$style.active]: activeTab === 'questions' }]"
+            @click="switchToQuestionAnalytics"
+          >
+            <i class="fas fa-question-circle"></i>
+التحليلات للاسئلة 
+          </button>
+        </div>
       </section>
 
-      <!-- Survey Overview -->
-      <!-- <section v-if="survey" :class="$style.overviewSection">
-        <div :class="$style.overviewGrid">
-          <div :class="$style.overviewCard">
-            <div :class="$style.overviewIcon">
-              <i class="fas fa-users"></i>
+      <!-- Tab Content -->
+      <div :class="$style.tabContent">
+        <!-- Responses Tab -->
+        <div v-show="activeTab === 'responses'" :class="$style.tabPanel">
+          <!-- Responses List -->
+          <div :class="$style.responsesSection">
+            <div v-if="isLoading" :class="$style.loadingContainer">
+              <div :class="$style.loadingSpinner"></div>
+              <p :class="$style.loadingText">جاري تحميل الردود...</p>
             </div>
-            <div :class="$style.overviewContent">
-              <div :class="$style.overviewNumber">{{ survey.total_responses || 0 }}</div>
-              <div :class="$style.overviewLabel">{{ t('survey.responses.totalResponses') }}</div>
-            </div>
-          </div>
-          
-          <div :class="$style.overviewCard">
-            <div :class="$style.overviewIcon">
-              <i class="fas fa-check-circle"></i>
-            </div>
-            <div :class="$style.overviewContent">
-              <div :class="$style.overviewNumber">{{ completedResponses }}</div>
-              <div :class="$style.overviewLabel">{{ t('survey.responses.completed') }}</div>
-            </div>
-          </div>
-          
-          <div :class="$style.overviewCard">
-            <div :class="$style.overviewIcon">
-              <i class="fas fa-clock"></i>
-            </div>
-            <div :class="$style.overviewContent">
-              <div :class="$style.overviewNumber">{{ incompleteResponses }}</div>
-              <div :class="$style.overviewLabel">{{ t('survey.responses.incomplete') }}</div>
-            </div>
-          </div>
-          
-          <div :class="$style.overviewCard">
-            <div :class="$style.overviewIcon">
-              <i class="fas fa-calendar-alt"></i>
-            </div>
-            <div :class="$style.overviewContent">
-              <div :class="$style.overviewNumber">{{ getResponseRate() }}%</div>
-              <div :class="$style.overviewLabel">{{ t('survey.responses.completionRate') }}</div>
-            </div>
-          </div>
-        </div>
-      </section> -->
-
-      <!-- Filters and Search -->
-      <!-- <section :class="$style.filtersSection">
-        <div :class="$style.filtersGrid">
-          <div :class="$style.searchGroup">
-            <div :class="$style.searchInputWrapper">
-              <i class="fas fa-search" :class="$style.searchIcon"></i>
-              <input
-                type="text"
-                :class="$style.searchInput"
-                :placeholder="t('survey.responses.searchPlaceholder')"
-                v-model="searchQuery"
-                @input="handleSearch"
-              />
-            </div>
-          </div>
-          
-          <div :class="$style.filterGroup">
-            <select :class="$style.filterSelect" v-model="completionFilter" @change="applyFilters">
-              <option value="all">{{ t('survey.responses.filters.all') }}</option>
-              <option value="complete">{{ t('survey.responses.filters.completed') }}</option>
-              <option value="incomplete">{{ t('survey.responses.filters.incomplete') }}</option>
-            </select>
             
-            <select :class="$style.filterSelect" v-model="respondentFilter" @change="applyFilters">
-              <option value="all">{{ t('survey.responses.filters.allRespondents') }}</option>
-              <option value="authenticated">{{ t('survey.responses.filters.authenticated') }}</option>
-              <option value="anonymous">{{ t('survey.responses.filters.anonymous') }}</option>
-            </select>
+            <div v-else-if="responses.length === 0" :class="$style.emptyState">
+              <div :class="$style.emptyIcon">
+                <i class="fas fa-inbox"></i>
+              </div>
+              <h3 :class="$style.emptyTitle">{{ t('survey.responses.noResponses') }}</h3>
+              <p :class="$style.emptyDescription">{{ t('survey.responses.noResponsesDescription') }}</p>
+            </div>
             
-            <select :class="$style.filterSelect" v-model="sortOrder" @change="applySorting">
-              <option value="-submitted_at">{{ t('survey.responses.sorting.newest') }}</option>
-              <option value="submitted_at">{{ t('survey.responses.sorting.oldest') }}</option>
-            </select>
-          </div>
-          
-          <div :class="$style.dateGroup">
-            <input
-              type="date"
-              :class="$style.dateInput"
-              v-model="startDate"
-              @change="applyFilters"
-              :title="t('survey.responses.dateRange.startDate')"
-            />
-            <span :class="$style.dateSeparator">{{ t('common.to') }}</span>
-            <input
-              type="date"
-              :class="$style.dateInput"
-              v-model="endDate"
-              @change="applyFilters"
-              :title="t('survey.responses.dateRange.endDate')"
-            />
-          </div>
-        </div>
-      </section> -->
-
-      <!-- Responses List -->
-      <section :class="$style.responsesSection">
-        <div v-if="isLoading" :class="$style.loadingContainer">
-          <div :class="$style.loadingSpinner"></div>
-          <p :class="$style.loadingText">جاري تحميل الردود...</p>
-        </div>
-        
-        <div v-else-if="responses.length === 0" :class="$style.emptyState">
-          <div :class="$style.emptyIcon">
-            <i class="fas fa-inbox"></i>
-          </div>
-          <h3 :class="$style.emptyTitle">{{ t('survey.responses.noResponses') }}</h3>
-          <p :class="$style.emptyDescription">{{ t('survey.responses.noResponsesDescription') }}</p>
-        </div>
-        
-        <div v-else :class="$style.responsesList">
-          <div
-            v-for="response in responses"
-            :key="response.id"
-            :class="$style.responseCard"
-          >
-            <div :class="$style.responseHeader"     @click="expandResponse(response.id)"
-  >
-              <div :class="$style.respondentInfo">
-                <div :class="$style.respondentAvatar">
-                  <i :class="response.respondent.type === 'authenticated' ? 'fas fa-user' : 'fas fa-user-secret'"></i>
-                </div>
-                <div :class="$style.respondentDetails">
-                  <div :class="$style.respondentName">
-                    {{ response.respondent.email || t('survey.responses.anonymousUser') }}
+            <div v-else :class="$style.responsesList">
+              <div
+                v-for="response in responses"
+                :key="response.id"
+                :class="$style.responseCard"
+              >
+                <div :class="$style.responseHeader" @click="expandResponse(response.id)">
+                  <div :class="$style.respondentInfo">
+                    <div :class="$style.respondentAvatar">
+                      <i :class="response.respondent.type === 'authenticated' ? 'fas fa-user' : 'fas fa-user-secret'"></i>
+                    </div>
+                    <div :class="$style.respondentDetails">
+                      <div :class="$style.respondentName">
+                        {{ response.respondent.email || t('survey.responses.anonymousUser') }}
+                      </div>
+                      <div :class="$style.respondentMeta">
+                        <span :class="$style.respondentType">
+                          {{ response.respondent.type === 'authenticated' ? t('survey.responses.authenticatedUser') : t('survey.responses.anonymousUser') }}
+                        </span>
+                        <span :class="$style.submissionDate">{{ formatDate(response.submitted_at) }}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div :class="$style.respondentMeta">
-                    <span :class="$style.respondentType">
-                      {{ response.respondent.type === 'authenticated' ? t('survey.responses.authenticatedUser') : t('survey.responses.anonymousUser') }}
+                  
+                  <div :class="$style.responseStatus">
+                    <span :class="[$style.statusBadge, response.is_complete ? $style.complete : $style.incomplete]">
+                      <i :class="response.is_complete ? 'fas fa-check-circle' : 'fas fa-clock'"></i>
+                      {{ response.is_complete ? t('survey.responses.completed') : t('survey.responses.incomplete') }}
                     </span>
-                    <span :class="$style.submissionDate">{{ formatDate(response.submitted_at) }}</span>
                   </div>
                 </div>
-              </div>
-              
-              <div :class="$style.responseStatus">
-                <span :class="[$style.statusBadge, response.is_complete ? $style.complete : $style.incomplete]">
-                  <i :class="response.is_complete ? 'fas fa-check-circle' : 'fas fa-clock'"></i>
-                  {{ response.is_complete ? t('survey.responses.completed') : t('survey.responses.incomplete') }}
-                </span>
                 
-                <!-- <div :class="$style.responseActions">
-                  <button :class="$style.actionButton" @click.stop="viewResponseDetails(response)" :title="t('survey.responses.viewDetails')">
-                    <i class="fas fa-eye"></i>
-                  </button>
-                  <button :class="$style.actionButton" @click.stop="exportSingleResponse(response)" :title="t('survey.responses.exportSingle')">
-                    <i class="fas fa-download"></i>
-                  </button>
-                </div> -->
-              </div>
-            </div>
-            
-            <div :class="$style.responsePreview">
-              <div :class="$style.answersSummary">
-                <span :class="$style.answersCount">
-                  {{ response.answer_count || response.answers?.length || 0 }} {{ t('survey.responses.answersProvided') }}
-                </span>
-                <span :class="$style.progressBar">
-                  <div :class="$style.progressFill" :style="{ width: getCompletionPercentage(response) + '%' }"></div>
-                </span>
-              </div>
-              
-              <div v-if="expandedResponse === response.id" :class="$style.responseDetails">
-                <div :class="$style.responseDetailsHeader">
-                  <div :class="$style.detailsHeaderIcon">
-                    <i class="fas fa-clipboard-list"></i>
+                <div :class="$style.responsePreview">
+                  <div :class="$style.answersSummary">
+                    <span :class="$style.answersCount">
+                      {{ response.answer_count || response.answers?.length || 0 }} {{ t('survey.responses.answersProvided') }}
+                    </span>
+                    <span :class="$style.progressBar">
+                      <div :class="$style.progressFill" :style="{ width: getCompletionPercentage(response) + '%' }"></div>
+                    </span>
                   </div>
-                  <h4 :class="$style.detailsHeaderTitle">الإجابات التفصيلية</h4>
-                  <div :class="$style.detailsHeaderBadge">
-                    {{ response.answers?.length || 0 }} {{ t('survey.responses.answers') }}
-                  </div>
-                </div>
+                  
+                  <div v-if="expandedResponse === response.id" :class="$style.responseDetails">
+                    <div :class="$style.responseDetailsHeader">
+                      <div :class="$style.detailsHeaderIcon">
+                        <i class="fas fa-clipboard-list"></i>
+                      </div>
+                      <h4 :class="$style.detailsHeaderTitle">الإجابات التفصيلية</h4>
+                      <div :class="$style.detailsHeaderBadge">
+                        {{ response.answers?.length || 0 }} {{ t('survey.responses.answers') }}
+                      </div>
+                    </div>
                 <div :class="$style.answersGrid">
   <div v-for="answer in response.answers" :key="answer.question_id" :class="$style.answerCard">
     <div :class="$style.answerCardHeader">
-      <div :class="$style.questionNumberBadge">
+      <div>
         <span :class="$style.questionNumber">{{ answer.question_order }}</span>
       </div>
       <div :class="$style.questionTextContainer">
@@ -252,7 +171,123 @@
             </div>
           </div>
         </div>
-      </section>
+        </div>
+
+        <!-- Analytics Dashboard Tab -->
+        <div v-show="activeTab === 'analytics'" :class="$style.tabPanel">
+          <div v-if="analyticsLoading" :class="$style.loadingContainer">
+            <div :class="$style.loadingSpinner"></div>
+            <p :class="$style.loadingText">{{ t('survey.analytics.loadingAnalytics') }}</p>
+          </div>
+          
+          <div v-else-if="analyticsError" :class="$style.errorContainer">
+            <div :class="$style.errorIcon">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 :class="$style.errorTitle">{{ t('survey.analytics.loadError') }}</h3>
+            <p :class="$style.errorMessage">{{ analyticsError }}</p>
+            <button @click="loadAnalytics" :class="$style.retryButton">
+              <i class="fas fa-redo"></i>
+              {{ t('common.retry') }}
+            </button>
+          </div>
+          
+          <div v-else-if="hasAnalyticsData" :class="$style.analyticsContent">
+            <SurveyAnalytics 
+              :analytics="surveyAnalytics"
+              :loading="analyticsLoading"
+              @refresh="loadAnalytics"
+              @question-click="onAnalyticsQuestionClick"
+              @period-click="onAnalyticsPeriodClick"
+              @filters-change="onAnalyticsFiltersChange"
+            />
+          </div>
+          
+          <div v-else :class="$style.noDataContainer">
+            <div :class="$style.noDataIcon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <h3 :class="$style.noDataTitle">{{ t('survey.analytics.noData') }}</h3>
+            <p :class="$style.noDataMessage">{{ t('survey.analytics.noDataDescription') }}</p>
+          </div>
+        </div>
+
+        <!-- Question Analytics Tab -->
+        <div v-show="activeTab === 'questions'" :class="$style.tabPanel">
+          <div v-if="analyticsLoading" :class="$style.loadingContainer">
+            <div :class="$style.loadingSpinner"></div>
+            <p :class="$style.loadingText">{{ t('survey.analytics.loadingAnalytics') }}</p>
+          </div>
+          
+          <div v-else-if="analyticsError" :class="$style.errorContainer">
+            <div :class="$style.errorIcon">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 :class="$style.errorTitle">{{ t('survey.analytics.loadError') }}</h3>
+            <p :class="$style.errorMessage">{{ analyticsError }}</p>
+            <button @click="loadAnalytics" :class="$style.retryButton">
+              <i class="fas fa-redo"></i>
+              {{ t('common.retry') }}
+            </button>
+          </div>
+          
+          <div v-else-if="hasQuestionAnalyticsData" :class="$style.questionAnalyticsContent">
+            <div :class="$style.questionAnalyticsHeader">
+              <h2 :class="$style.questionAnalyticsTitle">
+                <i class="fas fa-question-circle"></i>
+                {{ t('survey.analytics.questions') }}
+              </h2>
+              <p :class="$style.questionAnalyticsDescription">
+                {{ t('survey.analytics.questionsDescription') }}
+              </p>
+            </div>
+
+            <div :class="$style.questionAnalyticsGrid">
+              <div 
+                v-for="question in questionAnalytics" 
+                :key="question.question_id"
+                :class="$style.questionAnalyticsCard"
+              >
+                <div :class="$style.questionHeader">
+                  <div :class="$style.questionNumber">Q{{ question.question_order }}</div>
+                  <div :class="$style.questionTitle">{{ question.question_text }}</div>
+                  <div :class="$style.questionType">
+                    <i :class="getQuestionTypeIcon(question.question_type)"></i>
+                    {{ getQuestionTypeLabel(question.question_type) }}
+                  </div>
+                </div>
+
+                <div :class="$style.questionAnalyticsBody">
+                  <!-- Only render component if analytics data is valid -->
+                  <component
+                    v-if="isValidQuestionAnalytics(question)"
+                    :is="getQuestionAnalyticsComponent(question.question_type)"
+                    :question="transformQuestionAnalytics(question)"
+                    :analytics="transformQuestionAnalytics(question)"
+                    :detailed="true"
+                  />
+                  <div v-else :class="$style.noQuestionData">
+                    <div :class="$style.noQuestionDataIcon">
+                      <i class="fas fa-chart-line"></i>
+                    </div>
+                    <p :class="$style.noQuestionDataText">
+                      {{ t('survey.analytics.noDataForQuestion') }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div v-else :class="$style.noDataContainer">
+            <div :class="$style.noDataIcon">
+              <i class="fas fa-question-circle"></i>
+            </div>
+            <h3 :class="$style.noDataTitle">{{ t('survey.analytics.noQuestionData') }}</h3>
+            <p :class="$style.noDataMessage">{{ t('survey.analytics.noQuestionDataDescription') }}</p>
+          </div>
+        </div>
+      </div>
 
       <!-- Export Modal -->
       <div v-if="showExportModal" :class="$style.modalOverlay" @click="showExportModal = false">
@@ -363,13 +398,22 @@
         </div>
       </div>
     </div>
+  </div>
   </template>
 
   <script setup lang="ts">
-  import { ref, computed, onMounted } from 'vue'
+  import { ref, computed, onMounted, nextTick } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import { useAppStore } from '../../stores/useAppStore'
   import { apiClient } from '../../services/jwtAuthService'
+  
+  // Analytics Components
+  import SurveyAnalytics from '../../components/Analytics/SurveyAnalytics.vue'
+  import SingleChoiceAnalytics from '../../components/Analytics/SingleChoiceAnalytics.vue'
+  import MultipleChoiceAnalytics from '../../components/Analytics/MultipleChoiceAnalytics.vue'
+  import RatingAnalytics from '../../components/Analytics/RatingAnalytics.vue'
+  import YesNoAnalytics from '../../components/Analytics/YesNoAnalytics.vue'
+  import TextAnalytics from '../../components/Analytics/TextAnalytics.vue'
 
   // Props
   interface Props {
@@ -441,6 +485,18 @@ const isExpanded = (id: string | number) => expanded.value.has(id)
   const includeIncomplete = ref(true)
   const isExporting = ref(false)
 
+  // Analytics state
+  const activeTab = ref('responses')
+  const analyticsLoading = ref(false)
+  const analyticsError = ref<string | null>(null)
+  const surveyAnalytics = ref<any>(null)
+  const questionAnalytics = ref<any[]>([])
+  const analyticsLoadingPromise = ref<Promise<void> | null>(null) // Track loading promise
+  // Guards to prevent recursive updates from child emissions
+  const isProgrammaticAnalyticsUpdate = ref(false)
+  const lastAnalyticsFiltersKey = ref<string>('')
+  const isHandlingAnalyticsFilters = ref(false)
+
   // Get survey ID from route or props
   const surveyId = computed(() => props.surveyId || route.params.surveyId as string)
 
@@ -450,6 +506,19 @@ const isExpanded = (id: string | number) => expanded.value.has(id)
   const completedResponses = computed(() => 
     responses.value.filter(response => response.is_complete).length
   )
+
+  // Computed property to check if analytics data is ready to display
+  const hasAnalyticsData = computed(() => {
+    // Only show data if we're not loading and have valid data
+    return !analyticsLoading.value && 
+           !!(surveyAnalytics.value && (surveyAnalytics.value.data || surveyAnalytics.value.status === 'success'))
+  })
+
+  const hasQuestionAnalyticsData = computed(() => {
+    // Only show data if we're not loading and have valid data
+    return !analyticsLoading.value && 
+           !!(questionAnalytics.value && questionAnalytics.value.length > 0)
+  })
 
   // Removed unused computed property
 
@@ -656,6 +725,265 @@ const isExpanded = (id: string | number) => expanded.value.has(id)
 
   const goBack = () => {
     router.go(-1)
+  }
+
+  // Analytics methods
+  const switchToAnalytics = async () => {
+    if (activeTab.value === 'analytics') return // Prevent unnecessary calls
+    
+    activeTab.value = 'analytics'
+    
+    // Wait for the DOM to update before checking if we need to load analytics
+    await nextTick()
+    
+    // Only load analytics if we don't have data AND we're not already loading
+    if (!surveyAnalytics.value && !analyticsLoadingPromise.value) {
+      await loadAnalytics()
+    }
+  }
+
+  const switchToQuestionAnalytics = async () => {
+    if (activeTab.value === 'questions') return // Prevent unnecessary calls
+    
+    activeTab.value = 'questions'
+    
+    // Wait for the DOM to update before checking if we need to load analytics
+    await nextTick()
+    
+    // Only load analytics if we don't have data AND we're not already loading
+    if ((!questionAnalytics.value || questionAnalytics.value.length === 0) && !analyticsLoadingPromise.value) {
+      await loadAnalytics()
+    }
+  }
+
+  const loadAnalytics = async () => {
+    // If already loading, return the existing promise to prevent concurrent calls
+    if (analyticsLoadingPromise.value) {
+      return analyticsLoadingPromise.value
+    }
+    
+    const loadPromise = (async () => {
+      try {
+  // Mark as programmatic before any state changes to ignore child emissions
+  isProgrammaticAnalyticsUpdate.value = true
+        analyticsLoading.value = true
+        analyticsError.value = null
+
+        // Load survey-level analytics using the correct endpoint from JSON
+        const surveyAnalyticsResponse = await apiClient.get(`/surveys/admin/surveys/${surveyId.value}/dashboard/`)
+        
+  if (surveyAnalyticsResponse.status === 200) {
+          // Store the response data
+          const responseData = surveyAnalyticsResponse.data
+          surveyAnalytics.value = responseData
+          
+          // Extract question analytics from the survey response if available
+          if (responseData?.data?.questions_summary) {
+            const extractedQuestions = responseData.data.questions_summary.map((question: any) => ({
+              ...question,
+              question_id: question.question_id,
+              question_order: question.order,
+              question_type: question.type,
+              question_text: question.question_text || `Question ${question.order}`,
+              analytics: question.distributions || {}
+            }))
+            questionAnalytics.value = extractedQuestions
+          }
+          // Default filters snapshot to avoid re-fetch from initial/default emissions
+          if (!lastAnalyticsFiltersKey.value) {
+            lastAnalyticsFiltersKey.value = JSON.stringify({ start: '', end: '', group_by: 'day' })
+          }
+        }
+
+      } catch (error) {
+        console.error('Analytics loading error:', error)
+        analyticsError.value = error instanceof Error ? error.message : 'Failed to load analytics'
+      } finally {
+        analyticsLoading.value = false
+        analyticsLoadingPromise.value = null // Clear the promise
+  // Next tick to let children settle, then clear the programmatic flag
+  await nextTick()
+  isProgrammaticAnalyticsUpdate.value = false
+      }
+    })()
+    
+    analyticsLoadingPromise.value = loadPromise
+    return loadPromise
+  }
+
+  const getQuestionAnalyticsComponent = (questionType: string) => {
+    const componentMap: Record<string, any> = {
+      'single_choice': SingleChoiceAnalytics,
+      'multiple_choice': MultipleChoiceAnalytics,
+      'rating': RatingAnalytics,
+      'yes_no': YesNoAnalytics,
+      'text': TextAnalytics,
+      'textarea': TextAnalytics
+    }
+    return componentMap[questionType] || TextAnalytics
+  }
+
+  // Validate question analytics data before rendering
+  const isValidQuestionAnalytics = (question: any): boolean => {
+    if (!question) return false
+    
+    const questionType = question.question_type || question.type
+    
+    // For text/textarea questions, check if analytics data structure exists
+    if (questionType === 'text' || questionType === 'textarea') {
+      const transformed = transformQuestionAnalytics(question)
+      
+      // Check if the transformed data has the expected structure
+      return !!(transformed.analytics?.analytics?.textual || 
+               transformed.analytics?.textual ||
+               transformed.textual ||
+               (transformed.kpis && typeof transformed.kpis.answer_count === 'number'))
+    }
+    
+    // For other question types, basic validation
+    return !!(question.analytics || question.distributions || question.kpis)
+  }
+
+  // Transform question analytics data to match component expectations
+  const transformQuestionAnalytics = (question: any) => {
+    const transformed = { ...question }
+    
+    // If analytics is empty but distributions exist, move distributions to analytics.analytics
+    if ((!transformed.analytics || Object.keys(transformed.analytics).length === 0) && transformed.distributions) {
+      transformed.analytics = {
+        analytics: transformed.distributions
+      }
+    }
+    
+    // Ensure textual analytics has the expected structure
+    if (transformed.analytics?.textual) {
+      transformed.analytics.analytics = {
+        textual: {
+          total_responses: transformed.analytics.textual.total_responses || transformed.kpis?.answer_count || 0,
+          avg_words: transformed.analytics.textual.avg_words || 0,
+          avg_word_count: transformed.analytics.textual.avg_words || 0,
+          avg_char_count: transformed.analytics.textual.avg_chars || 0,
+          response_lengths: transformed.analytics.textual.response_lengths || {}
+        }
+      }
+    } else if (transformed.distributions?.textual) {
+      transformed.analytics = {
+        analytics: {
+          textual: {
+            total_responses: transformed.distributions.textual.total_responses || transformed.kpis?.answer_count || 0,
+            avg_words: transformed.distributions.textual.avg_words || 0,
+            avg_word_count: transformed.distributions.textual.avg_words || 0,
+            avg_char_count: transformed.distributions.textual.avg_chars || 0,
+            response_lengths: transformed.distributions.textual.response_lengths || {}
+          }
+        }
+      }
+    } else if ((transformed.type === 'text' || transformed.type === 'textarea') && (!transformed.analytics || Object.keys(transformed.analytics).length === 0)) {
+      // For empty text analytics, provide default structure
+      transformed.analytics = {
+        analytics: {
+          textual: {
+            total_responses: transformed.kpis?.answer_count || 0,
+            avg_words: 0,
+            avg_word_count: 0,
+            avg_char_count: 0,
+            response_lengths: {}
+          }
+        }
+      }
+    }
+    
+    return transformed
+  }
+
+  // Analytics event handlers
+  const onAnalyticsQuestionClick = (question: any) => {
+    // Switch to question analytics tab and highlight specific question
+    activeTab.value = 'questions'
+    
+    // If we have question analytics loaded, scroll to specific question
+    // You could implement scrolling to specific question here
+    console.log('Question clicked in analytics:', question)
+  }
+
+  const onAnalyticsPeriodClick = (period: any) => {
+    // Handle period click (could filter responses by this period)
+    console.log('Analytics period clicked:', period)
+    
+    // Example: filter responses by this period
+    // startDate.value = period.start
+    // endDate.value = period.end
+    // loadSurveyResponses()
+  }
+
+  const onAnalyticsFiltersChange = async (filters: any) => {
+    // Handle analytics filters change and reload analytics
+    console.log('Analytics filters changed:', filters)
+    
+    // Ignore if this was triggered by our own programmatic update
+    if (isProgrammaticAnalyticsUpdate.value) {
+      return
+    }
+
+    // Prevent recursive calls if already loading or if there's a pending promise
+    if (isHandlingAnalyticsFilters.value || analyticsLoading.value || analyticsLoadingPromise.value) {
+      console.log('Analytics already loading, skipping filter change')
+      return
+    }
+    
+    // Skip if surveyAnalytics is not loaded yet
+    if (!surveyAnalytics.value) {
+      console.log('Skipping filter change - no initial data loaded yet')
+      return
+    }
+    
+    try {
+      isHandlingAnalyticsFilters.value = true
+      // Mark as programmatic right away to ignore any child emissions caused by our own updates
+      isProgrammaticAnalyticsUpdate.value = true
+      analyticsLoading.value = true
+      
+      // Build query params
+      const params = new URLSearchParams()
+      const norm = {
+        start: filters.start || '',
+        end: filters.end || '',
+        group_by: filters.group_by || 'day'
+      }
+      const key = JSON.stringify(norm)
+      // If first time and filters are default, just snapshot and skip
+      if (!lastAnalyticsFiltersKey.value && norm.start === '' && norm.end === '' && norm.group_by === 'day') {
+        lastAnalyticsFiltersKey.value = key
+        analyticsLoading.value = false
+        return
+      }
+      // Dedupe: if filters haven't changed, skip
+      if (key === lastAnalyticsFiltersKey.value) {
+        analyticsLoading.value = false
+        return
+      }
+      lastAnalyticsFiltersKey.value = key
+
+      if (norm.start) params.append('start', norm.start)
+      if (norm.end) params.append('end', norm.end)
+      if (norm.group_by) params.append('group_by', norm.group_by)
+      
+      // Reload analytics with filters
+      const surveyAnalyticsResponse = await apiClient.get(`/surveys/admin/surveys/${surveyId.value}/dashboard/?${params.toString()}`)
+      
+  if (surveyAnalyticsResponse.status === 200) {
+        surveyAnalytics.value = surveyAnalyticsResponse.data
+      }
+      
+    } catch (error) {
+      console.error('Error loading filtered analytics:', error)
+      analyticsError.value = error instanceof Error ? error.message : 'Failed to load filtered analytics'
+    } finally {
+      analyticsLoading.value = false
+      await nextTick()
+      isProgrammaticAnalyticsUpdate.value = false
+  isHandlingAnalyticsFilters.value = false
+    }
   }
 
   // Lifecycle

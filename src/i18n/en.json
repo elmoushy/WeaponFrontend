@@ -328,7 +328,19 @@
       "selectedItems": "items selected",
       "noSurveys": "No surveys found. Create your first survey!",
       "loading": "Loading surveys...",
-      "refreshData": "Refresh Data"
+      "refreshData": "Refresh Data",
+      "stats": "Statistics",
+      "status": "Status",
+      "lastUpdated": "Last Updated",
+      "actions": "Actions"
+    },
+    "pagination": {
+      "showing": "Showing",
+      "of": "of",
+      "items": "items",
+      "previous": "Previous",
+      "next": "Next",
+      "itemsPerPage": "Items per page"
     },
     "filters": {
       "all": "All Surveys",
@@ -576,7 +588,63 @@
       "timeToComplete": "Time to Complete",
       "deviceBreakdown": "Device Breakdown",
       "locationData": "Location Data",
-      "trendAnalysis": "Trend Analysis"
+      "trendAnalysis": "Trend Analysis",
+      "dashboard": "Analytics Dashboard",
+      "loadingAnalytics": "Loading analytics...",
+      "loadError": "Failed to load analytics",
+      "noData": "No Analytics Data",
+      "noDataDescription": "There is no data available for this survey yet. Check back once responses are submitted.",
+      "textualAnalysis": "Text Response Analysis",
+      "avgWords": "Avg Words",
+      "avgChars": "Avg Characters",
+      "responses": "Responses",
+      "responseLengthDistribution": "Response Length Distribution",
+      "wordCountAnalysis": "Word Count Analysis",
+      "averageWords": "Average Words",
+      "averageChars": "Average Characters",
+      "perResponse": "per response",
+      "verbosityLevel": "Response Detail",
+      "engagementScore": "Engagement Score",
+      "responseQuality": "Response Quality",
+      "detailLevel": "Detail Level",
+      "consistencyLevel": "Response Consistency",
+      "participation": "Participation Rate",
+      "providedText": "provided text responses",
+      "lengthDistribution": "Length Distribution",
+      "lengths": {
+        "short": "Short",
+        "medium": "Medium",  
+        "long": "Long",
+        "shortDesc": "Brief responses (1-10 words)",
+        "mediumDesc": "Standard responses (11-50 words)",
+        "longDesc": "Detailed responses (50+ words)"
+      },
+      "verbosityTypes": {
+        "brief": "Brief",
+        "moderate": "Moderate",
+        "detailed": "Detailed", 
+        "extensive": "Extensive"
+      },
+      "engagementLevels": {
+        "low": "Low engagement responses",
+        "moderate": "Moderate engagement",
+        "high": "High engagement responses"
+      },
+      "detailTypes": {
+        "minimal": "Minimal Detail",
+        "basic": "Basic Detail",
+        "detailed": "Detailed",
+        "comprehensive": "Comprehensive"
+      },
+      "consistencyTypes": {
+        "high": "Highly Consistent",
+        "moderate": "Moderately Consistent",
+        "low": "Varied Responses"
+      },
+      "wordsPerResponse": "words per response",
+      "charsPerResponse": "characters per response",
+      "inSameCategory": "in the same response category",
+      "unknown": "Unknown"
     },
     "sharing": {
       "title": "Share Survey",

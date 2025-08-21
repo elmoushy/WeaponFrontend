@@ -72,6 +72,7 @@
                 <div :class="$style.userDetailsSection">
                   <div :class="$style.userDisplayName">{{ userDisplayName || 'Guest User' }}</div>
                   <div :class="$style.userEmailText">{{ userEmail || 'No email available' }}</div>
+                  <div :class="$style.userRoleText">{{ userRole || 'No role assigned' }}</div>
                   <div :class="$style.userStatus">
                     <div :class="$style.statusIndicator"></div>
                     <span>{{'Online' }}</span>
@@ -161,6 +162,7 @@
             <div :class="$style.mobileUserDetails">
               <div :class="$style.mobileUserName">{{ userDisplayName || 'Guest User' }}</div>
               <div :class="$style.mobileUserEmail">{{ userEmail || 'No email available' }}</div>
+              <div :class="$style.mobileUserRole">{{ userRole || 'No role assigned' }}</div>
             </div>
           </div>
           <button @click="handleLogout" :class="$style.mobileLogoutBtn">
@@ -222,6 +224,9 @@ const {
 
 // Computed user email
 const userEmail = computed(() => user.value?.email || '')
+
+// Computed user role
+const userRole = computed(() => user.value?.role || '')
 
 // Reactive state
 const showSettings = ref(false)

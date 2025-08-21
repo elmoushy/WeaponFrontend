@@ -98,12 +98,12 @@ class SurveyService {
     }
   }
 
-  // Survey CRUD operations
-  async getAllSurveys(filters?: SurveyFilters): Promise<PaginatedApiResponse<Survey>> {
+  // Enhanced Survey CRUD operations with new API support
+  async getAllSurveys(filters?: any): Promise<PaginatedApiResponse<Survey>> {
     const params = new URLSearchParams()
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
+        if (value !== undefined && value !== null && value !== '') {
           params.append(key, value.toString())
         }
       })
@@ -114,15 +114,60 @@ class SurveyService {
     try {
       // Use apiClient directly since Django returns paginated response
       const response = await apiClient.get(`${this.baseURL}${endpoint}`)
-      // Debug log
+      // Debug log - Response structure should match new API format
+      console.log('API Response:', response.data)
       
-      // Django returns paginated response directly
-      return response.data as PaginatedApiResponse<Survey>
+      // Handle the nested response structure: response.data.data contains the actual paginated data
+      const responseData = response.data?.data || response.data
+      
+      if (responseData && 'results' in responseData) {
+        return {
+          count: responseData.count || 0,
+          total_pages: responseData.total_pages || 0,
+          current_page: responseData.current_page || 1,
+          per_page: responseData.per_page || 10,
+          next: responseData.next || null,
+          previous: responseData.previous || null,
+          results: responseData.results || [],
+          applied_filters: response.data?.applied_filters || responseData.applied_filters || {},
+          available_filters: responseData.available_filters || {}
+        } as PaginatedApiResponse<Survey>
+      }
+      
+      // Check if it's the direct nested structure from your API
+      if (response.data?.status === 'success' && response.data?.data) {
+        const data = response.data.data
+        return {
+          count: data.count || 0,
+          total_pages: data.total_pages || 0,
+          current_page: data.current_page || 1,
+          per_page: data.per_page || 10,
+          next: data.next || null,
+          previous: data.previous || null,
+          results: data.results || [],
+          applied_filters: response.data.applied_filters || {},
+          available_filters: data.available_filters || {}
+        } as PaginatedApiResponse<Survey>
+      }
+      
+      // Fallback for legacy response format
+      return {
+        count: 0,
+        total_pages: 0,
+        current_page: 1,
+        per_page: 10,
+        next: null,
+        previous: null,
+        results: []
+      }
     } catch (error: any) {
-      // Logging removed for production
+      console.error('API Error:', error)
       // Return a fallback structure if the API call fails
       return {
         count: 0,
+        total_pages: 0,
+        current_page: 1,
+        per_page: 10,
         next: null,
         previous: null,
         results: []
@@ -141,11 +186,30 @@ class SurveyService {
     })
   }
 
+  async createDraft(surveyData: SurveyCreateRequest): Promise<ApiResponse<Survey>> {
+    return this.apiCall<ApiResponse<Survey>>('draft/', {
+      method: 'POST',
+      body: JSON.stringify(surveyData)
+    })
+  }
+
+  async submitSurvey(surveyId: string): Promise<ApiResponse<Survey>> {
+    return this.apiCall<ApiResponse<Survey>>('submit/', {
+      method: 'POST',
+      body: JSON.stringify({ survey_id: surveyId })
+    })
+  }
+
   async updateSurvey(
     surveyId: string,
     surveyData: SurveyUpdateRequest
   ): Promise<ApiResponse<Survey>> {
     try {
+      // Validate survey ID
+      if (!surveyId || surveyId === 'undefined' || surveyId === 'null') {
+        throw new Error('Survey ID is required and cannot be undefined')
+      }
+      
       // If access_level is provided, map it to visibility
       const updateData = { ...surveyData }
       if ('access_level' in updateData) {
@@ -187,6 +251,11 @@ class SurveyService {
     accessLevel: 'public' | 'authenticated' | 'private' | 'groups',
     contactMethod?: 'email' | 'phone'
   ): Promise<ApiResponse<Survey>> {
+    // Validate survey ID
+    if (!surveyId || surveyId === 'undefined' || surveyId === 'null') {
+      throw new Error('Survey ID is required and cannot be undefined')
+    }
+    
     // Map access level to visibility for the PATCH API
     let visibility: 'PUBLIC' | 'AUTH' | 'PRIVATE' | 'GROUPS'
     switch (accessLevel) {
