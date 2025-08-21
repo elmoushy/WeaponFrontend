@@ -1,0 +1,432 @@
+{
+  "endpoint": {
+    "method": "GET",
+    "url": "http://127.0.0.1:8000/api/surveys/admin/surveys/453fa171-1e03-4c80-be98-6889bd31551f/analytics/dashboard/",
+    "description": "Get detailed analytics dashboard for a specific question within a survey. Provides question-specific KPIs, answer distribution, statistical analysis, and insights based on question type (single_choice, multiple_choice, rating, yes_no, text, textarea)."
+  },
+  "headers": {
+    "required": {
+      "Authorization": "Bearer <access_token>",
+      "Accept": "application/json"
+    },
+    "optional": {
+      "Content-Type": "application/json"
+    }
+  },
+  "path_parameters": {
+    "survey_id": {
+      "type": "uuid",
+      "description": "Survey ID containing the question",
+      "example": "123e4567-e89b-12d3-a456-426614174000"
+    },
+    "question_id": {
+      "type": "uuid", 
+      "description": "Question ID to get analytics for",
+      "example": "789e1234-e89b-12d3-a456-426614174002"
+    }
+  },
+  "query_parameters": {
+    "start": {
+      "type": "datetime",
+      "format": "ISO 8601",
+      "description": "Start date for filtering responses (inclusive)",
+      "example": "2025-07-01T00:00:00+04:00",
+      "optional": true
+    },
+    "end": {
+      "type": "datetime",
+      "format": "ISO 8601", 
+      "description": "End date for filtering responses (inclusive)",
+      "example": "2025-08-21T23:59:59+04:00",
+      "optional": true
+    },
+    "tz": {
+      "type": "string",
+      "description": "Timezone for date calculations",
+      "default": "Asia/Dubai",
+      "example": "Asia/Dubai",
+      "optional": true
+    },
+    "include_personal": {
+      "type": "boolean",
+      "description": "Include personally identifiable information in analytics",
+      "default": false,
+      "example": false,
+      "optional": true,
+      "note": "When false, excludes PII from answer analysis"
+    }
+  },
+  "responses": {
+    "200": {
+      "description": "Question analytics dashboard data retrieved successfully",
+      "content": {
+        "status": "success",
+        "message": "Question analytics dashboard retrieved successfully",
+        "data": {
+          "question": {
+            "id": "789e1234-e89b-12d3-a456-426614174002",
+            "text": "How satisfied are you with our customer service?",
+            "type": "single_choice",
+            "is_required": true,
+            "order": 1,
+            "created_at": "2025-07-15T10:35:00+04:00"
+          },
+          "survey": {
+            "id": "123e4567-e89b-12d3-a456-426614174000",
+            "title": "Customer Satisfaction Survey 2025",
+            "total_responses": 1250
+          },
+          "kpis": {
+            "answer_count": 1205,
+            "skipped_count": 45,
+            "answer_rate": 0.964,
+            "total_eligible_responses": 1250
+          },
+          "analytics": {
+            "single_choice": {
+              "options": [
+                {
+                  "label": "Very Satisfied",
+                  "value": "Very Satisfied",
+                  "count": 523,
+                  "pct": 0.434
+                },
+                {
+                  "label": "Satisfied", 
+                  "value": "Satisfied",
+                  "count": 412,
+                  "pct": 0.342
+                },
+                {
+                  "label": "Neutral",
+                  "value": "Neutral", 
+                  "count": 185,
+                  "pct": 0.154
+                },
+                {
+                  "label": "Dissatisfied",
+                  "value": "Dissatisfied",
+                  "count": 65,
+                  "pct": 0.054
+                },
+                {
+                  "label": "Very Dissatisfied",
+                  "value": "Very Dissatisfied", 
+                  "count": 20,
+                  "pct": 0.017
+                }
+              ],
+              "top_choice": {
+                "label": "Very Satisfied",
+                "count": 523,
+                "pct": 0.434
+              }
+            }
+          }
+        }
+      }
+    },
+    "200_multiple_choice": {
+      "description": "Example response for multiple choice question",
+      "content": {
+        "status": "success",
+        "message": "Question analytics dashboard retrieved successfully",
+        "data": {
+          "question": {
+            "id": "456e7890-e89b-12d3-a456-426614174003",
+            "text": "Which features do you use most often? (Select all that apply)",
+            "type": "multiple_choice",
+            "is_required": false,
+            "order": 2
+          },
+          "survey": {
+            "id": "123e4567-e89b-12d3-a456-426614174000", 
+            "title": "Customer Satisfaction Survey 2025",
+            "total_responses": 1250
+          },
+          "kpis": {
+            "answer_count": 1180,
+            "skipped_count": 70,
+            "answer_rate": 0.944,
+            "total_eligible_responses": 1250
+          },
+          "analytics": {
+            "multiple_choice": {
+              "options": [
+                {
+                  "label": "Mobile App",
+                  "value": "Mobile App",
+                  "count": 785,
+                  "pct": 0.665,
+                  "selected_by_respondents": 785
+                },
+                {
+                  "label": "Website",
+                  "value": "Website", 
+                  "count": 623,
+                  "pct": 0.528,
+                  "selected_by_respondents": 623
+                },
+                {
+                  "label": "API Integration",
+                  "value": "API Integration",
+                  "count": 342,
+                  "pct": 0.290,
+                  "selected_by_respondents": 342
+                }
+              ],
+              "total_selections": 1750,
+              "avg_selections_per_respondent": 1.48,
+              "most_popular": {
+                "label": "Mobile App", 
+                "count": 785,
+                "pct": 0.665
+              }
+            }
+          }
+        }
+      }
+    },
+    "200_rating": {
+      "description": "Example response for rating question",
+      "content": {
+        "status": "success",
+        "message": "Question analytics dashboard retrieved successfully", 
+        "data": {
+          "question": {
+            "id": "321e6543-e89b-12d3-a456-426614174004",
+            "text": "Rate our customer support on a scale of 1-5",
+            "type": "rating",
+            "is_required": true,
+            "order": 3
+          },
+          "kpis": {
+            "answer_count": 1190,
+            "skipped_count": 60,
+            "answer_rate": 0.952
+          },
+          "analytics": {
+            "rating": {
+              "avg": 4.23,
+              "median": 4.0,
+              "mode": 4,
+              "min": 1,
+              "max": 5,
+              "std_dev": 0.87,
+              "histogram": [
+                {"rating": 1, "count": 25, "pct": 0.021},
+                {"rating": 2, "count": 48, "pct": 0.040},
+                {"rating": 3, "count": 156, "pct": 0.131}, 
+                {"rating": 4, "count": 521, "pct": 0.438},
+                {"rating": 5, "count": 440, "pct": 0.370}
+              ],
+              "distribution": {
+                "positive": {"count": 961, "pct": 0.808},
+                "neutral": {"count": 156, "pct": 0.131},
+                "negative": {"count": 73, "pct": 0.061}
+              }
+            }
+          }
+        }
+      }
+    },
+    "200_yes_no": {
+      "description": "Example response for yes/no question",
+      "content": {
+        "status": "success",
+        "message": "Question analytics dashboard retrieved successfully",
+        "data": {
+          "question": {
+            "id": "654e3210-e89b-12d3-a456-426614174005",
+            "text": "Would you recommend our service to others?",
+            "type": "yes_no",
+            "is_required": true,
+            "order": 4
+          },
+          "kpis": {
+            "answer_count": 1198,
+            "skipped_count": 52,
+            "answer_rate": 0.958
+          },
+          "analytics": {
+            "yes_no": [
+              {
+                "value": "yes",
+                "label": "Yes",
+                "count": 1034,
+                "pct": 0.863
+              },
+              {
+                "value": "no", 
+                "label": "No",
+                "count": 164,
+                "pct": 0.137
+              }
+            ]
+          }
+        }
+      }
+    },
+    "200_textual": {
+      "description": "Example response for text/textarea question",
+      "content": {
+        "status": "success",
+        "message": "Question analytics dashboard retrieved successfully",
+        "data": {
+          "question": {
+            "id": "987e6543-e89b-12d3-a456-426614174006",
+            "text": "Please provide any additional feedback or suggestions",
+            "type": "textarea",
+            "is_required": false,
+            "order": 5
+          },
+          "kpis": {
+            "answer_count": 856,
+            "skipped_count": 394,
+            "answer_rate": 0.685
+          },
+          "analytics": {
+            "textual": {
+              "total_responses": 856,
+              "avg_word_count": 24.5,
+              "avg_char_count": 142.3,
+              "response_lengths": {
+                "short": {"count": 312, "pct": 0.364, "description": "< 50 characters"},
+                "medium": {"count": 389, "pct": 0.454, "description": "50-200 characters"},
+                "long": {"count": 155, "pct": 0.181, "description": "> 200 characters"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "400": {
+      "description": "Bad request - Invalid parameters",
+      "content": {
+        "status": "error",
+        "message": "Invalid query parameters",
+        "data": {
+          "start": ["Invalid datetime format"],
+          "tz": ["Invalid timezone"]
+        }
+      }
+    },
+    "401": {
+      "description": "Authentication required",
+      "content": {
+        "detail": "Authentication credentials were not provided."
+      }
+    },
+    "403": {
+      "description": "Permission denied", 
+      "examples": {
+        "not_authorized": {
+          "content": {
+            "status": "error",
+            "message": "You don't have permission to view analytics for this survey",
+            "data": null
+          }
+        }
+      }
+    },
+    "404": {
+      "description": "Survey or question not found",
+      "examples": {
+        "survey_not_found": {
+          "content": {
+            "status": "error",
+            "message": "Survey not found",
+            "data": null
+          }
+        },
+        "question_not_found": {
+          "content": {
+            "status": "error",
+            "message": "Question not found in this survey",
+            "data": null
+          }
+        }
+      }
+    },
+    "500": {
+      "description": "Internal server error",
+      "content": {
+        "status": "error",
+        "message": "An error occurred while generating question analytics",
+        "data": null
+      }
+    }
+  },
+  "examples": {
+    "basic_question_analytics": {
+      "description": "Get basic question analytics dashboard",
+      "curl": "curl -X GET 'http://127.0.0.1:8000/api/surveys/admin/surveys/123e4567-e89b-12d3-a456-426614174000/questions/789e1234-e89b-12d3-a456-426614174002/dashboard/' -H 'Authorization: Bearer your_access_token'"
+    },
+    "filtered_by_date": {
+      "description": "Get question analytics with date range filtering",
+      "curl": "curl -X GET 'http://127.0.0.1:8000/api/surveys/admin/surveys/123e4567-e89b-12d3-a456-426614174000/questions/789e1234-e89b-12d3-a456-426614174002/dashboard/?start=2025-08-01T00:00:00%2B04:00&end=2025-08-21T23:59:59%2B04:00' -H 'Authorization: Bearer your_access_token'"
+    },
+    "include_personal_data": {
+      "description": "Get question analytics including personal data",
+      "curl": "curl -X GET 'http://127.0.0.1:8000/api/surveys/admin/surveys/123e4567-e89b-12d3-a456-426614174000/questions/789e1234-e89b-12d3-a456-426614174002/dashboard/?include_personal=true' -H 'Authorization: Bearer your_access_token'"
+    }
+  },
+  "permissions": {
+    "authentication": "Required - Valid JWT token",
+    "authorization": "Survey creator, admin, or super_admin role required",
+    "creator_access": "Survey creators can view question analytics for their own surveys",
+    "admin_access": "Admins and super_admins can view question analytics for any survey",
+    "question_ownership": "Question must belong to the specified survey"
+  },
+  "question_type_analytics": {
+    "single_choice": {
+      "description": "Shows distribution of selected options with counts and percentages",
+      "fields": ["options", "top_choice"]
+    },
+    "multiple_choice": {
+      "description": "Shows selection frequency for each option with total selections and averages",
+      "fields": ["options", "total_selections", "avg_selections_per_respondent", "most_popular"]
+    },
+    "rating": {
+      "description": "Statistical analysis including mean, median, mode, distribution, and histogram",
+      "fields": ["avg", "median", "mode", "min", "max", "std_dev", "histogram", "distribution"]
+    },
+    "yes_no": {
+      "description": "Simple binary choice distribution with yes/no counts and percentages",
+      "fields": ["yes count/percentage", "no count/percentage"]
+    },
+    "text": {
+      "description": "Textual analysis including response lengths and word/character counts",
+      "fields": ["total_responses", "avg_word_count", "avg_char_count", "response_lengths"]
+    },
+    "textarea": {
+      "description": "Same as text type - textual analysis with response length categorization",
+      "fields": ["total_responses", "avg_word_count", "avg_char_count", "response_lengths"]
+    }
+  },
+  "performance": {
+    "target_response_time": "< 300ms for questions with up to 10,000 responses",
+    "optimization": "Uses optimized queries with proper indexing on question and answer relationships",
+    "caching": "Question metadata cached, analytics calculated on-demand",
+    "statistical_calculations": "Efficient aggregation queries for statistical measures"
+  },
+  "data_privacy": {
+    "pii_protection": "Personal identifiers excluded from analytics when include_personal=false",
+    "text_content": "Full text responses not included in analytics summary",
+    "anonymization": "Response content analyzed statistically without revealing individual responses"
+  },
+  "statistical_definitions": {
+    "answer_rate": "Percentage of eligible responses that provided an answer to this question",
+    "distribution": "For ratings: positive (4-5), neutral (3), negative (1-2)",
+    "response_lengths": "Text categorized as short (<50 chars), medium (50-200 chars), long (>200 chars)",
+    "avg_selections_per_respondent": "For multiple choice: average number of options selected per respondent"
+  },
+  "notes": {
+    "question_validation": "Question must exist and belong to the specified survey",
+    "empty_responses": "Returns structured analytics even when no responses exist",
+    "encryption": "Question text is decrypted for display", 
+    "real_time": "Analytics calculated from current database state",
+    "type_specific": "Analytics structure varies based on question type",
+    "filtering": "Date filtering applies to response creation dates"
+  }
+}

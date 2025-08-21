@@ -1,4 +1,5 @@
 <template>
+  <h1>safa</h1>
   <div :class="$style.analyticsContainer" :data-theme="currentTheme" :dir="isRTL ? 'rtl' : 'ltr'">
     <!-- Header Section with Survey Info -->
     <section :class="$style.headerSection">
@@ -493,6 +494,8 @@ const t = computed(() => store.t)
 const surveyInfo = ref<any>(null)
 const analyticsData = ref<any>(null)
 const questionAnalytics = ref<Record<string, any>>({})
+
+
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 
@@ -537,7 +540,7 @@ const loadSurveyAnalytics = async () => {
     params.append('tz', 'Asia/Dubai')
     
     const response = await apiClient.get(`/surveys/admin/surveys/${surveyId.value}/dashboard/?${params.toString()}`)
-    
+
     if (response.data?.status === 'success') {
       analyticsData.value = response.data.data
       surveyInfo.value = response.data.data.survey
@@ -570,7 +573,7 @@ const loadQuestionAnalytics = async () => {
       const response = await apiClient.get(
         `/surveys/admin/surveys/${surveyId.value}/questions/${question.id}/dashboard/?${params.toString()}`
       )
-      
+
       if (response.data?.status === 'success') {
         return { id: question.id, data: response.data.data }
       }

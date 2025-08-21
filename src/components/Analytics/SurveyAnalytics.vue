@@ -6,22 +6,22 @@
         <i class="fas fa-chart-line"></i>
       </div>
       <div :class="$style.headerContent">
-        <h2 :class="$style.headerTitle">{{ t('survey.analytics.dashboard') }}</h2>
-        <p :class="$style.headerSubtitle">{{ t('survey.analytics.dashboardDescription') }}</p>
+        <h2 :class="$style.headerTitle">لوحة التحليلات</h2>
+        <p :class="$style.headerSubtitle">نظرة عامة على أداء الاستبيان خلال الفترة المحددة.</p>
       </div>
       <div :class="$style.headerActions">
         <button @click="refreshAnalytics" :class="$style.refreshButton" :disabled="loading">
           <i :class="['fas', 'fa-sync-alt', { [$style.spinning]: loading }]"></i>
-          {{ t('common.refresh') }}
+          تحديث
         </button>
       </div>
     </div>
 
     <!-- Date Filter Section -->
-    <div :class="$style.filterSection">
+    <!-- <div :class="$style.filterSection">
       <div :class="$style.dateFilters">
         <div :class="$style.dateGroup">
-          <label>{{ t('survey.analytics.startDate') }}</label>
+          <label>تاريخ البداية</label>
           <input
             type="datetime-local"
             v-model="filters.start"
@@ -30,7 +30,7 @@
           />
         </div>
         <div :class="$style.dateGroup">
-          <label>{{ t('survey.analytics.endDate') }}</label>
+          <label>تاريخ النهاية</label>
           <input
             type="datetime-local"
             v-model="filters.end"
@@ -39,15 +39,15 @@
           />
         </div>
         <div :class="$style.dateGroup">
-          <label>{{ t('survey.analytics.groupBy') }}</label>
+          <label>تجميع حسب</label>
           <select v-model="filters.group_by" :class="$style.selectInput" @change="onFiltersChange">
-            <option value="day">{{ t('survey.analytics.groupByDay') }}</option>
-            <option value="week">{{ t('survey.analytics.groupByWeek') }}</option>
-            <option value="month">{{ t('survey.analytics.groupByMonth') }}</option>
+            <option value="day">اليوم</option>
+            <option value="week">الأسبوع</option>
+            <option value="month">الشهر</option>
           </select>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- KPIs Section -->
     <div :class="$style.kpisSection">
@@ -58,7 +58,7 @@
           </div>
           <div :class="$style.kpiContent">
             <div :class="$style.kpiNumber">{{ formatNumber(kpis.total_responses) }}</div>
-            <div :class="$style.kpiLabel">{{ t('survey.analytics.totalResponses') }}</div>
+            <div :class="$style.kpiLabel">إجمالي الردود</div>
           </div>
         </div>
 
@@ -68,7 +68,7 @@
           </div>
           <div :class="$style.kpiContent">
             <div :class="$style.kpiNumber">{{ formatNumber(kpis.unique_respondents) }}</div>
-            <div :class="$style.kpiLabel">{{ t('survey.analytics.uniqueRespondents') }}</div>
+            <div :class="$style.kpiLabel">المشاركون الفريدون</div>
           </div>
         </div>
 
@@ -78,7 +78,7 @@
           </div>
           <div :class="$style.kpiContent">
             <div :class="$style.kpiNumber">{{ formatPercentage(kpis.completion_rate) }}</div>
-            <div :class="$style.kpiLabel">{{ t('survey.analytics.completionRate') }}</div>
+            <div :class="$style.kpiLabel">معدل الإكمال</div>
           </div>
         </div>
 
@@ -88,7 +88,7 @@
           </div>
           <div :class="$style.kpiContent">
             <div :class="$style.kpiNumber">{{ formatDuration(kpis.average_completion_time) }}</div>
-            <div :class="$style.kpiLabel">{{ t('survey.analytics.avgCompletionTime') }}</div>
+            <div :class="$style.kpiLabel">متوسط زمن الإكمال</div>
           </div>
         </div>
 
@@ -98,7 +98,7 @@
           </div>
           <div :class="$style.kpiContent">
             <div :class="$style.kpiNumber">{{ formatNumber(kpis.authenticated_count) }}</div>
-            <div :class="$style.kpiLabel">{{ t('survey.analytics.authenticatedResponses') }}</div>
+            <div :class="$style.kpiLabel">ردود موثقة</div>
           </div>
         </div>
 
@@ -108,7 +108,7 @@
           </div>
           <div :class="$style.kpiContent">
             <div :class="$style.kpiNumber">{{ formatNumber(kpis.anonymous_count) }}</div>
-            <div :class="$style.kpiLabel">{{ t('survey.analytics.anonymousResponses') }}</div>
+            <div :class="$style.kpiLabel">ردود مجهولة</div>
           </div>
         </div>
       </div>
@@ -116,18 +116,18 @@
 
     <!-- Charts Section -->
     <div :class="$style.chartsSection">
-      <!-- Time Series Chart -->
-      <div :class="$style.chartCard">
+      <!-- Time Series Chart commented for now-->
+      <!-- <div :class="$style.chartCard">
         <div :class="$style.chartHeader">
-          <h3 :class="$style.chartTitle">{{ t('survey.analytics.responsesOverTime') }}</h3>
+          <h3 :class="$style.chartTitle">الردود عبر الزمن</h3>
           <div :class="$style.chartLegend">
             <div :class="$style.legendItem">
               <div :class="$style.legendColor" style="background-color: #4CAF50;"></div>
-              <span>{{ t('survey.analytics.responses') }}</span>
+              <span>الردود</span>
             </div>
             <div :class="$style.legendItem">
               <div :class="$style.legendColor" style="background-color: #2196F3;"></div>
-              <span>{{ t('survey.analytics.completionRate') }}</span>
+              <span>معدل الإكمال</span>
             </div>
           </div>
         </div>
@@ -138,20 +138,21 @@
             @period-click="onPeriodClick"
           />
         </div>
-      </div>
+      </div> -->
+
 
       <!-- Segments Charts Row -->
       <div :class="$style.chartsRow">
         <!-- Authentication Segmentation -->
         <div :class="$style.chartCard">
           <div :class="$style.chartHeader">
-            <h3 :class="$style.chartTitle">{{ t('survey.analytics.responsesByAuth') }}</h3>
+            <h3 :class="$style.chartTitle">الردود حسب التوثيق</h3>
           </div>
           <div :class="$style.chartContainer">
             <DonutChart
               :data="authenticationSegments"
               :colors="['#4CAF50', '#FF5722']"
-              :labels="[t('survey.analytics.authenticated'), t('survey.analytics.anonymous')]"
+              :labels="['موثق', 'مجهول']"
               :loading="loading"
             />
           </div>
@@ -160,13 +161,13 @@
         <!-- Completion Segmentation -->
         <div :class="$style.chartCard">
           <div :class="$style.chartHeader">
-            <h3 :class="$style.chartTitle">{{ t('survey.analytics.responsesByCompletion') }}</h3>
+            <h3 :class="$style.chartTitle">الردود حسب الإكمال</h3>
           </div>
           <div :class="$style.chartContainer">
             <DonutChart
               :data="completionSegments"
               :colors="['#4CAF50', '#FFC107']"
-              :labels="[t('survey.analytics.completed'), t('survey.analytics.incomplete')]"
+              :labels="['مكتمل', 'غير مكتمل']"
               :loading="loading"
             />
           </div>
@@ -177,8 +178,8 @@
     <!-- Questions Summary Section -->
     <div :class="$style.questionsSection" v-if="questionsSummary.length > 0">
       <div :class="$style.sectionHeader">
-        <h3 :class="$style.sectionTitle">{{ t('survey.analytics.questionsOverview') }}</h3>
-        <p :class="$style.sectionDescription">{{ t('survey.analytics.questionsOverviewDescription') }}</p>
+        <h3 :class="$style.sectionTitle">ملخص الأسئلة</h3>
+        <p :class="$style.sectionDescription">أداء كل سؤال ونسبة الإجابات عليه.</p>
       </div>
 
       <div :class="$style.questionsGrid">
@@ -191,32 +192,47 @@
           <div :class="$style.questionSummaryHeader">
             <div :class="$style.questionNumber">Q{{ index + 1 }}</div>
             <div :class="$style.questionType">
-              <i :class="getQuestionTypeIcon(question.question_type)"></i>
+              <i :class="getQuestionTypeIcon(question.type)"></i>
             </div>
           </div>
           
           <div :class="$style.questionSummaryContent">
             <h4 :class="$style.questionTitle">{{ question.question_text }}</h4>
+            <div :class="$style.questionMeta">
+              <span :class="$style.questionRequired" v-if="question.is_required">
+                <i class="fas fa-asterisk"></i>
+                مطلوب
+              </span>
+              <span :class="$style.questionOptional" v-else>
+                <i class="fas fa-circle"></i>
+                اختياري
+              </span>
+            </div>
             <div :class="$style.questionStats">
               <div :class="$style.statItem">
                 <span :class="$style.statNumber">{{ formatNumber(question.response_count) }}</span>
-                <span :class="$style.statLabel">{{ t('survey.analytics.responses') }}</span>
+                <span :class="$style.statLabel">الردود</span>
               </div>
               <div :class="$style.statItem">
                 <span :class="$style.statNumber">{{ formatPercentage(question.answer_rate) }}</span>
-                <span :class="$style.statLabel">{{ t('survey.analytics.answerRate') }}</span>
+                <span :class="$style.statLabel">معدل الإجابة</span>
+              </div>
+              <div :class="$style.statItem" v-if="question.skipped_count > 0">
+                <span :class="$style.statNumber">{{ formatNumber(question.skipped_count) }}</span>
+                <span :class="$style.statLabel">تم التخطي</span>
               </div>
             </div>
-            <div v-if="question.top_response" :class="$style.topResponse">
-              <strong>{{ t('survey.analytics.topResponse') }}:</strong>
+            <div v-if="question.top_response && question.type !== 'text' && question.type !== 'textarea'" :class="$style.topResponse">
+              <strong>أكثر إجابة شيوعًا:</strong>
               <span>{{ question.top_response }}</span>
             </div>
+            <br v-else-if="question.type === 'text' || question.type === 'textarea'" />
           </div>
 
           <div :class="$style.questionSummaryActions">
-            <button :class="$style.detailsButton">
+            <button :class="$style.detailsButton" @click.stop="onQuestionDetailsClick(question)">
               <i class="fas fa-chart-bar"></i>
-              {{ t('survey.analytics.viewDetails') }}
+              عرض التفاصيل
             </button>
           </div>
         </div>
@@ -226,7 +242,7 @@
     <!-- Insights Section -->
     <div :class="$style.insightsSection">
       <div :class="$style.sectionHeader">
-        <h3 :class="$style.sectionTitle">{{ t('survey.analytics.insights') }}</h3>
+        <h3 :class="$style.sectionTitle">استبصارات</h3>
       </div>
       
       <div :class="$style.insightsGrid">
@@ -235,7 +251,7 @@
             <i :class="getTrendIcon(kpis.response_rate_trend)" :style="`color: ${getTrendColor(kpis.response_rate_trend)}`"></i>
           </div>
           <div :class="$style.insightContent">
-            <h4 :class="$style.insightTitle">{{ t('survey.analytics.responseTrend') }}</h4>
+            <h4 :class="$style.insightTitle">اتجاه الاستجابة</h4>
             <p :class="$style.insightText">
               {{ getResponseTrendText(kpis.response_rate_trend) }}
             </p>
@@ -247,75 +263,101 @@
             <i class="fas fa-calendar-alt" style="color: #2196F3;"></i>
           </div>
           <div :class="$style.insightContent">
-            <h4 :class="$style.insightTitle">{{ t('survey.analytics.lastResponse') }}</h4>
+            <h4 :class="$style.insightTitle">آخر رد</h4>
             <p :class="$style.insightText">
-              {{ formatDateTime(kpis.last_response_date) }}
+              {{ formatDateTime(kpis.last_response_at) }}
             </p>
           </div>
         </div>
 
         <div :class="$style.insightCard">
           <div :class="$style.insightIcon">
-            <i class="fas fa-globe" style="color: #FF9800;"></i>
+            <i class="fas fa-calendar-check" style="color: #4CAF50;"></i>
           </div>
           <div :class="$style.insightContent">
-            <h4 :class="$style.insightTitle">{{ t('survey.analytics.uniqueIPs') }}</h4>
+            <h4 :class="$style.insightTitle">أول رد</h4>
             <p :class="$style.insightText">
-              {{ formatNumber(kpis.unique_ips) }} {{ t('survey.analytics.uniqueIPsText') }}
+              {{ formatDateTime(kpis.first_response_at) }}
             </p>
           </div>
         </div>
+<!-- 
+        <div :class="$style.insightCard">
+          <div :class="$style.insightIcon">
+            <i class="fas fa-globe" style="color: #FF9800;"></i>
+          </div>
+          <div :class="$style.insightContent">
+            <h4 :class="$style.insightTitle">عناوين IP فريدة</h4>
+            <p :class="$style.insightText">
+              {{ formatNumber(kpis.unique_ips) }} عنوان IP
+            </p>
+          </div>
+        </div> -->
       </div>
     </div>
+
+    <!-- Question Details Modal -->
+    <QuestionDetailsModal
+      :is-visible="showQuestionDetails"
+      :question="selectedQuestion"
+      :details="questionDetails"
+      :loading="questionDetailsLoading"
+      @close="closeQuestionDetails"
+      @retry="retryQuestionDetails"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useAppStore } from '../../stores/useAppStore'
-import TimeSeriesChart from './TimeSeriesChart.vue'
+import { surveyService } from '../../services/surveyService'
+// import TimeSeriesChart from './TimeSeriesChart.vue'
 import DonutChart from './DonutChart.vue'
-import SingleChoiceAnalytics from './SingleChoiceAnalytics.vue'
-import MultipleChoiceAnalytics from './MultipleChoiceAnalytics.vue'
-import RatingAnalytics from './RatingAnalytics.vue'
-import YesNoAnalytics from './YesNoAnalytics.vue'
-import TextAnalytics from './TextAnalytics.vue'
+import QuestionDetailsModal from './QuestionDetailsModal'
 
 // Props
-interface Props {
-  analytics: any
-  loading?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  loading: false
-})
+interface Props { analytics?: any; loading?: boolean }
+const props = withDefaults(defineProps<Props>(), { loading: false })
 
 // Emits
 const emit = defineEmits<{
   refresh: []
   questionClick: [question: any]
+  questionDetailsClick: [data: { question: any, details: any }]
   periodClick: [period: any]
   filtersChange: [filters: any]
 }>()
 
-// Store
+// Store (نستخدمه للثيم والاتجاه فقط)
 const store = useAppStore()
-
-// Computed
 const currentTheme = computed(() => store.currentTheme)
 const isRTL = computed(() => store.currentLanguage === 'ar')
-const t = computed(() => store.t)
 
 // State
-const filters = ref({
-  start: '',
-  end: '',
-  group_by: 'day'
-})
-
-// Track if this is the initial mount to prevent initial filter emissions
+// const filters = ref({ start: '', end: '', group_by: 'day' })
 const isMounted = ref(false)
+const surveyDetails = ref<any>(null)
+
+// Question details modal state
+const showQuestionDetails = ref(false)
+const selectedQuestion = ref<any>(null)
+const questionDetails = ref<any>(null)
+const questionDetailsLoading = ref(false)
+
+// Watch for analytics data changes to fetch survey details
+watch(() => props.analytics?.data?.survey?.id, async (surveyId) => {
+  if (surveyId && !surveyDetails.value) {
+    try {
+      const response = await surveyService.getSurvey(surveyId)
+      if (response.status === 'success') {
+        surveyDetails.value = response.data
+      }
+    } catch (error) {
+      console.error('Error fetching survey details:', error)
+    }
+  }
+}, { immediate: true })
 
 // Computed analytics data
 const kpis = computed(() => props.analytics?.data?.kpis || {
@@ -327,39 +369,124 @@ const kpis = computed(() => props.analytics?.data?.kpis || {
   anonymous_count: 0,
   unique_ips: 0,
   response_rate_trend: 0,
-  last_response_date: null
+  last_response_date: null,
+  first_response_at: null,
+  last_response_at: null
 })
 
-const timeSeriesData = computed(() => {
-  const timeSeries = props.analytics?.data?.time_series || []
-  return timeSeries.map((item: any) => ({
-    period: item.period,
-    label: item.period_label,
-    responses: item.response_count,
-    uniqueRespondents: item.unique_respondents,
-    completionRate: item.completion_rate
-  }))
-})
+// const timeSeriesData = computed(() => {
+//   const timeSeries = props.analytics?.data?.time_series || []
+//   return timeSeries.map((item: any) => ({
+//     period: item.period,
+//     label: item.period_label,
+//     responses: item.response_count,
+//     uniqueRespondents: item.unique_respondents,
+//     completionRate: item.completion_rate
+//   }))
+// })
 
 const authenticationSegments = computed(() => {
-  const segments = props.analytics?.data?.segments?.by_authentication || []
+  const segments = props.analytics?.data?.segments?.by_auth || []
+  const total = segments.reduce((sum: number, segment: any) => sum + segment.count, 0)
+  
   return segments.map((segment: any) => ({
     value: segment.count,
-    percentage: segment.percentage
+    percentage: total > 0 ? segment.count / total : 0
   }))
 })
 
 const completionSegments = computed(() => {
   const segments = props.analytics?.data?.segments?.by_completion || []
+  const total = segments.reduce((sum: number, segment: any) => sum + segment.count, 0)
+  
   return segments.map((segment: any) => ({
     value: segment.count,
-    percentage: segment.percentage
+    percentage: total > 0 ? segment.count / total : 0
   }))
 })
 
-const questionsSummary = computed(() => props.analytics?.data?.questions_summary || [])
+const questionsSummary = computed(() => {
+  const rawSummary = props.analytics?.data?.questions_summary || []
+  return rawSummary.map((question: any) => ({
+    id: question.question_id,
+    question_text: getQuestionText(question),
+    type: question.type,
+    response_count: question.answer_count,
+    answer_rate: calculateAnswerRate(question),
+    top_response: getTopResponse(question),
+    order: question.order,
+    is_required: question.is_required,
+    skipped_count: question.skipped_count
+  }))
+})
 
-// Methods
+// Helper functions for question summary processing
+const getQuestionText = (question: any) => {
+  if (surveyDetails.value?.questions) {
+    const questionDetail = surveyDetails.value.questions.find((q: any) => q.id === question.question_id)
+    if (questionDetail) {
+      return questionDetail.question_text || questionDetail.text || `السؤال ${question.order}`
+    }
+  }
+  return `السؤال ${question.order}`
+}
+
+const calculateAnswerRate = (question: any) => {
+  const totalResponses = question.answer_count + question.skipped_count
+  if (totalResponses === 0) return 0
+  return question.answer_count / totalResponses
+}
+
+const getTopResponse = (question: any) => {
+  const distributions = question.distributions
+  
+  if (!distributions) return null
+  
+  // Handle different question types
+  switch (question.type) {
+    case 'yes_no':
+      if (distributions.yes_no) {
+        const topChoice = distributions.yes_no.reduce((prev: any, current: any) => 
+          prev.count > current.count ? prev : current
+        )
+        return topChoice.value === 'yes' ? 'نعم' : 'لا'
+      }
+      break
+      
+    case 'rating':
+      if (distributions.rating) {
+        return `متوسط التقييم: ${distributions.rating.avg.toFixed(1)}`
+      }
+      break
+      
+    case 'multiple_choice':
+    case 'single_choice':
+      if (distributions.options) {
+        const topOption = distributions.options.reduce((prev: any, current: any) => 
+          prev.count > current.count ? prev : current
+        )
+        return topOption.count > 0 ? topOption.label : 'لا توجد إجابات'
+      }
+      break
+      
+    case 'text':
+    case 'textarea':
+      if (distributions.textual) {
+        const avgWords = distributions.textual.avg_words
+        return avgWords > 0 ? `متوسط الكلمات: ${avgWords.toFixed(1)}` : 'لا توجد إجابات نصية'
+      }
+      break
+      
+    default:
+      return null
+  }
+  
+  return null
+}
+
+// Helpers
+const NEVER_TEXT = 'لم يحدث بعد'
+
 const formatNumber = (value: number) => {
   if (!value && value !== 0) return '0'
   return new Intl.NumberFormat().format(value)
@@ -372,22 +499,16 @@ const formatPercentage = (value: number) => {
 
 const formatDuration = (seconds: number) => {
   if (!seconds && seconds !== 0) return '0s'
-  
   const minutes = Math.floor(seconds / 60)
   const remainingSeconds = Math.floor(seconds % 60)
-  
-  if (minutes > 0) {
-    return `${minutes}m ${remainingSeconds}s`
-  }
+  if (minutes > 0) return `${minutes}m ${remainingSeconds}s`
   return `${remainingSeconds}s`
 }
 
 const formatDateTime = (dateString: string) => {
-  if (!dateString) return t.value('common.never')
-  
+  if (!dateString) return NEVER_TEXT
   const date = new Date(dateString)
   const locale = isRTL.value ? 'ar-SA' : 'en-US'
-  
   return date.toLocaleString(locale, {
     year: 'numeric',
     month: 'short',
@@ -423,43 +544,72 @@ const getTrendColor = (trend: number) => {
 
 const getResponseTrendText = (trend: number) => {
   const percentage = Math.abs(trend * 100).toFixed(1)
-  if (trend > 0.05) {
-    return `${t.value('survey.analytics.trendUp')} ${percentage}%`
-  } else if (trend < -0.05) {
-    return `${t.value('survey.analytics.trendDown')} ${percentage}%`
+  if (trend > 0.05) return `زادت بنسبة ${percentage}%`
+  if (trend < -0.05) return `انخفضت بنسبة ${percentage}%`
+  return 'مستقرة'
+}
+
+const refreshAnalytics = () => emit('refresh')
+const onQuestionClick = (question: any) => emit('questionClick', question)
+
+const onQuestionDetailsClick = async (question: any) => {
+  try {
+    selectedQuestion.value = question
+    showQuestionDetails.value = true
+    questionDetailsLoading.value = true
+    questionDetails.value = null
+    
+    const surveyId = props.analytics?.data?.survey?.id
+    const questionId = question.id
+    
+    if (!surveyId || !questionId) {
+      console.error('Missing survey ID or question ID')
+      questionDetailsLoading.value = false
+      return
+    }
+    
+    const response = await surveyService.getQuestionAnalytics(surveyId, questionId)
+    
+    if (response.status === 'success') {
+      questionDetails.value = response.data
+      emit('questionDetailsClick', {
+        question: question,
+        details: response.data
+      })
+    }
+  } catch (error) {
+    console.error('Error fetching question details:', error)
+  } finally {
+    questionDetailsLoading.value = false
   }
-  return t.value('survey.analytics.trendStable')
 }
 
-const refreshAnalytics = () => {
-  emit('refresh')
+const closeQuestionDetails = () => {
+  showQuestionDetails.value = false
+  selectedQuestion.value = null
+  questionDetails.value = null
 }
 
-const onQuestionClick = (question: any) => {
-  emit('questionClick', question)
-}
-
-const onPeriodClick = (period: any) => {
-  emit('periodClick', period)
-}
-
-const onFiltersChange = () => {
-  // Only emit filter changes after component is properly mounted and data is available
-  if (isMounted.value && props.analytics?.data) {
-    emit('filtersChange', filters.value)
+const retryQuestionDetails = () => {
+  if (selectedQuestion.value) {
+    onQuestionDetailsClick(selectedQuestion.value)
   }
 }
 
-// Set mounted flag after component initialization to prevent initial filter emissions
-onMounted(() => {
-  isMounted.value = true
-})
+// const onPeriodClick = (period: any) => emit('periodClick', period)
+
+// const onFiltersChange = () => {
+//   if (isMounted.value && props.analytics?.data) emit('filtersChange', filters.value)
+// }
+
+onMounted(() => { isMounted.value = true })
 </script>
+
 
 <style module>
 .surveyAnalytics {
   padding: 24px;
-  max-width: 1200px;
+  max-width: auto;
   margin: 0 auto;
 }
 
@@ -637,7 +787,7 @@ onMounted(() => {
 }
 
 .kpiLabel {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -678,7 +828,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
 }
 
@@ -689,8 +839,10 @@ onMounted(() => {
 }
 
 .chartContainer {
-  padding: 20px;
-  height: 300px;
+  padding: 0px;
+  /* height: 300px; */
+
+  font-size: 10px;
 }
 
 .chartsRow {
@@ -763,11 +915,39 @@ onMounted(() => {
 }
 
 .questionTitle {
-  margin: 0 0 16px 0;
+  margin: 0 0 8px 0;
   font-size: 16px;
   font-weight: 600;
   color: var(--ink);
   line-height: 1.4;
+}
+
+.questionMeta {
+  margin-bottom: 12px;
+}
+
+.questionRequired {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #F44336;
+  background: rgba(244, 67, 54, 0.1);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.questionOptional {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--surface-variant);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: 500;
 }
 
 .questionStats {

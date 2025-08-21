@@ -974,6 +974,23 @@ class SurveyService {
     }
   }
 
+  // Question Analytics - Get detailed analytics for a specific question
+  async getQuestionAnalytics(surveyId: string, questionId: string, params?: {
+    start_date?: string
+    end_date?: string
+    include_demographics?: boolean
+  }): Promise<ApiResponse<any>> {
+    const queryParams = new URLSearchParams()
+    if (params?.start_date) queryParams.append('start_date', params.start_date)
+    if (params?.end_date) queryParams.append('end_date', params.end_date)
+    if (params?.include_demographics) queryParams.append('include_demographics', 'true')
+    
+    const queryString = queryParams.toString()
+    const endpoint = `surveys/${surveyId}/analytics/questions/${questionId}/${queryString ? '?' + queryString : ''}`
+    
+    return this.apiCall<ApiResponse<any>>(endpoint)
+  }
+
   // Export - NOW IMPLEMENTED ✅
   async exportSurveyData(
     surveyId: string,

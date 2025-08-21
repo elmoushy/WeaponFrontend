@@ -2,14 +2,14 @@
   <div :class="$style.donutChart" :data-theme="currentTheme">
     <div v-if="loading" :class="$style.loadingContainer">
       <div :class="$style.loadingSpinner"></div>
-      <p :class="$style.loadingText">{{ t('survey.analytics.loadingChart') }}</p>
+      <p :class="$style.loadingText">جاري تحميل الرسم البياني...</p>
     </div>
 
     <div v-else-if="!data || data.length === 0 || total === 0" :class="$style.emptyContainer">
       <div :class="$style.emptyIcon">
         <i class="fas fa-chart-pie"></i>
       </div>
-      <p :class="$style.emptyText">{{ t('survey.analytics.noData') }}</p>
+      <p :class="$style.emptyText">لا توجد بيانات</p>
     </div>
 
     <div v-else :class="$style.chartContainer">
@@ -48,7 +48,7 @@
             text-anchor="middle"
             dy="20"
           >
-            {{ t('survey.analytics.total') }}
+           الإجمالي
           </text>
         </g>
       </svg>
