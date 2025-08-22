@@ -312,12 +312,10 @@ class SurveyService {
   // Public Link Management
   async generatePublicLink(
     surveyId: string,
-    options: PublicLinkRequest = {}
+    _options: PublicLinkRequest = {}
   ): Promise<ApiResponse<PublicLinkResponse>> {
     try {
-      const response = await apiClient.post(`/surveys/surveys/${surveyId}/generate-link/`, {
-        days_to_expire: options.days_to_expire || 30
-      })
+      const response = await apiClient.get(`/surveys/surveys/${surveyId}/public-link/`)
       
       if (response.data.status === 'success') {
         // Construct the full frontend URL since backend only returns token

@@ -865,7 +865,7 @@ const openLinkSharingModal = async (survey: Survey) => {
   showLinkSharingModal.value = true
 }
 
-const handleAccessSave = async (_data: any) => {
+const handleAccessSave = async (data: any) => {
   try {
     const survey = selectedSurveyForAccess.value
     
@@ -874,8 +874,8 @@ const handleAccessSave = async (_data: any) => {
       // Clear the submission flow flag
       delete (survey as any)._isSubmissionFlow
       
-      // Now proceed with actual submission after access settings are saved
-      await performDraftSubmission(survey.id)
+      // Now proceed with actual submission with confirmation and endpoint handling
+      await performDraftSubmissionWithConfirmation(survey.id, data)
     }
     
     showAccessModal.value = false
@@ -884,6 +884,7 @@ const handleAccessSave = async (_data: any) => {
     await loadSurveys() // Refresh the surveys list
   } catch (error) {
     // Logging removed for production
+    console.error('Error in handleAccessSave:', error)
   }
 }
 
@@ -898,14 +899,15 @@ const closeAccessModal = () => {
   isSubmissionFlow.value = false // Reset submission flow flag
 }
 
-// New method to handle the actual draft submission
-const performDraftSubmission = async (surveyId: string) => {
+// New method to handle the actual draft submission with confirmation and endpoint selection
+const performDraftSubmissionWithConfirmation = async (surveyId: string, accessData: any) => {
   try {
     const isArabic = store.currentLanguage === 'ar'
     
+    // Show confirmation dialog with the specified message
     const result = await Swal.fire({
-      title: isArabic ? 'تأكيد الإرسال' : 'Confirm Submission',
-      text: isArabic ? 'هل أنت متأكد من إرسال هذا الاستطلاع؟ بعد الإرسال لن يمكنك تعديله.' : 'Are you sure you want to submit this survey? Once submitted, you cannot edit it.',
+      title: 'تأكيد الإرسال',
+      text: 'هل أنت متأكد من إرسال هذا الاستطلاع؟ بعد الإرسال لن يمكنك تعديله.',
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#28a745',
@@ -914,16 +916,59 @@ const performDraftSubmission = async (surveyId: string) => {
       cancelButtonText: isArabic ? 'إلغاء' : 'Cancel'
     })
 
-    if (result.isConfirmed) {
-      // Show loading
-      Swal.fire({
-        title: isArabic ? 'جاري الإرسال...' : 'Submitting...',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading()
-        }
-      })
+    if (!result.isConfirmed) {
+      return // User cancelled
+    }
 
+    // Show loading
+    Swal.fire({
+      title: isArabic ? 'جاري الإرسال...' : 'Submitting...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      }
+    })
+
+    // Call the appropriate endpoint based on the chosen access type
+    let linkGenerationSuccess = false
+
+    if (accessData.visibility === 'PUBLIC') {
+      try {
+        if (accessData.passwordProtected) {
+          // Use password-protected endpoint
+          const passwordOptions: any = {
+            days_to_expire: 30
+          }
+
+          // Add restricted emails/phones if provided
+          if (accessData.passwordOptions?.passwordAccessMode === 'email' && 
+              accessData.passwordOptions?.restrictedEmails?.length > 0) {
+            passwordOptions.restricted_email = accessData.passwordOptions.restrictedEmails
+          }
+          
+          if (accessData.passwordOptions?.passwordAccessMode === 'phone' && 
+              accessData.passwordOptions?.restrictedPhones?.length > 0) {
+            passwordOptions.restricted_phone = accessData.passwordOptions.restrictedPhones
+          }
+
+          const response = await surveyService.generatePasswordProtectedLink(surveyId, passwordOptions)
+          linkGenerationSuccess = response.status === 'success'
+        } else {
+          // Use regular public link endpoint
+          const response = await surveyService.generatePublicLink(surveyId, {})
+          linkGenerationSuccess = response.status === 'success'
+        }
+      } catch (error) {
+        console.error('Error generating public link:', error)
+        linkGenerationSuccess = false
+      }
+    } else {
+      // For non-public access, we don't need to generate special links
+      linkGenerationSuccess = true
+    }
+
+    // Only submit the survey if link generation was successful (or not needed)
+    if (linkGenerationSuccess) {
       await surveyService.submitSurvey(surveyId)
       
       await Swal.fire({
@@ -934,6 +979,9 @@ const performDraftSubmission = async (surveyId: string) => {
       })
 
       await refreshData()
+    } else {
+      // Link generation failed, show error
+      throw new Error(isArabic ? 'فشل في إنشاء رابط المشاركة' : 'Failed to generate sharing link')
     }
   } catch (error: any) {
     const isArabic = store.currentLanguage === 'ar'

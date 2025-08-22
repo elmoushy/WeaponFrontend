@@ -595,7 +595,7 @@ const props = defineProps<Props>()
 
 // Emits
 const emit = defineEmits<{
-  save: [data: { visibility: SurveyVisibility; publicContactMethod?: PublicContactMethod; users: User[]; emails: string[]; groups?: AdminGroup[] }]
+  save: [data: { visibility: SurveyVisibility; publicContactMethod?: PublicContactMethod; users: User[]; emails: string[]; groups?: AdminGroup[]; passwordProtected?: boolean; passwordOptions?: any }]
   cancel: []
 }>()
 
@@ -920,7 +920,13 @@ const closeLinkSharingModal = () => {
       publicContactMethod: selectedContactMethod.value,
       users: selectedUsers.value,
       emails: [] as string[], // Email invitations removed from compact UI
-      groups: selectedGroups.value
+      groups: selectedGroups.value,
+      passwordProtected: passwordProtectionEnabled.value,
+      passwordOptions: passwordProtectionEnabled.value ? {
+        passwordAccessMode: passwordAccessMode.value,
+        restrictedEmails: [...restrictedEmails.value],
+        restrictedPhones: [...restrictedPhones.value]
+      } : undefined
     }
     emit('save', saveData)
   }
@@ -1257,7 +1263,13 @@ const handleSave = async () => {
           publicContactMethod: selectedContactMethod.value,
           users: selectedUsers.value,
           emails: [] as string[],
-          groups: selectedGroups.value
+          groups: selectedGroups.value,
+          passwordProtected: passwordProtectionEnabled.value,
+          passwordOptions: passwordProtectionEnabled.value ? {
+            passwordAccessMode: passwordAccessMode.value,
+            restrictedEmails: [...restrictedEmails.value],
+            restrictedPhones: [...restrictedPhones.value]
+          } : undefined
         }
         emit('save', saveData)
       }
@@ -1268,7 +1280,13 @@ const handleSave = async () => {
         publicContactMethod: selectedAccess.value === 'PUBLIC' ? selectedContactMethod.value : undefined,
         users: selectedUsers.value,
         emails: [] as string[], // Email invitations removed from compact UI
-        groups: selectedGroups.value
+        groups: selectedGroups.value,
+        passwordProtected: selectedAccess.value === 'PUBLIC' ? passwordProtectionEnabled.value : false,
+        passwordOptions: selectedAccess.value === 'PUBLIC' && passwordProtectionEnabled.value ? {
+          passwordAccessMode: passwordAccessMode.value,
+          restrictedEmails: [...restrictedEmails.value],
+          restrictedPhones: [...restrictedPhones.value]
+        } : undefined
       }
       emit('save', saveData)
     }
