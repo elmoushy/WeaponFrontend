@@ -331,6 +331,7 @@ const emit = defineEmits<{
   cancel: []
   draftSaved: [survey: Survey]
   draftUpdated: [survey: Survey]
+  finalSubmit: [survey: Survey]
 }>()
 
 // Store

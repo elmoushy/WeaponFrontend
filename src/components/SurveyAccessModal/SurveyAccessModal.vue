@@ -48,9 +48,35 @@
               
               <!-- Compact Public Link Management -->
               <div v-if="selectedAccess === 'PUBLIC'" :class="$style.publicLinkSection">
-                <!-- Contact Method Selection - Hidden when password protection is enabled with specific email/phone -->
+                <!-- Per-Device Access Option -->
+                <div :class="$style.perDeviceAccessSection">
+                  <div :class="$style.perDeviceAccessHeader">
+                    <h4 :class="$style.perDeviceAccessTitle">
+                      <i class="fas fa-mobile-alt"></i>
+                      {{ getText('survey.access.perDeviceAccess') }}
+                    </h4>
+                    <div :class="$style.perDeviceToggleContainer">
+                      <label :class="$style.toggleSwitch">
+                        <input 
+                          type="checkbox" 
+                          v-model="perDeviceAccessEnabled"
+                          :class="$style.toggleInput"
+                        />
+                        <span :class="$style.toggleSlider"></span>
+                      </label>
+                      <span :class="$style.toggleLabel">
+                        {{ getText('survey.access.enablePerDeviceAccess') }}
+                      </span>
+                    </div>
+                  </div>
+                  <p :class="$style.perDeviceDescription">
+                    {{ getText('survey.access.perDeviceAccessDescription') }}
+                  </p>
+                </div>
+
+                <!-- Contact Method Selection - Hidden when password protection is enabled with specific email/phone OR per-device access is enabled -->
                 <div 
-                  v-if="!passwordProtectionEnabled || passwordAccessMode === 'anyone'"
+                  v-if="!perDeviceAccessEnabled && (!passwordProtectionEnabled || passwordAccessMode === 'anyone')"
                   :class="$style.contactMethodSection"
                 >
                   <div :class="$style.contactMethodHeader">
@@ -98,8 +124,8 @@
                   </div>
                 </div>
 
-                <!-- Password Protection Section -->
-                <div :class="$style.passwordProtectionSection">
+                <!-- Password Protection Section - Hidden when per-device access is enabled -->
+                <div v-if="!perDeviceAccessEnabled" :class="$style.passwordProtectionSection">
                   <div :class="$style.passwordProtectionHeader">
                     <h4 :class="$style.passwordProtectionTitle">
                       <i class="fas fa-shield-alt"></i>
@@ -595,7 +621,7 @@ const props = defineProps<Props>()
 
 // Emits
 const emit = defineEmits<{
-  save: [data: { visibility: SurveyVisibility; publicContactMethod?: PublicContactMethod; users: User[]; emails: string[]; groups?: AdminGroup[]; passwordProtected?: boolean; passwordOptions?: any }]
+  save: [data: { visibility: SurveyVisibility; publicContactMethod?: PublicContactMethod; users: User[]; emails: string[]; groups?: AdminGroup[]; passwordProtected?: boolean; passwordOptions?: any; per_device_access?: boolean }]
   cancel: []
 }>()
 
@@ -668,6 +694,9 @@ const translations = computed(() => {
     'survey.access.emailDescription': 'المشاركون يحتاجون بريد إلكتروني',
     'survey.access.phoneContact': 'هاتف',
     'survey.access.phoneDescription': 'المشاركون يحتاجون رقم هاتف',
+    'survey.access.perDeviceAccess': 'وصول لكل جهاز',
+    'survey.access.perDeviceAccessDescription': 'السماح بالوصول بدون متطلبات البريد الإلكتروني أو الهاتف',
+    'survey.access.enablePerDeviceAccess': 'تمكين الوصول لكل جهاز',
     
     // Password Protection
     'survey.access.passwordProtection': 'الحماية بكلمة مرور',
@@ -754,6 +783,9 @@ const translations = computed(() => {
     'survey.access.emailDescription': 'Participants need email address',
     'survey.access.phoneContact': 'Phone',
     'survey.access.phoneDescription': 'Participants need phone number',
+    'survey.access.perDeviceAccess': 'Per-Device Access',
+    'survey.access.perDeviceAccessDescription': 'Allow access without email or phone requirements',
+    'survey.access.enablePerDeviceAccess': 'Enable per-device access',
     
     // Password Protection
     'survey.access.passwordProtection': 'Password Protection',
@@ -838,6 +870,7 @@ const getText = (key: string, fallback?: string) => {
 // State
 const selectedAccess = ref<SurveyVisibility>(props.survey.visibility)
 const selectedContactMethod = ref<PublicContactMethod>(props.survey.public_contact_method || 'email')
+const perDeviceAccessEnabled = ref(props.survey.per_device_access || false)
 const publicLink = ref<PublicLinkResponse | null>(null)
 const isSaving = ref(false)
 
@@ -926,7 +959,8 @@ const closeLinkSharingModal = () => {
         passwordAccessMode: passwordAccessMode.value,
         restrictedEmails: [...restrictedEmails.value],
         restrictedPhones: [...restrictedPhones.value]
-      } : undefined
+      } : undefined,
+      per_device_access: perDeviceAccessEnabled.value
     }
     emit('save', saveData)
   }
@@ -1177,9 +1211,19 @@ const handleSave = async () => {
     }
 
     // Call the survey service to update using the existing updateSurveyAccess method
-    const contactMethod = selectedAccess.value === 'PUBLIC' ? selectedContactMethod.value : undefined
+    const contactMethod = selectedAccess.value === 'PUBLIC' && !perDeviceAccessEnabled.value ? selectedContactMethod.value : undefined
     const surveyId = String(props.survey.id) // Ensure ID is string
-    await surveyService.updateSurveyAccess(surveyId, accessLevel, contactMethod)
+    
+    // Debug logging
+    console.log('Modal Debug - Before service call:', {
+      selectedAccess: selectedAccess.value,
+      perDeviceAccessEnabled: perDeviceAccessEnabled.value,
+      selectedContactMethod: selectedContactMethod.value,
+      contactMethod,
+      accessLevel
+    })
+    
+    await surveyService.updateSurveyAccess(surveyId, accessLevel, contactMethod, perDeviceAccessEnabled.value)
     
     // Handle private access sharing if needed
     if (selectedAccess.value === 'PRIVATE' && selectedUsers.value.length > 0) {
@@ -1269,7 +1313,8 @@ const handleSave = async () => {
             passwordAccessMode: passwordAccessMode.value,
             restrictedEmails: [...restrictedEmails.value],
             restrictedPhones: [...restrictedPhones.value]
-          } : undefined
+          } : undefined,
+          per_device_access: perDeviceAccessEnabled.value
         }
         emit('save', saveData)
       }
@@ -1286,7 +1331,8 @@ const handleSave = async () => {
           passwordAccessMode: passwordAccessMode.value,
           restrictedEmails: [...restrictedEmails.value],
           restrictedPhones: [...restrictedPhones.value]
-        } : undefined
+        } : undefined,
+        per_device_access: selectedAccess.value === 'PUBLIC' ? perDeviceAccessEnabled.value : false
       }
       emit('save', saveData)
     }
@@ -1357,6 +1403,14 @@ watch(() => passwordProtectionEnabled.value, (isEnabled) => {
     } else if (passwordAccessMode.value === 'phone') {
       selectedContactMethod.value = 'phone'
     }
+  }
+})
+
+// Watch per-device access enabled state
+watch(() => perDeviceAccessEnabled.value, (isEnabled) => {
+  if (isEnabled) {
+    // Disable password protection when per-device access is enabled
+    passwordProtectionEnabled.value = false
   }
 })
 

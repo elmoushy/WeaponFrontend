@@ -260,7 +260,7 @@
       </div>
 
       <!-- Email Collection Section -->
-      <div v-if="currentQuestionIndex === (survey.questions?.length || 0) - 1 || showContactForm" :class="$style.contactSection">
+      <div v-if="shouldShowContactForm" :class="$style.contactSection">
         <div :class="$style.contactContainer">
           <div :class="$style.contactHeader">
             <h3 :class="$style.contactTitle">
@@ -570,6 +570,11 @@ const requiredContactMethod = computed(() => {
 
 // This is for form validation during submission
 const hasValidContactForSubmission = computed(() => {
+  // If per_device_access is true, contact information is not required
+  if (survey.value?.per_device_access === true) {
+    return true
+  }
+  
   if (requiredContactMethod.value === 'email') {
     return userEmail.value.trim() !== '' && isValidEmail.value
   } else if (requiredContactMethod.value === 'phone') {
@@ -593,6 +598,16 @@ const filteredCountries = computed(() => {
 
 const selectedCountry = computed(() => {
   return countryCodes.find(country => country.dialCode === selectedCountryCode.value) || defaultCountry
+})
+
+const shouldShowContactForm = computed(() => {
+  // If per_device_access is true, hide the contact form
+  if (survey.value?.per_device_access === true) {
+    return false
+  }
+  
+  // Otherwise, show it on the last question or when explicitly requested
+  return (currentQuestionIndex.value === (survey.value?.questions?.length || 0) - 1) || showContactForm.value
 })
 
 // Contact methods
@@ -816,10 +831,13 @@ const toggleMultipleChoice = (questionId: string, option: string) => {
 const submitSurvey = async () => {
   if (!canSubmit.value || isSubmitting.value) return
   
-  // Validate contact information before submission
-  if (!validateContact()) {
-    showContactForm.value = true
-    return
+  // Skip contact validation if per_device_access is true
+  if (survey.value?.per_device_access !== true) {
+    // Validate contact information before submission
+    if (!validateContact()) {
+      showContactForm.value = true
+      return
+    }
   }
   
   try {
@@ -831,11 +849,13 @@ const submitSurvey = async () => {
       answers: formatAnswersForSubmission()
     }
 
-    // Add the appropriate contact method field
-    if (requiredContactMethod.value === 'email') {
-      submissionData.email = userEmail.value.trim()
-    } else if (requiredContactMethod.value === 'phone') {
-      submissionData.phone = fullPhoneNumber.value
+    // Add the appropriate contact method field only if not per_device_access
+    if (survey.value?.per_device_access !== true) {
+      if (requiredContactMethod.value === 'email') {
+        submissionData.email = userEmail.value.trim()
+      } else if (requiredContactMethod.value === 'phone') {
+        submissionData.phone = fullPhoneNumber.value
+      }
     }
     
     // Call the new anonymous response endpoint

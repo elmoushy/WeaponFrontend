@@ -187,9 +187,15 @@ class SurveyService {
   }
 
   async createDraft(surveyData: SurveyCreateRequest): Promise<ApiResponse<Survey>> {
+    // Add per_device_access: false to avoid 400 Bad Request error
+    const draftData = {
+      ...surveyData,
+      per_device_access: false
+    }
+    
     return this.apiCall<ApiResponse<Survey>>('draft/', {
       method: 'POST',
-      body: JSON.stringify(surveyData)
+      body: JSON.stringify(draftData)
     })
   }
 
@@ -249,7 +255,8 @@ class SurveyService {
   async updateSurveyAccess(
     surveyId: string, 
     accessLevel: 'public' | 'authenticated' | 'private' | 'groups',
-    contactMethod?: 'email' | 'phone'
+    contactMethod?: 'email' | 'phone',
+    perDeviceAccess?: boolean
   ): Promise<ApiResponse<Survey>> {
     // Validate survey ID
     if (!surveyId || surveyId === 'undefined' || surveyId === 'null') {
@@ -278,10 +285,25 @@ class SurveyService {
     // Build update data
     const updateData: any = { visibility }
     
-    // Add contact method if it's a public survey
-    if (visibility === 'PUBLIC' && contactMethod) {
+    // Debug logging
+    console.log('updateSurveyAccess Debug:', {
+      visibility,
+      perDeviceAccess,
+      contactMethod,
+      perDeviceAccessType: typeof perDeviceAccess
+    })
+    
+    // Add per_device_access if enabled for public surveys
+    if (visibility === 'PUBLIC' && perDeviceAccess === true) {
+      updateData.per_device_access = true
+      console.log('Setting per_device_access to true')
+    } else if (visibility === 'PUBLIC' && contactMethod && perDeviceAccess !== true) {
+      // Only add contact method if per_device_access is not enabled
       updateData.public_contact_method = contactMethod
+      console.log('Setting public_contact_method to', contactMethod)
     }
+    
+    console.log('Final updateData:', updateData)
     
     return this.updateSurvey(surveyId, updateData)
   }

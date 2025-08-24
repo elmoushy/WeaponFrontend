@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <div v-if="isVisible" :class="$style.modalOverlay" @click="handleOverlayClick">
+    <div v-if="isVisible" :class="$style.modalOverlay">
       <div 
         :class="$style.modalContainer" 
         :data-theme="currentTheme" 
@@ -124,7 +124,7 @@
                 <i class="fab fa-whatsapp"></i>
                 {{ getText('survey.access.whatsapp') }}
               </button> -->
-              <button 
+              <!-- <button 
                 :class="[$style.shareButton, { [$style.disabled]: !currentLinkData && !publicLink }]"
                 @click="shareBySMS"
                 :disabled="!currentLinkData && !publicLink"
@@ -132,7 +132,7 @@
               >
                 <i class="fas fa-sms"></i>
                 {{ getText('survey.access.sms') }}
-              </button>
+              </button> -->
             </div>
           </div>
           
