@@ -51,6 +51,74 @@
     "profile": "الملف الشخصي",
     "settings": "الإعدادات"
   },
+  "notifications": {
+    "title": "الإشعارات",
+    "markAllRead": "تحديد الكل كمقروء",
+    "noNotifications": "لا توجد إشعارات",
+    "noNotificationsDesc": "أنت محدث! لا توجد إشعارات جديدة.",
+    "viewAll": "عرض جميع الإشعارات",
+    "refresh": "تحديث",
+    "filter": "تصفية",
+    "search": "البحث في الإشعارات...",
+    "filterBy": "تصفية حسب",
+    "sortBy": "ترتيب حسب",
+    "priority": "الأولوية",
+    "type": "النوع",
+    "status": "الحالة",
+    "dateRange": "النطاق الزمني",
+    "showRead": "إظهار المقروءة",
+    "showUnread": "إظهار غير المقروءة",
+    "showAll": "إظهار الكل",
+    "deleteSelected": "حذف المحدد",
+    "markAsRead": "تحديد كمقروء",
+    "markAsUnread": "تحديد كغير مقروء",
+    "delete": "حذف",
+    "preferences": "تفضيلات الإشعارات",
+    "settings": "الإعدادات",
+    "emailNotifications": "إشعارات البريد الإلكتروني",
+    "websocketNotifications": "الإشعارات الفورية",
+    "quietHours": "ساعات الصمت",
+    "language": "لغة الإشعارات",
+    "timezone": "المنطقة الزمنية",
+    "types": {
+      "survey_assigned": "تم تكليف استطلاع",
+      "survey_completed": "تم إكمال الاستطلاع",
+      "survey_shared": "تم مشاركة الاستطلاع",
+      "survey_updated": "تم تحديث الاستطلاع",
+      "survey_deleted": "تم حذف الاستطلاع",
+      "admin_message": "رسالة من الإدارة",
+      "system_alert": "تنبيه النظام",
+      "user_mention": "إشارة المستخدم",
+      "group_invitation": "دعوة المجموعة",
+      "response_received": "تم استلام الرد"
+    },
+    "priorities": {
+      "low": "منخفض",
+      "normal": "عادي",
+      "high": "عالي",
+      "urgent": "عاجل"
+    },
+    "time": {
+      "justNow": "الآن",
+      "minutesAgo": "دقيقة مضت",
+      "hourAgo": "ساعة مضت",
+      "hoursAgo": "ساعات مضت",
+      "dayAgo": "يوم مضى",
+      "daysAgo": "أيام مضت"
+    },
+    "actions": {
+      "markAllRead": "تحديد جميع الإشعارات كمقروءة",
+      "bulkDelete": "حذف الإشعارات المحددة",
+      "refresh": "تحديث الإشعارات",
+      "goToSurvey": "الذهاب إلى الاستطلاع",
+      "viewDetails": "عرض التفاصيل"
+    },
+    "stats": {
+      "total": "إجمالي الإشعارات",
+      "unread": "غير مقروء",
+      "recent": "الحديث (7 أيام)"
+    }
+  },
   "welcome": {
     "heroTitle": "WPC | WeaponpowerCloud",
     "heroDescription": "استمتع بالجيل القادم من الأنظمة السحابية الآمنة المصممة للتميز العسكري والعمليات الاستراتيجية. توفر منصتنا أماناً لا مثيل له، واستخبارات في الوقت الفعلي، وقدرات تعاون سلسة للمنظمات الدفاعية في جميع أنحاء العالم.",

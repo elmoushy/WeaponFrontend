@@ -24,29 +24,66 @@
       <div :class="$style.rightSection">
         <!-- Notifications -->
         <div :class="$style.notifications" @click.stop="toggleNotifications" data-dropdown>
-          <i class="fas fa-bell"></i>
-          <span v-if="notificationCount > 0" :class="$style.badge">{{ notificationCount }}</span>
+          <div :class="$style.bellContainer">
+            <i class="fas fa-bell" :class="{ [$style.wsConnected]: wsConnected, [$style.wsDisconnected]: !wsConnected }"></i>
+            <span v-if="notificationCount > 0" :class="$style.badge">{{ notificationCount }}</span>
+            
+            <!-- New WebSocket Notification Indicator -->
+            <div v-if="hasNewWebSocketNotification" :class="$style.newNotificationIndicator" title="New notification received">
+              <i class="fas fa-circle"></i>
+            </div>
+          </div>
+          
+          <!-- WebSocket Connection Indicator -->
+          <div v-if="wsConnecting" :class="$style.wsStatus" title="Connecting to notification service...">
+            <i class="fas fa-spinner fa-spin"></i>
+          </div>
+          <div v-else-if="wsConnectionError" :class="$style.wsError" :title="`Connection error: ${wsConnectionError}`">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
           
           <!-- Notifications Dropdown -->
           <div v-if="showNotifications" :class="$style.dropdown" data-dropdown @click.stop>
             <div :class="$style.dropdownHeader">
-              <h3>{{ t('header.notifications') }}</h3>
-              <button @click="markAllAsRead" :class="$style.markAllRead">
-                {{ t('header.markAllRead') }}
+              <h3>{{ t('notifications.title') }}</h3>
+              <button @click="markAllAsRead" :class="$style.markAllRead" :disabled="isMarkingAllRead">
+                <i v-if="isMarkingAllRead" class="fas fa-spinner fa-spin"></i>
+                {{ t('notifications.markAllRead') }}
               </button>
             </div>
             <div :class="$style.notificationsList">
+              <div v-if="!hasLoadedNotifications && !isLoadingNotifications" :class="$style.noNotifications">
+                <i class="fas fa-bell"></i>
+                <p>{{ currentLanguage === 'ar' ? 'انقر لتحميل الإشعارات' : 'Click to load notifications' }}</p>
+              </div>
+              <div v-else-if="notifications.length === 0 && !isLoadingNotifications" :class="$style.noNotifications">
+                <i class="fas fa-bell-slash"></i>
+                <p>{{ t('notifications.noNotifications') }}</p>
+                <span>{{ t('notifications.noNotificationsDesc') }}</span>
+              </div>
+              <div v-if="isLoadingNotifications" :class="$style.loadingNotifications">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>{{ currentLanguage === 'ar' ? 'جاري التحميل...' : 'Loading...' }}</p>
+              </div>
               <div 
                 v-for="notification in notifications" 
                 :key="notification.id"
-                :class="[$style.notificationItem, { [$style.unread]: !notification.read }]"
+                :class="[$style.notificationItem, { [$style.unread]: !notification.is_read }]"
+                @click="handleNotificationClick(notification)"
               >
-                <i :class="notification.icon"></i>
+                <i :class="getNotificationIcon(notification.notification_type)" :style="{ color: getPriorityColor(notification.priority) }"></i>
                 <div :class="$style.notificationContent">
-                  <p>{{ notification.message }}</p>
-                  <span :class="$style.notificationTime">{{ notification.time }}</span>
+                  <p :class="$style.notificationTitle">{{ notification.title_localized }}</p>
+                  <p :class="$style.notificationBody">{{ notification.body_localized }}</p>
+                  <span :class="$style.notificationTime">{{ formatTime(notification.created_at) }}</span>
                 </div>
+                <div v-if="!notification.is_read" :class="$style.unreadDot"></div>
               </div>
+            </div>
+            <div v-if="notifications.length > 0" :class="$style.notificationFooter">
+              <router-link to="/notifications" @click="closeAllDropdowns" :class="$style.viewAllLink">
+                {{ t('notifications.viewAll') }}
+              </router-link>
             </div>
           </div>
         </div>
@@ -199,6 +236,11 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '../../stores/useAppStore'
 import { useSimpleAuth } from '../../composables/useSimpleAuth'
+import { notificationService } from '../../services/notificationService'
+import { websocketService } from '../../services/websocketService'
+import { useWebSocketNotifications } from '../../composables/useWebSocketNotifications'
+import { NOTIFICATION_ICONS, PRIORITY_COLORS } from '../../types/notifications.types'
+import type { Notification } from '../../types/notifications.types'
 
 // Navigation link interface
 interface NavigationLink {
@@ -233,6 +275,56 @@ const showSettings = ref(false)
 const showNotifications = ref(false)
 const showMobileMenu = ref(false)
 const showUserMenu = ref(false)
+
+// Notifications state - combining HTTP API and WebSocket data
+const notifications = ref<Notification[]>([])
+const isLoadingNotifications = ref(false)
+const isMarkingAllRead = ref(false)
+const hasLoadedNotifications = ref(false)
+
+// New notification indicator state
+const hasNewWebSocketNotification = ref(false)
+const newNotificationTimer = ref<NodeJS.Timeout | null>(null)
+
+// WebSocket Notifications
+const {
+  realtimeNotifications,
+  hasNewNotifications,
+  isConnected: wsConnected,
+  isConnecting: wsConnecting,
+  connectionError: wsConnectionError,
+  unreadCount: wsUnreadCount,
+  connect: wsConnect,
+  disconnect: wsDisconnect,
+  markAsRead: wsMarkAsRead,
+  requestNotificationPermission
+} = useWebSocketNotifications({
+  autoConnect: false, // Disable auto-connect, we'll connect manually when ready
+  showBrowserNotifications: true,
+  subscribeToTypes: ['survey_assigned', 'admin_message', 'system_alert']
+})
+
+// Add direct WebSocket service event listener for pong notifications
+const handlePongNotificationEvent = (data: any) => {
+  console.log('🔔 [Navigation] Pong notification event received:', data)
+  console.log('🔔 [Navigation] Current hasNewWebSocketNotification state:', hasNewWebSocketNotification.value)
+  
+  if (data.trigger === 'new_notification') {
+    console.log('🎯 [Navigation] Triggering notification indicator!')
+    showNewNotificationIndicator()
+    
+    // Force reload notifications on next open
+    hasLoadedNotifications.value = false
+    console.log('🔄 [Navigation] Forced notification reload flag set')
+  } else {
+    console.log('⚠️ [Navigation] Pong trigger not recognized:', data.trigger)
+  }
+}
+
+// Combined notification count from WebSocket (real-time) and local state
+const notificationCount = computed(() => {
+  return wsUnreadCount.value || 0
+})
 
 // Computed properties
 // Computed properties for template usage
@@ -278,6 +370,13 @@ const baseNavigationLinks = ref<NavigationLink[]>([
     label: 'navigation.surveys',
     title: 'Surveys'
   },
+  // { 
+  //   name: 'Notifications', 
+  //   path: '/notifications', 
+  //   icon: 'fas fa-bell', 
+  //   label: 'navigation.notifications',
+  //   title: 'Notifications'
+  // },
   { 
     name: 'Control', 
     path: '/control', 
@@ -310,34 +409,94 @@ const navigationLinks = computed(() => {
   })
 })
 
-// Notifications data (replace with actual notifications from store/API)
-const notifications = ref([
-  {
-    id: 1,
-    icon: 'fas fa-upload',
-    message: 'File upload completed successfully',
-    time: '2 minutes ago',
-    read: false
-  },
-  {
-    id: 2,
-    icon: 'fas fa-share',
-    message: 'Document shared with team',
-    time: '10 minutes ago',
-    read: false
-  },
-  {
-    id: 3,
-    icon: 'fas fa-bell',
-    message: 'System maintenance scheduled',
-    time: '1 hour ago',
-    read: true
-  }
-])
+// Notification methods - Enhanced with WebSocket integration
 
-const notificationCount = computed(() => 
-  notifications.value.filter(n => !n.read).length
-)
+// Helper function to convert WebSocket notification to standard Notification type
+const convertWebSocketNotification = (wsNotification: any): Notification => ({
+  ...wsNotification,
+  is_expired: false,
+  sent_via_websocket: true
+})
+
+const loadNotifications = async () => {
+  isLoadingNotifications.value = true
+  try {
+    const lang = currentLanguage.value as 'en' | 'ar'
+    const recentNotifications = await notificationService.getRecentNotifications(lang)
+    
+    // Convert WebSocket notifications to standard format
+    const convertedRealtimeNotifications = realtimeNotifications.value.map(convertWebSocketNotification)
+    
+    // Merge HTTP API notifications with real-time notifications from WebSocket
+    const combinedNotifications = [...convertedRealtimeNotifications, ...recentNotifications]
+    
+    // Remove duplicates by ID and sort by created_at
+    const uniqueNotifications = combinedNotifications
+      .filter((notification, index, self) => 
+        index === self.findIndex(n => n.id === notification.id)
+      )
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    
+    notifications.value = uniqueNotifications
+    hasLoadedNotifications.value = true
+  } catch (error) {
+    console.error('Failed to load notifications:', error)
+    // Fallback to WebSocket notifications only
+    const convertedRealtimeNotifications = realtimeNotifications.value.map(convertWebSocketNotification)
+    notifications.value = convertedRealtimeNotifications
+  } finally {
+    isLoadingNotifications.value = false
+  }
+}
+
+const handleNotificationClick = async (notification: Notification) => {
+  try {
+    // Mark as read if unread
+    if (!notification.is_read) {
+      await notificationService.updateNotification(notification.id, true)
+      notification.is_read = true
+      
+      // Also mark as read in WebSocket service
+      wsMarkAsRead(notification.id)
+    }
+    
+    // Navigate to action URL if available
+    if (notification.action_url) {
+      router.push(notification.action_url)
+      closeAllDropdowns()
+    }
+  } catch (error) {
+    console.error('Failed to handle notification click:', error)
+  }
+}
+
+const markAllAsRead = async () => {
+  if (isMarkingAllRead.value) return
+  
+  isMarkingAllRead.value = true
+  try {
+    const lang = currentLanguage.value as 'en' | 'ar'
+    await notificationService.markAllAsRead(lang)
+    
+    // Update local state
+    notifications.value.forEach(n => {
+      n.is_read = true
+    })
+    
+    // Also mark all real-time notifications as read via WebSocket
+    const unreadIds = realtimeNotifications.value
+      .filter(n => !n.is_read)
+      .map(n => n.id)
+    
+    if (unreadIds.length > 0) {
+      wsMarkAsRead(unreadIds)
+    }
+  } catch (error) {
+    console.error('Failed to mark all notifications as read:', error)
+  } finally {
+    isMarkingAllRead.value = false
+  }
+}
 
 // Methods
 const toggleUserMenu = () => {
@@ -352,6 +511,46 @@ const toggleNotifications = () => {
   showSettings.value = false
   showMobileMenu.value = false
   showUserMenu.value = false
+  
+  // Hide the new notification indicator when notifications are opened
+  hideNewNotificationIndicator()
+  
+  // Load notifications when opening dropdown
+  if (showNotifications.value) {
+    loadNotifications()
+  }
+}
+
+// New notification indicator methods
+const showNewNotificationIndicator = () => {
+  console.log('🎯 [Navigation] showNewNotificationIndicator called!')
+  console.log('🎯 [Navigation] Before state change:', hasNewWebSocketNotification.value)
+  
+  hasNewWebSocketNotification.value = true
+  
+  console.log('🎯 [Navigation] After state change:', hasNewWebSocketNotification.value)
+  
+  // Clear any existing timer
+  if (newNotificationTimer.value) {
+    console.log('🕒 [Navigation] Clearing existing timer')
+    clearTimeout(newNotificationTimer.value)
+  }
+  
+  // Auto-hide the indicator after 5 seconds
+  newNotificationTimer.value = setTimeout(() => {
+    console.log('🕒 [Navigation] Auto-hiding indicator after 5 seconds')
+    hasNewWebSocketNotification.value = false
+  }, 5000)
+  
+  console.log('🕒 [Navigation] Timer set for auto-hide')
+}
+
+const hideNewNotificationIndicator = () => {
+  hasNewWebSocketNotification.value = false
+  if (newNotificationTimer.value) {
+    clearTimeout(newNotificationTimer.value)
+    newNotificationTimer.value = null
+  }
 }
 
 const toggleMobileMenu = () => {
@@ -396,10 +595,6 @@ const handleLogout = async () => {
   }
 }
 
-const markAllAsRead = () => {
-  notifications.value.forEach(n => n.read = true)
-}
-
 // Handle clicks outside dropdowns
 const handleClickOutside = (event: Event) => {
   const target = event.target as HTMLElement
@@ -431,17 +626,112 @@ watch([showSettings, showNotifications, showMobileMenu, showUserMenu], () => {
   preventBodyScroll()
 })
 
+// Watch for new WebSocket notifications
+watch(
+  () => realtimeNotifications.value.length,
+  (newLength, oldLength) => {
+    // Show indicator when new WebSocket notifications arrive
+    if (newLength > (oldLength || 0)) {
+      console.log('🔔 New WebSocket notification received, showing indicator')
+      showNewNotificationIndicator()
+    }
+  }
+)
+
+// Watch for hasNewNotifications from WebSocket composable
+watch(
+  () => hasNewNotifications.value,
+  (hasNew) => {
+    if (hasNew) {
+      console.log('🔔 New notification flag set, showing indicator')
+      showNewNotificationIndicator()
+    }
+  }
+)
+
+// Utility functions for notifications
+const getNotificationIcon = (notificationType: string): string => {
+  return NOTIFICATION_ICONS[notificationType as keyof typeof NOTIFICATION_ICONS] || 'fas fa-info-circle'
+}
+
+const getPriorityColor = (priority: string): string => {
+  return PRIORITY_COLORS[priority as keyof typeof PRIORITY_COLORS] || '#667eea'
+}
+
+// Format time helper for notifications
+const formatTime = (createdAt: string): string => {
+  const now = new Date()
+  const notificationDate = new Date(createdAt)
+  const diffInMinutes = Math.floor((now.getTime() - notificationDate.getTime()) / (1000 * 60))
+
+  if (diffInMinutes < 1) {
+    return 'Just now'
+  } else if (diffInMinutes < 60) {
+    return `${diffInMinutes}m ago`
+  } else if (diffInMinutes < 1440) { // 24 hours
+    const hours = Math.floor(diffInMinutes / 60)
+    return `${hours}h ago`
+  } else {
+    const days = Math.floor(diffInMinutes / 1440)
+    return `${days}d ago`
+  }
+}
+
+// Watch for user authentication to connect WebSocket
+watch(
+  () => user.value,
+  (currentUser) => {
+    if (currentUser && !wsConnected.value) {
+      // User is authenticated, connect WebSocket
+      wsConnect().catch(error => {
+        console.warn('WebSocket auto-connect on auth failed:', error instanceof Error ? error.message : 'Unknown error')
+      })
+    } else if (!currentUser && wsConnected.value) {
+      // User logged out, disconnect WebSocket
+      wsDisconnect()
+    }
+  }
+)
+
 // Lifecycle
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleEscapeKey)
+  
+  // Set up WebSocket service event listener for pong notifications
+  websocketService.on('pong_notification', handlePongNotificationEvent)
+  
+  // Request browser notification permission
+  requestNotificationPermission()
+  
+  // Connect WebSocket when authentication is ready
+  // Wait a bit to ensure authentication state is properly initialized
+  setTimeout(() => {
+    if (user.value && !wsConnected.value) {
+      wsConnect().catch(error => {
+        console.warn('Navigation WebSocket connection failed:', error instanceof Error ? error.message : 'Unknown error')
+      })
+    }
+  }, 500) // Longer delay to ensure auth is ready
+  
+  // Don't load notifications on mount - only when user clicks
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleEscapeKey)
+  
+  // Clean up WebSocket service event listener
+  websocketService.off('pong_notification', handlePongNotificationEvent)
+  
   // Reset body scroll on unmount
   document.body.style.overflow = ''
+  
+  // Clear any notification timer
+  if (newNotificationTimer.value) {
+    clearTimeout(newNotificationTimer.value)
+  }
+  // WebSocket will be managed by the composable lifecycle
 })
 </script>
 

@@ -37,6 +37,74 @@
     "profile": "Profile",
     "settings": "Settings"
   },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark All as Read",
+    "noNotifications": "No notifications",
+    "noNotificationsDesc": "You're all caught up! No new notifications.",
+    "viewAll": "View All Notifications",
+    "refresh": "Refresh",
+    "filter": "Filter",
+    "search": "Search notifications...",
+    "filterBy": "Filter by",
+    "sortBy": "Sort by",
+    "priority": "Priority",
+    "type": "Type",
+    "status": "Status",
+    "dateRange": "Date Range",
+    "showRead": "Show Read",
+    "showUnread": "Show Unread",
+    "showAll": "Show All",
+    "deleteSelected": "Delete Selected",
+    "markAsRead": "Mark as Read",
+    "markAsUnread": "Mark as Unread",
+    "delete": "Delete",
+    "preferences": "Notification Preferences",
+    "settings": "Settings",
+    "emailNotifications": "Email Notifications",
+    "websocketNotifications": "Real-time Notifications",
+    "quietHours": "Quiet Hours",
+    "language": "Notification Language",
+    "timezone": "Timezone",
+    "types": {
+      "survey_assigned": "Survey Assigned",
+      "survey_completed": "Survey Completed",
+      "survey_shared": "Survey Shared",
+      "survey_updated": "Survey Updated",
+      "survey_deleted": "Survey Deleted",
+      "admin_message": "Admin Message",
+      "system_alert": "System Alert",
+      "user_mention": "User Mention",
+      "group_invitation": "Group Invitation",
+      "response_received": "Response Received"
+    },
+    "priorities": {
+      "low": "Low",
+      "normal": "Normal",
+      "high": "High",
+      "urgent": "Urgent"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "minutes ago",
+      "hourAgo": "hour ago",
+      "hoursAgo": "hours ago",
+      "dayAgo": "day ago",
+      "daysAgo": "days ago"
+    },
+    "actions": {
+      "markAllRead": "Mark all notifications as read",
+      "bulkDelete": "Delete selected notifications",
+      "refresh": "Refresh notifications",
+      "goToSurvey": "Go to Survey",
+      "viewDetails": "View Details"
+    },
+    "stats": {
+      "total": "Total Notifications",
+      "unread": "Unread",
+      "recent": "Recent (7 days)"
+    }
+  },
   "welcome": {
     "heroTitle": "WPC | WeaponpowerCloud",
     "heroDescription": "Experience the next generation of secure cloud systems designed for military excellence and strategic operations. Our platform delivers unmatched security, real-time intelligence, and seamless collaboration capabilities for defense organizations worldwide.",

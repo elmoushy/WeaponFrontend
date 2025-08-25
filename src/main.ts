@@ -18,6 +18,15 @@ import '@fortawesome/fontawesome-free/css/all.min.css'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 
+// Import debug utilities (development only)
+if (import.meta.env.DEV) {
+  import('./utils/testPongDebugging')
+}
+// Import test utilities in development mode
+if (import.meta.env.DEV) {
+  import('./utils/testPongNotifications')
+}
+
 // Load Google Fonts
 const loadFonts = () => {
   const link = document.createElement('link')

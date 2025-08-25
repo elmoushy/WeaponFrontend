@@ -26,6 +26,9 @@ const JWTLogin = () => import("../pages/Auth/JWTLogin.vue");
 // Core
 const Profile = () => import("../pages/Profile/Profile.vue");
 
+// Development/Testing
+const WebSocketTest = () => import("../components/WebSocketTest.vue");
+
 // Control
 const Control = () => import("../pages/Control/Control.vue");
 const SurveyControl = () => import("../pages/Control/SurveyControl.vue");
@@ -40,6 +43,9 @@ const PublicSurveyView = () => import("../pages/Survey/PublicSurveyView.vue");
 const PasswordProtectedSurveyView = () =>
   import("../pages/Survey/PasswordProtectedSurveyView.vue");
 const AuthSurveyView = () => import("../pages/Survey/AuthSurveyView.vue");
+
+// Notifications
+const Notifications = () => import("../pages/Notifications");
 
 /* =========================
    Routes
@@ -91,6 +97,22 @@ const routes: RouteRecordRaw[] = [
       title: "Take Survey - WPC | WeaponpowerCloud App",
       requiresAuth: true,
     },
+  },
+
+  // Notifications
+  {
+    path: "/notifications",
+    name: "Notifications",
+    component: Notifications,
+    meta: { title: "Notifications - WPC | WeaponpowerCloud App", requiresAuth: true },
+  },
+
+  // WebSocket Test (Development only)
+  {
+    path: "/websocket-test",
+    name: "WebSocketTest",
+    component: WebSocketTest,
+    meta: { title: "WebSocket Test - WPC | WeaponpowerCloud App", requiresAuth: true },
   },
 
   // Control (Admins only)
