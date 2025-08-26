@@ -19,21 +19,6 @@ const sensitivePatterns = [
   /csrf/i
 ]
 
-// Stack trace keywords that reveal system internals
-const internalKeywords = [
-  'node_modules',
-  'webpack',
-  'vite',
-  'at Object.',
-  'at async',
-  'at Module.',
-  'internal/modules',
-  'node:',
-  'file://',
-  'localhost:',
-  '127.0.0.1:'
-]
-
 /**
  * Sanitizes error messages to remove sensitive information
  */

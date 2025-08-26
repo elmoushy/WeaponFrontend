@@ -296,10 +296,6 @@ const getText = (key: string, fallback?: string) => {
 }
 
 // Methods
-const handleOverlayClick = () => {
-  emit('close')
-}
-
 const setStatusMessage = (text: string, type: 'success' | 'error' | 'warning' | 'info') => {
   const iconMap = {
     success: 'fas fa-check-circle',
@@ -622,33 +618,6 @@ const shareByEmail = async () => {
 //     setStatusMessage(currentLanguage.value === 'ar' ? 'فشل في مشاركة عبر واتساب' : 'Failed to share by WhatsApp', 'error')
 //   }
 // }
-
-const shareBySMS = async () => {
-  if (!currentLinkData.value && !props.publicLink) {
-    setStatusMessage(currentLanguage.value === 'ar' ? 'يجب إنشاء رابط أولاً' : 'Please generate a link first', 'warning')
-    return
-  }
-  
-  try {
-    const message = getShareMessage('sms')
-    const smsUrl = `sms:?&body=${encodeURIComponent(message)}`
-    
-    try {
-      window.open(smsUrl, '_blank')
-      setStatusMessage(currentLanguage.value === 'ar' ? 'تم فتح تطبيق الرسائل النصية' : 'SMS app opened', 'success')
-    } catch (e) {
-      await navigator.clipboard.writeText(message)
-      setStatusMessage(
-        currentLanguage.value === 'ar' 
-          ? 'تم نسخ الرسالة - يمكنك لصقها في تطبيق الرسائل النصية'
-          : 'Message copied - you can paste it in SMS app', 
-        'info'
-      )
-    }
-  } catch (error) {
-    setStatusMessage(currentLanguage.value === 'ar' ? 'فشل في مشاركة عبر الرسائل النصية' : 'Failed to share by SMS', 'error')
-  }
-}
 
 // Watchers
 watch(() => currentLinkData.value, async (newData) => {

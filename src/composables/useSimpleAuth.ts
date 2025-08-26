@@ -311,9 +311,10 @@ export const useSimpleAuth = () => {
   }
   
   // Initialize and check for existing lockout
-  const initializeWithLockoutCheck = async () => {
+  const initializeWithLockoutCheck = async (): Promise<boolean> => {
     checkExistingLockout()
     await initializeAuth()
+    return isAuthenticated.value
   }
 
   // Watch for authentication changes and update session storage
