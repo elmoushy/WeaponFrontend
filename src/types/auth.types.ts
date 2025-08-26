@@ -54,6 +54,11 @@ export interface AuthError {
   detail: string
   status?: number
   errors?: Record<string, string[]>
+  // Rate limiting fields
+  retry_after_seconds?: number
+  remaining_attempts?: number
+  max_attempts?: number
+  warning?: string
 }
 
 // JWT Authentication Types
@@ -69,6 +74,38 @@ export interface LoginResponse {
     access: string
     refresh: string
   }
+  // Rate limiting fields
+  remaining_attempts?: number
+  warning?: string
+  retry_after_seconds?: number
+  max_attempts?: number
+}
+
+// Rate limiting error response
+export interface RateLimitResponse {
+  error: string
+  detail: string
+  retry_after_seconds: number
+  max_attempts: number
+}
+
+// Security error types
+export interface SecurityError {
+  type: 'rate_limit' | 'validation' | 'sanitization' | 'authentication'
+  message: string
+  details?: {
+    retry_after?: number
+    remaining_attempts?: number
+    field_errors?: Record<string, string[]>
+  }
+}
+
+// Input validation response
+export interface ValidationResponse {
+  valid: boolean
+  sanitized?: boolean
+  errors?: Record<string, string[]>
+  warnings?: string[]
 }
 
 export interface TokenRefreshRequest {

@@ -27,6 +27,16 @@
           </div>
 
           <div :class="styles.cardBody">
+            <!-- Security Status Indicator -->
+            <div v-if="isAccountLocked || attemptsRemaining > 0" style="margin-bottom: 1rem;">
+              <SecurityStatusIndicator 
+                :attempts-remaining="attemptsRemaining"
+                :retry-after="lockoutTimeRemaining"
+                :status="isAccountLocked ? 'error' : (attemptsRemaining <= 3 ? 'warning' : 'secure')"
+                :show-countdown="isAccountLocked"
+              />
+            </div>
+
             <!-- Error Display -->
             <div v-if="hasError" :class="styles.errorAlert">
               <div :class="styles.errorIndicator">
@@ -126,9 +136,11 @@
                 <button 
                   type="submit"
                   :class="styles.loginButton"
-                  :disabled="isLoading || !email || !password"
+                  :disabled="isLoading || !email || !password || isAccountLocked"
                 >
-                  <span :class="styles.buttonText">تسجيل الدخول</span>
+                  <span :class="styles.buttonText">
+                    {{ isAccountLocked ? `محظور حتى ${Math.ceil(lockoutTimeRemaining / 60)} دقائق` : 'تسجيل الدخول' }}
+                  </span>
                   <div :class="styles.buttonRipple"></div>
                 </button>
 
@@ -171,6 +183,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useSimpleAuth } from '../../composables/useSimpleAuth'
+import SecurityStatusIndicator from '../../components/SecurityStatusIndicator'
 import styles from './JWTLogin.module.css'
 
 const router = useRouter()
@@ -184,7 +197,11 @@ const {
   hasError,
   login,
   clearError,
-  checkAuth
+  checkAuth,
+  // Rate limiting state  
+  isAccountLocked,
+  attemptsRemaining,
+  lockoutTimeRemaining
 } = useSimpleAuth()
 
 // Form state
@@ -234,6 +251,11 @@ const handleLogin = async () => {
       return
     }
 
+    // Check if account is currently locked
+    if (isAccountLocked.value) {
+      return // Let the security indicator show the lockout message
+    }
+
     const result = await login(email.value, password.value)
     
     if (!result.success && result.errors) {
@@ -248,6 +270,11 @@ const handleLogin = async () => {
           ? result.errors.password[0] 
           : result.errors.password
       }
+      
+      // Handle general errors (including rate limiting)
+      if (result.errors.general && Array.isArray(result.errors.general)) {
+        // The error will be set in the composable already
+      }
     }
   } catch (error: any) {
     // Logging removed for production
@@ -258,9 +285,9 @@ const handleLogin = async () => {
 onMounted(async () => {
   try {
     // Check if user is already authenticated
-    const isAuth = await checkAuth()
+    await checkAuth()
     
-    if (isAuth) {
+    if (isAuthenticated.value) {
       const redirectTo = (route.query.redirect as string) || '/surveys'
       router.replace(redirectTo)
     }

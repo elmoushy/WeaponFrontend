@@ -244,13 +244,6 @@ const clearTokens = (): void => {
   refreshDisabled = false
   sessionExpiredAlertShown = false // Reset alert flag for future sessions
   
-  // Clear Azure AD tokens from localStorage
-  try {
-    localStorage.removeItem('azure_id_token')
-  } catch (error) {
-    console.warn('Failed to clear Azure AD token from localStorage:', error)
-  }
-  
   // Clear user session data from sessionStorage (from useSimpleAuth)
   try {
     sessionStorage.removeItem('wpc_user')
@@ -462,7 +455,13 @@ export const authAPI = {
   // Login with email and password
   login: async (email: string, password: string): Promise<LoginResponse> => {
     try {
-      const response = await apiClient.post<LoginResponse>('/auth/login/', { email, password })
+      const response = await apiClient.post<LoginResponse>('/auth/login/', { 
+        email, 
+        password 
+      }, {
+        validateStatus: (status) => status < 500 // Don't throw for 4xx errors
+      })
+      
       if (response.status === 200) {
         const { tokens, user } = response.data
         // Store both access and refresh tokens
@@ -473,11 +472,30 @@ export const authAPI = {
         refreshDisabled = false
         return { ...response.data, user }
       }
+      
+      // Handle specific error responses
+      if (response.status === 429) {
+        // Rate limit error - preserve the response data for handling
+        const error = new Error('Rate limit exceeded') as any
+        error.response = response
+        throw error
+      }
+      
+      if (response.status === 400) {
+        // Validation error - preserve field errors and rate limit info
+        const error = new Error('Validation failed') as any
+        error.response = response
+        throw error
+      }
+      
       throw new Error('Login failed')
     } catch (error: any) {
-      if (error.response?.data?.errors) {
-        throw error.response.data.errors
+      // For axios errors, preserve the original error structure
+      if (error.response) {
+        throw error
       }
+      
+      // For other errors, wrap in our format
       throw { general: ['Login failed. Please try again.'] }
     }
   },
@@ -555,6 +573,16 @@ export const authAPI = {
 
 // Error handling utility
 export const handleApiError = (error: AxiosError<AuthError>): string => {
+  // Handle rate limiting specifically
+  if (error.response?.status === 429) {
+    const retryAfter = error.response.data?.retry_after_seconds || 0
+    if (retryAfter > 0) {
+      const minutes = Math.ceil(retryAfter / 60)
+      return `Account locked. Try again in ${minutes} minute${minutes > 1 ? 's' : ''}.`
+    }
+    return 'Too many failed attempts. Please try again later.'
+  }
+  
   if (error.response?.data?.errors) {
     const errors = error.response.data.errors
     if (errors.non_field_errors && errors.non_field_errors.length > 0) {
@@ -575,6 +603,54 @@ export const handleApiError = (error: AxiosError<AuthError>): string => {
     return error.message
   }
   return 'Network error occurred'
+}
+
+// Enhanced security error handler
+export const handleSecurityApiError = (error: any): {
+  type: 'rate_limit' | 'validation' | 'authentication' | 'network'
+  message: string
+  remainingAttempts?: number
+  retryAfter?: number
+  fieldErrors?: Record<string, string[]>
+} => {
+  if (!error.response) {
+    return {
+      type: 'network',
+      message: 'Network error occurred'
+    }
+  }
+  
+  const status = error.response.status
+  const data = error.response.data
+  
+  if (status === 429) {
+    return {
+      type: 'rate_limit',
+      message: 'Too many failed attempts. Account locked.',
+      retryAfter: data.retry_after_seconds || 0
+    }
+  }
+  
+  if (status === 400) {
+    return {
+      type: 'validation',
+      message: data.detail || 'Invalid input provided',
+      remainingAttempts: data.remaining_attempts,
+      fieldErrors: data.errors
+    }
+  }
+  
+  if (status === 401) {
+    return {
+      type: 'authentication', 
+      message: data.detail || 'Invalid credentials'
+    }
+  }
+  
+  return {
+    type: 'authentication',
+    message: data.detail || 'Authentication failed'
+  }
 }
 
 export { apiClient, clearTokens }

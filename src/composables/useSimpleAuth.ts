@@ -1,6 +1,7 @@
 import { ref, computed, watch } from 'vue'
-import { authAPI, handleApiError, silentRefreshAccessToken } from '../services/jwtAuthService'
+import { authAPI, handleApiError, handleSecurityApiError, silentRefreshAccessToken } from '../services/jwtAuthService'
 import type { UserProfile, LoginResponse } from '../types/auth.types'
+import { storeLockoutTime, getRemainingLockoutTime, clearLockoutTime } from '../utils/security'
 
 // Reactive state - shared across all composable instances
 const isAuthenticated = ref(false)
@@ -8,6 +9,12 @@ const user = ref<UserProfile | null>(null)
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 const isInitialized = ref(false)
+
+// Rate limiting state
+const remainingAttempts = ref<number>(0)
+const retryAfter = ref<number>(0)
+const isLocked = ref(false)
+const lockoutInterval = ref<number | null>(null)
 
 // Session storage keys
 const STORAGE_KEYS = {
@@ -118,13 +125,65 @@ const initializeAuth = async (): Promise<void> => {
 }
 
 export const useSimpleAuth = () => {
+  // Rate limiting helpers
+  const startLockoutCountdown = (seconds: number) => {
+    retryAfter.value = seconds
+    isLocked.value = true
+    
+    if (lockoutInterval.value) {
+      clearInterval(lockoutInterval.value)
+    }
+    
+    lockoutInterval.value = window.setInterval(() => {
+      retryAfter.value--
+      if (retryAfter.value <= 0) {
+        clearLockoutCountdown()
+      }
+    }, 1000)
+    
+    // Store in localStorage for persistence across page refreshes
+    storeLockoutTime(seconds)
+  }
+  
+  const clearLockoutCountdown = () => {
+    if (lockoutInterval.value) {
+      clearInterval(lockoutInterval.value)
+      lockoutInterval.value = null
+    }
+    retryAfter.value = 0
+    isLocked.value = false
+    remainingAttempts.value = 0
+    clearLockoutTime()
+  }
+  
+  // Check for existing lockout on initialization
+  const checkExistingLockout = () => {
+    const remaining = getRemainingLockoutTime()
+    if (remaining > 0) {
+      startLockoutCountdown(remaining)
+    }
+  }
+
   // Login with email and password
   const login = async (email: string, password: string): Promise<{ success: boolean; errors?: any }> => {
     try {
+      // Check if currently locked
+      if (isLocked.value && retryAfter.value > 0) {
+        return { 
+          success: false, 
+          errors: { 
+            general: [`Account locked. Try again in ${Math.ceil(retryAfter.value / 60)} minute(s).`] 
+          }
+        }
+      }
+
       isLoading.value = true
       error.value = null
       
       const response: LoginResponse = await authAPI.login(email, password)
+      
+      // Clear any previous rate limiting state on successful login
+      clearLockoutCountdown()
       
       // Update reactive state
       user.value = response.user
@@ -135,11 +194,39 @@ export const useSimpleAuth = () => {
       
       return { success: true }
     } catch (err: any) {
-      error.value = handleApiError(err)
+      const securityError = handleSecurityApiError(err)
+      
+      // Handle rate limiting
+      if (securityError.type === 'rate_limit' && securityError.retryAfter) {
+        startLockoutCountdown(securityError.retryAfter)
+        error.value = securityError.message
+        return { 
+          success: false, 
+          errors: { general: [securityError.message] }
+        }
+      }
+      
+      // Handle validation errors with remaining attempts
+      if (securityError.type === 'validation') {
+        if (securityError.remainingAttempts !== undefined) {
+          remainingAttempts.value = securityError.remainingAttempts
+        }
+        error.value = securityError.message
+        return { 
+          success: false, 
+          errors: securityError.fieldErrors || { general: [securityError.message] }
+        }
+      }
+      
+      // Handle other authentication errors  
+      error.value = securityError.message
       isAuthenticated.value = false
       user.value = null
       clearSession()
-      return { success: false, errors: err }
+      return { 
+        success: false, 
+        errors: securityError.fieldErrors || { general: [securityError.message] }
+      }
     } finally {
       isLoading.value = false
     }
@@ -214,15 +301,19 @@ export const useSimpleAuth = () => {
     }
   }
 
-  // Check authentication status
-  const checkAuth = async (): Promise<boolean> => {
-    await initializeAuth()
-    return isAuthenticated.value
-  }
-
   // Clear error
   const clearError = (): void => {
     error.value = null
+    // Also clear rate limiting warnings but not lockout state
+    if (!isLocked.value) {
+      remainingAttempts.value = 0
+    }
+  }
+  
+  // Initialize and check for existing lockout
+  const initializeWithLockoutCheck = async () => {
+    checkExistingLockout()
+    await initializeAuth()
   }
 
   // Watch for authentication changes and update session storage
@@ -238,6 +329,9 @@ export const useSimpleAuth = () => {
   const isLoggedIn = computed(() => isAuthenticated.value)
   const currentUser = computed(() => user.value)
   const hasError = computed(() => !!error.value)
+  const isAccountLocked = computed(() => isLocked.value)
+  const attemptsRemaining = computed(() => remainingAttempts.value)
+  const lockoutTimeRemaining = computed(() => retryAfter.value)
   const userFullName = computed(() => {
     if (!user.value) return ''
     return user.value.full_name || `${user.value.first_name} ${user.value.last_name}`.trim()
@@ -259,17 +353,33 @@ export const useSimpleAuth = () => {
     userFullName,
     userInitials,
     isInitialized: computed(() => isInitialized.value),
+    
+    // Rate limiting state
+    isAccountLocked,
+    attemptsRemaining,
+    lockoutTimeRemaining,
 
     // Methods
     login,
     logout,
     getCurrentUser,
     updateProfile,
-    checkAuth,
+    checkAuth: initializeWithLockoutCheck, // Use initialize instead for lockout check
     clearError,
-    initializeAuth
+    initializeAuth,
+    clearLockoutCountdown
   }
 }
 
-// Auto-initialize on module load (for page refresh scenarios)
-initializeAuth()
+// Auto-initialize on module load (for page refresh scenarios)  
+// Check for existing lockout and initialize auth
+const globalInitialize = async () => {
+  const remaining = getRemainingLockoutTime()
+  if (remaining > 0) {
+    retryAfter.value = remaining
+    isLocked.value = true
+  }
+  await initializeAuth()
+}
+
+globalInitialize()
