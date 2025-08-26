@@ -22,15 +22,17 @@ export class WebSocketDebugger {
     const { isAuthenticated, user } = useSimpleAuth()
     const token = getAccessToken()
     
-    console.group('🔍 WebSocket Authentication Debug')
-    logger.log('🔐 Is Authenticated:', isAuthenticated.value)
-    logger.log('👤 User:', user.value)
-    logger.log('🎫 JWT Token Available:', !!token)
-    logger.log('🎫 JWT Token Length:', token ? token.length : 0)
-    logger.log('🎫 JWT Token Preview:', token ? `${token.substring(0, 20)}...` : 'None')
+    if (!envConfig.isProduction || envConfig.debugMode) {
+      console.group('🔍 WebSocket Authentication Debug')
+      logger.log('🔐 Is Authenticated:', isAuthenticated.value)
+      logger.log('👤 User:', user.value)
+      logger.log('🎫 JWT Token Available:', !!token)
+      logger.log('🎫 JWT Token Length:', token ? token.length : 0)
+      logger.log('🎫 JWT Token Preview:', token ? `${token.substring(0, 20)}...` : 'None')
+    }
     
     // Check if token looks valid (basic JWT format check)
-    if (token) {
+    if (token && (!envConfig.isProduction || envConfig.debugMode)) {
       try {
         const parts = token.split('.')
         logger.log('🔍 JWT Parts Count:', parts.length)
@@ -46,7 +48,9 @@ export class WebSocketDebugger {
       }
     }
     
-    console.groupEnd()
+    if (!envConfig.isProduction || envConfig.debugMode) {
+      console.groupEnd()
+    }
     
     return {
       isAuthenticated: isAuthenticated.value,
@@ -65,16 +69,16 @@ export class WebSocketDebugger {
     const auth = this.checkAuthenticationState()
     
     if (!auth.isAuthenticated) {
-      console.warn('🚫 WebSocket Connection Blocked: User not authenticated')
+      logger.warn('🚫 WebSocket Connection Blocked: User not authenticated')
       return false
     }
     
     if (!auth.hasToken) {
-      console.warn('🚫 WebSocket Connection Blocked: No JWT token available')
+      logger.warn('🚫 WebSocket Connection Blocked: No JWT token available')
       return false
     }
 
-    console.log('✅ WebSocket Connection Ready: All authentication checks passed')
+    logger.debug('✅ WebSocket Connection Ready: All authentication checks passed')
     return true
   }
 }

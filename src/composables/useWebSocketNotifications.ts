@@ -1,23 +1,7 @@
 import { onMounted, onUnmounted, ref, computed, watch, type Ref } from 'vue'
 import { websocketService, type NotificationWebSocketData, type ConnectionSuccessData, type UnreadCountData, type PongMessageData } from '../services/websocketService'
 import { useSimpleAuth } from './useSimpleAuth'
-import { logger } from '../utils/logger'd, onUnmounted, ref, computed, watch, type Ref } from 'vue'
-import { websocketService, type NotificationWebSocketData, type ConnectionSuccessData, type UnreadCountData, type PongMessageData } from '../services/websocketService'
-import { useSimpleAuth } from './useSimpleAuth'
-import { envConfig } from '../utils/envConfig'
-
-// Helper functions to conditionally log WebSocket messages only in development
-const wsLog = (...args: any[]) => {
-  if (envConfig.debugMode && !envConfig.isProduction) {
-    wsLog(...args)
-  }
-}
-
-const wsError = (...args: any[]) => {
-  if (envConfig.debugMode && !envConfig.isProduction) {
-    wsError(...args)
-  }
-}
+import { logger } from '../utils/logger'
 
 export interface UseWebSocketNotificationsOptions {
   autoConnect?: boolean
@@ -56,7 +40,7 @@ export function useWebSocketNotifications(options: UseWebSocketNotificationsOpti
     try {
       await websocketService.connect()
     } catch (error) {
-      wsError('Failed to connect to WebSocket:', error)
+      logger.error('Failed to connect to WebSocket:', error)
       throw error
     }
   }
@@ -116,7 +100,7 @@ export function useWebSocketNotifications(options: UseWebSocketNotificationsOpti
    * Handle new notification received
    */
   const handleNewNotification = (notification: NotificationWebSocketData): void => {
-    wsLog('New WebSocket notification received:', notification)
+    logger.debug('New WebSocket notification received:', notification)
     
     // Add to local notifications array (prepend to show latest first)
     realtimeNotifications.value.unshift(notification)
@@ -135,7 +119,7 @@ export function useWebSocketNotifications(options: UseWebSocketNotificationsOpti
    * Handle bulk notifications received
    */
   const handleBulkNotifications = (data: { notifications: NotificationWebSocketData[], count: number }): void => {
-    wsLog('Bulk WebSocket notifications received:', data.count)
+    logger.debug('Bulk WebSocket notifications received:', data.count)
     
     // Add all notifications to local array
     data.notifications.forEach(notification => {
@@ -160,7 +144,7 @@ export function useWebSocketNotifications(options: UseWebSocketNotificationsOpti
    * Handle connection success
    */
   const handleConnectionSuccess = (data: ConnectionSuccessData): void => {
-    wsLog('WebSocket connection established:', data.message)
+    logger.debug('WebSocket connection established:', data.message)
     
     // Subscribe to notification types if specified
     if (subscribeToTypes.length > 0) {
@@ -172,21 +156,21 @@ export function useWebSocketNotifications(options: UseWebSocketNotificationsOpti
    * Handle unread count update
    */
   const handleUnreadCountUpdate = (data: UnreadCountData): void => {
-    wsLog('Unread count updated:', data.count)
+    logger.debug('Unread count updated:', data.count)
   }
 
   /**
    * Handle connection error
    */
   const handleConnectionError = (error: any): void => {
-    wsError('WebSocket connection error:', error)
+    logger.error('WebSocket connection error:', error)
   }
 
   /**
    * Handle pong notification (notification delivered via pong message)
    */
   const handlePongNotification = (data: PongMessageData): void => {
-    wsLog('Pong notification received:', data)
+    logger.debug('Pong notification received:', data)
     
     if (data.trigger === 'new_notification' && data.notification) {
       // This notification was already processed by handleNewNotification via the WebSocket service
@@ -194,7 +178,7 @@ export function useWebSocketNotifications(options: UseWebSocketNotificationsOpti
       
       // Add any specific pong notification handling logic here
       // For example, different UI feedback or logging
-      wsLog('Notification delivered via pong mechanism:', data.notification.title_localized)
+      logger.debug('Notification delivered via pong mechanism:', data.notification.title_localized)
     }
   }
 
@@ -202,7 +186,7 @@ export function useWebSocketNotifications(options: UseWebSocketNotificationsOpti
    * Handle disconnection
    */
   const handleDisconnection = (event: any): void => {
-    wsLog('WebSocket disconnected:', event)
+    logger.debug('WebSocket disconnected:', event)
   }
 
   /**
@@ -330,4 +314,5 @@ export function useWebSocketNotifications(options: UseWebSocketNotificationsOpti
     getConnectionStatus: () => websocketService.getStatus()
   }
 }
+
 
