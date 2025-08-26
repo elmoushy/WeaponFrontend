@@ -1,6 +1,7 @@
 import { getAccessToken } from '../services/jwtAuthService'
 import { useSimpleAuth } from '../composables/useSimpleAuth'
 import { logger } from './logger'
+import { envConfig } from './envConfig'
 
 /**
  * Debug utility for WebSocket authentication issues
@@ -8,6 +9,16 @@ import { logger } from './logger'
  */
 export class WebSocketDebugger {
   static checkAuthenticationState() {
+    // Skip WebSocket debugging in production to reduce console noise
+    if (envConfig.isProduction && !envConfig.debugMode) {
+      return {
+        isAuthenticated: false,
+        hasUser: false,
+        hasToken: false,
+        tokenLength: 0
+      }
+    }
+
     const { isAuthenticated, user } = useSimpleAuth()
     const token = getAccessToken()
     
@@ -46,6 +57,11 @@ export class WebSocketDebugger {
   }
   
   static logWebSocketAttempt() {
+    // Skip WebSocket debugging in production to reduce console noise
+    if (envConfig.isProduction && !envConfig.debugMode) {
+      return false
+    }
+
     const auth = this.checkAuthenticationState()
     
     if (!auth.isAuthenticated) {
@@ -57,7 +73,7 @@ export class WebSocketDebugger {
       console.warn('🚫 WebSocket Connection Blocked: No JWT token available')
       return false
     }
-    
+
     console.log('✅ WebSocket Connection Ready: All authentication checks passed')
     return true
   }

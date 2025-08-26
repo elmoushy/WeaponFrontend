@@ -2,6 +2,7 @@ import { ref, computed, type Ref } from 'vue'
 import { getAccessToken } from './jwtAuthService'
 import { debugWebSocket } from '../utils/websocketDebug'
 import { envConfig } from '../utils/envConfig'
+import { logger } from '../utils/logger'
 
 export interface WebSocketMessage {
   type: string
@@ -96,7 +97,7 @@ class NotificationWebSocketService {
     // Check if WebSocket is enabled in configuration
     if (!envConfig.websocketEnabled) {
       const errorMessage = 'WebSocket is disabled in configuration'
-      console.log('WebSocket connection skipped:', errorMessage)
+      logger.debug('WebSocket connection skipped:', errorMessage)
       this._connectionError.value = errorMessage
       this._isConnecting.value = false
       return
@@ -105,7 +106,7 @@ class NotificationWebSocketService {
     const token = getAccessToken()
     if (!token) {
       const errorMessage = 'No authentication token available. Please login first.'
-      console.warn('WebSocket connection aborted:', errorMessage)
+      logger.warn('WebSocket connection aborted:', errorMessage)
       
       // Debug authentication state
       debugWebSocket.checkAuthenticationState()
@@ -116,7 +117,7 @@ class NotificationWebSocketService {
     }
 
     if (this.ws?.readyState === WebSocket.OPEN) {
-      console.log('WebSocket already connected')
+      logger.debug('WebSocket already connected')
       return
     }
 
@@ -129,7 +130,7 @@ class NotificationWebSocketService {
 
     try {
       const wsUrl = `${this.baseUrl}?token=${token}`
-      console.log('WebSocket connecting to:', wsUrl.replace(token, '[TOKEN]'))
+      logger.debug('WebSocket connecting to:', wsUrl.replace(token, '[TOKEN]'))
       
       this.ws = new WebSocket(wsUrl)
       
@@ -139,7 +140,7 @@ class NotificationWebSocketService {
       this.ws.onerror = this.handleError.bind(this)
 
     } catch (error) {
-      console.error('Failed to create WebSocket connection:', error)
+      logger.error('Failed to create WebSocket connection:', error)
       this._isConnecting.value = false
       this._connectionError.value = error instanceof Error ? error.message : 'Connection failed'
       throw error
@@ -183,7 +184,7 @@ class NotificationWebSocketService {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(data))
     } else {
-      console.error('WebSocket is not connected')
+      logger.error('WebSocket is not connected')
     }
   }
 
@@ -234,7 +235,7 @@ class NotificationWebSocketService {
    * Handle WebSocket open event
    */
   private handleOpen(event: Event): void {
-    console.log('WebSocket connected successfully')
+    logger.debug('WebSocket connected successfully')
     this._isConnected.value = true
     this._isConnecting.value = false
     this._connectionError.value = null
@@ -250,7 +251,7 @@ class NotificationWebSocketService {
   private handleMessage(event: MessageEvent): void {
     try {
       const message: WebSocketMessage = JSON.parse(event.data)
-      console.log('WebSocket message received:', message.type, message)
+      logger.debug('WebSocket message received:', message.type, message)
       
       switch (message.type) {
         case 'notification':
@@ -275,10 +276,10 @@ class NotificationWebSocketService {
           this.handlePongMessage(message.data)
           break
         default:
-          console.log('Unknown WebSocket message type:', message.type)
+          logger.debug('Unknown WebSocket message type:', message.type)
       }
     } catch (error) {
-      console.error('Failed to parse WebSocket message:', error)
+      logger.error('Failed to parse WebSocket message:', error)
     }
   }
 
@@ -319,7 +320,7 @@ class NotificationWebSocketService {
    * Handle connection success message
    */
   private handleConnectionSuccess(data: ConnectionSuccessData): void {
-    console.log('WebSocket connection success:', data.message)
+    logger.debug('WebSocket connection success:', data.message)
     this._unreadCount.value = data.unread_count
     this.trigger('connection_success', data)
   }
@@ -347,7 +348,7 @@ class NotificationWebSocketService {
    * Handle server error
    */
   private handleServerError(data: any): void {
-    console.error('WebSocket server error:', data)
+    logger.error('WebSocket server error:', data)
     this._connectionError.value = data.message || 'Server error'
     this.trigger('error', data)
   }
@@ -356,34 +357,34 @@ class NotificationWebSocketService {
    * Handle pong message - check for new notification trigger
    */
   private handlePongMessage(data: PongMessageData): void {
-    console.log('🏓 Pong message received in WebSocket service:', data)
+    logger.debug('🏓 Pong message received in WebSocket service:', data)
     
     // Regular heartbeat pong response - no action needed
     if (!data || !data.trigger) {
-      console.log('🏓 Regular pong, no action needed')
+      logger.debug('🏓 Regular pong, no action needed')
       return
     }
 
     // Check if the pong is triggered by a new notification
     if (data.trigger === 'new_notification') {
-      console.log('🔔 Pong triggered by new notification:', data)
+      logger.debug('🔔 Pong triggered by new notification:', data)
       
       // If notification data is included, handle it as a complete notification
       if (data.notification) {
-        console.log('📨 Handling complete notification from pong:', data.notification)
+        logger.debug('📨 Handling complete notification from pong:', data.notification)
         this.handleNotificationMessage(data.notification)
       } else if (data.notification_id) {
         // If only notification_id is provided, create a minimal notification event
         // This will trigger the indicator and force a refresh of notifications
-        console.log('📨 New notification ID received via pong:', data.notification_id)
+        logger.debug('📨 New notification ID received via pong:', data.notification_id)
         
         // Increment unread count since we know there's a new notification
         this._unreadCount.value += 1
-        console.log('📊 Incremented unread count to:', this._unreadCount.value)
+        logger.debug('📊 Incremented unread count to:', this._unreadCount.value)
       }
       
       // Always trigger the pong notification event for UI updates
-      console.log('🎯 Triggering pong_notification event for UI')
+      logger.debug('🎯 Triggering pong_notification event for UI')
       this.trigger('pong_notification', {
         trigger: data.trigger,
         notification_id: data.notification_id,
@@ -397,7 +398,7 @@ class NotificationWebSocketService {
    * Handle WebSocket close event
    */
   private handleClose(event: CloseEvent): void {
-    console.log('WebSocket closed:', event.code, event.reason)
+    logger.debug('WebSocket closed:', event.code, event.reason)
     this._isConnected.value = false
     this._isConnecting.value = false
     this.stopHeartbeat()
@@ -417,7 +418,7 @@ class NotificationWebSocketService {
    * Handle WebSocket error event
    */
   private handleError(event: Event): void {
-    console.error('WebSocket error:', event)
+    logger.error('WebSocket error:', event)
     this._connectionError.value = 'Connection error'
     this.trigger('error', event)
   }
@@ -429,12 +430,12 @@ class NotificationWebSocketService {
     this.reconnectAttempts++
     const delay = Math.min(this.reconnectInterval * Math.pow(2, this.reconnectAttempts - 1), 30000)
     
-    console.log(`Scheduling WebSocket reconnection in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`)
+    logger.debug(`Scheduling WebSocket reconnection in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`)
     
     setTimeout(() => {
       if (!this.isIntentionalClose) {
         this.connect().catch(error => {
-          console.error('Reconnection failed:', error)
+          logger.error('Reconnection failed:', error)
         })
       }
     }, delay)
@@ -473,7 +474,7 @@ class NotificationWebSocketService {
           requireInteraction: notification.priority === 'high'
         })
       } catch (error) {
-        console.error('Failed to show browser notification:', error)
+        logger.error('Failed to show browser notification:', error)
       }
     }
   }
@@ -485,7 +486,7 @@ class NotificationWebSocketService {
     if ('Notification' in window) {
       const permission = await Notification.requestPermission()
       if (envConfig.websocketEnabled) {
-        console.log('Browser notification permission:', permission)
+        logger.debug('Browser notification permission:', permission)
       }
       return permission
     }
@@ -497,7 +498,7 @@ class NotificationWebSocketService {
    */
   on(event: string, callback: (data: any) => void): void {
     if (envConfig.websocketEnabled) {
-      console.log(`🔗 [WebSocket] Adding event listener for: ${event}`)
+      logger.debug(`🔗 [WebSocket] Adding event listener for: ${event}`)
     }
     
     if (!this.eventListeners.has(event)) {
@@ -507,8 +508,8 @@ class NotificationWebSocketService {
     this.eventListeners.get(event)!.push(callback)
     
     if (envConfig.websocketEnabled) {
-      console.log(`🔗 [WebSocket] Total listeners for ${event}: ${this.eventListeners.get(event)!.length}`)
-      console.log(`🔗 [WebSocket] All registered events:`, Array.from(this.eventListeners.keys()))
+      logger.debug(`🔗 [WebSocket] Total listeners for ${event}: ${this.eventListeners.get(event)!.length}`)
+      logger.debug(`🔗 [WebSocket] All registered events:`, Array.from(this.eventListeners.keys()))
     }
   }
 
@@ -540,7 +541,7 @@ class NotificationWebSocketService {
    * Trigger event listeners
    */
   private trigger(event: string, data: any): void {
-    console.log(`🎯 [WebSocket] Triggering event: ${event}`, { 
+    logger.debug(`🎯 [WebSocket] Triggering event: ${event}`, { 
       event, 
       data, 
       hasListeners: this.eventListeners.has(event),
@@ -549,18 +550,18 @@ class NotificationWebSocketService {
     
     if (this.eventListeners.has(event)) {
       const callbacks = this.eventListeners.get(event)!
-      console.log(`🎯 [WebSocket] Found ${callbacks.length} listeners for ${event}`)
+      logger.debug(`🎯 [WebSocket] Found ${callbacks.length} listeners for ${event}`)
       
       callbacks.forEach((callback, index) => {
         try {
-          console.log(`🎯 [WebSocket] Calling listener ${index + 1}/${callbacks.length} for ${event}`)
+          logger.debug(`🎯 [WebSocket] Calling listener ${index + 1}/${callbacks.length} for ${event}`)
           callback(data)
         } catch (error) {
-          console.error(`Error in WebSocket event listener for ${event}:`, error)
+          logger.error(`Error in WebSocket event listener for ${event}:`, error)
         }
       })
     } else {
-      console.log(`⚠️ [WebSocket] No listeners found for event: ${event}`)
+      logger.debug(`⚠️ [WebSocket] No listeners found for event: ${event}`)
     }
   }
 
@@ -581,7 +582,7 @@ class NotificationWebSocketService {
    * Test method to simulate pong message for debugging
    */
   simulatePongMessage(data: PongMessageData) {
-    console.log('🧪 [WebSocket] Simulating pong message:', data)
+    logger.debug('🧪 [WebSocket] Simulating pong message:', data)
     this.handlePongMessage(data)
   }
 
@@ -589,7 +590,7 @@ class NotificationWebSocketService {
    * Test method to expose private trigger method for debugging
    */
   testTrigger(event: string, data: any) {
-    console.log('🧪 [WebSocket] Test triggering event:', event, data)
+    logger.debug('🧪 [WebSocket] Test triggering event:', event, data)
     this.trigger(event, data)
   }
 }
@@ -597,3 +598,4 @@ class NotificationWebSocketService {
 // Export singleton instance
 export const websocketService = new NotificationWebSocketService()
 export default websocketService
+

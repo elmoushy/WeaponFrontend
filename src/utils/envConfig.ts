@@ -137,7 +137,8 @@ class EnvironmentManager {
         errors.push('Frontend base URL must use HTTPS in production')
       }
 
-      if (!this.config.wsBaseUrl.startsWith('wss://')) {
+      // Only validate WebSocket URL if WebSocket is enabled
+      if (this.config.websocketEnabled && this.config.wsBaseUrl && !this.config.wsBaseUrl.startsWith('wss://')) {
         errors.push('WebSocket URL must use WSS (secure WebSocket) in production')
       }
 
