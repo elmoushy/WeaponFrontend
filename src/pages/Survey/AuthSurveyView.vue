@@ -449,6 +449,14 @@ const loadSurvey = async () => {
   } catch (err: any) {
     // Logging removed for production
     
+    // Extract error message from response if available
+    let errorMessage = err.message || 'فشل في تحميل الاستطلاع'
+    
+    // Check if error has a response with message field
+    if (err.response?.data?.message) {
+      errorMessage = err.response.data.message
+    }
+    
     if (err.message === 'TIMEOUT') {
       timeoutError.value = true
       await Swal.fire({
@@ -460,24 +468,24 @@ const loadSurvey = async () => {
       })
     } else if (err.message?.includes('403') || err.message?.includes('Access denied')) {
       accessDenied.value = true
-      accessMessage.value = 'ليس لديك صلاحية للوصول إلى هذا الاستطلاع'
+      accessMessage.value = errorMessage
     } else if (err.message?.includes('404')) {
-      error.value = 'الاستطلاع غير موجود'
+      error.value = errorMessage
       await Swal.fire({
         title: 'خطأ',
-        text: 'الاستطلاع غير موجود',
+        text: errorMessage,
         icon: 'error',
         confirmButtonText: 'موافق',
         confirmButtonColor: '#dc3545'
       })
     } else if (err.message?.includes('401')) {
       accessDenied.value = true
-      accessMessage.value = 'مطلوب المصادقة للوصول إلى هذا الاستطلاع'
+      accessMessage.value = errorMessage
     } else {
-      error.value = err.message || 'فشل في تحميل الاستطلاع'
+      error.value = errorMessage
       await Swal.fire({
         title: 'خطأ في تحميل الاستطلاع',
-        text: err.message || 'فشل في تحميل الاستطلاع',
+        text: errorMessage,
         icon: 'error',
         confirmButtonText: 'موافق',
         confirmButtonColor: '#dc3545'
@@ -580,6 +588,15 @@ const submitSurvey = async () => {
     
   } catch (err: any) {
     // Logging removed for production
+    
+    // Extract error message from response if available
+    let errorMessage = err.message || 'فشل في إرسال إجابات الاستطلاع'
+    
+    // Check if error has a response with message field
+    if (err.response?.data?.message) {
+      errorMessage = err.response.data.message
+    }
+    
     if (err.message === 'TIMEOUT') {
       await Swal.fire({
         title: 'انتهت مهلة الطلب',
@@ -591,13 +608,13 @@ const submitSurvey = async () => {
     } else {
       await Swal.fire({
         title: 'خطأ في الإرسال',
-        text: err.message || 'فشل في إرسال إجابات الاستطلاع',
+        text: errorMessage,
         icon: 'error',
         confirmButtonText: 'موافق',
         confirmButtonColor: '#dc3545'
       })
     }
-    questionError.value = err.message || 'فشل في إرسال إجابات الاستطلاع'
+    questionError.value = errorMessage
   } finally {
     isSubmitting.value = false
   }
