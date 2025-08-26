@@ -1,6 +1,7 @@
 import { ref, computed, type Ref } from 'vue'
 import { getAccessToken } from './jwtAuthService'
 import { debugWebSocket } from '../utils/websocketDebug'
+import { envConfig } from '../utils/envConfig'
 
 export interface WebSocketMessage {
   type: string
@@ -92,6 +93,15 @@ class NotificationWebSocketService {
    * Connect to WebSocket server
    */
   async connect(): Promise<void> {
+    // Check if WebSocket is enabled in configuration
+    if (!envConfig.websocketEnabled) {
+      const errorMessage = 'WebSocket is disabled in configuration'
+      console.log('WebSocket connection skipped:', errorMessage)
+      this._connectionError.value = errorMessage
+      this._isConnecting.value = false
+      return
+    }
+
     const token = getAccessToken()
     if (!token) {
       const errorMessage = 'No authentication token available. Please login first.'
@@ -140,6 +150,11 @@ class NotificationWebSocketService {
    * Check if WebSocket connection can be established
    */
   canConnect(): boolean {
+    // Check if WebSocket is enabled in configuration
+    if (!envConfig.websocketEnabled) {
+      return false
+    }
+    
     const token = getAccessToken()
     return !!token && this.ws?.readyState !== WebSocket.OPEN
   }
@@ -469,7 +484,9 @@ class NotificationWebSocketService {
   async requestNotificationPermission(): Promise<NotificationPermission> {
     if ('Notification' in window) {
       const permission = await Notification.requestPermission()
-      console.log('Browser notification permission:', permission)
+      if (envConfig.websocketEnabled) {
+        console.log('Browser notification permission:', permission)
+      }
       return permission
     }
     return 'denied'
@@ -479,7 +496,9 @@ class NotificationWebSocketService {
    * Add event listener
    */
   on(event: string, callback: (data: any) => void): void {
-    console.log(`🔗 [WebSocket] Adding event listener for: ${event}`)
+    if (envConfig.websocketEnabled) {
+      console.log(`🔗 [WebSocket] Adding event listener for: ${event}`)
+    }
     
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, [])
@@ -487,8 +506,10 @@ class NotificationWebSocketService {
     
     this.eventListeners.get(event)!.push(callback)
     
-    console.log(`🔗 [WebSocket] Total listeners for ${event}: ${this.eventListeners.get(event)!.length}`)
-    console.log(`🔗 [WebSocket] All registered events:`, Array.from(this.eventListeners.keys()))
+    if (envConfig.websocketEnabled) {
+      console.log(`🔗 [WebSocket] Total listeners for ${event}: ${this.eventListeners.get(event)!.length}`)
+      console.log(`🔗 [WebSocket] All registered events:`, Array.from(this.eventListeners.keys()))
+    }
   }
 
   /**

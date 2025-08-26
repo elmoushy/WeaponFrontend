@@ -32,8 +32,7 @@ export function useWebSocketNotifications(options: UseWebSocketNotificationsOpti
    */
   const connect = async (): Promise<void> => {
     if (!websocketService.canConnect()) {
-      const error = new Error('Cannot connect to WebSocket: No authentication token available or already connected')
-      console.warn('WebSocket connection skipped:', error.message)
+      const error = new Error('WebSocket feature is disabled')
       throw error
     }
     

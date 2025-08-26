@@ -27,3 +27,34 @@ npm run dev
 ```sh
 npm run build
 ```
+
+## WebSocket Management
+
+The application includes WebSocket functionality for real-time notifications. You can easily enable or disable this feature:
+
+### Check WebSocket Status
+```sh
+npm run ws:status
+```
+
+### Enable WebSocket
+```sh
+npm run ws:enable
+```
+
+### Disable WebSocket
+```sh
+npm run ws:disable
+```
+
+### Toggle WebSocket (switch between enabled/disabled)
+```sh
+npm run ws:toggle
+```
+
+**Note:** After changing WebSocket settings, you need to restart your development server for the changes to take effect.
+
+The WebSocket feature is controlled by environment variables in your `.env` file:
+- `VITE_WEBSOCKET_ENABLED=true|false` - Main feature flag
+- `VITE_WS_BASE_URL` - WebSocket server URL
+- `VITE_NOTIFICATIONS_ENDPOINT` - Notifications endpoint path

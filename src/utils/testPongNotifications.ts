@@ -2,13 +2,17 @@
 // This file is for development/testing purposes only
 
 import { websocketService } from '../services/websocketService'
+import { envConfig } from './envConfig'
 import type { NotificationWebSocketData, PongMessageData } from '../services/websocketService'
 
-/**
- * Simulate a pong message with new notification trigger (matching the provided structure)
- * This is for testing purposes only - in production, pong messages come from the server
- */
-export function simulatePongNotification(notificationData?: Partial<NotificationWebSocketData>) {
+// Only initialize if WebSocket is enabled
+if (envConfig.websocketEnabled) {
+  
+  /**
+   * Simulate a pong message with new notification trigger (matching the provided structure)
+   * This is for testing purposes only - in production, pong messages come from the server
+   */
+  function simulatePongNotification(notificationData?: Partial<NotificationWebSocketData>) {
   // Create a mock notification
   const mockNotification: NotificationWebSocketData = {
     id: `ad7c8ebd-0172-4493-8924-e58054f4534a`,
@@ -42,7 +46,7 @@ export function simulatePongNotification(notificationData?: Partial<Notification
 /**
  * Simulate a pong message with only notification_id (more realistic scenario)
  */
-export function simulatePongNotificationIdOnly(notificationId?: string) {
+  function simulatePongNotificationIdOnly(notificationId?: string) {
   const pongData: PongMessageData = {
     trigger: 'new_notification',
     notification_id: notificationId || `notif_${Date.now()}`,
@@ -59,7 +63,7 @@ export function simulatePongNotificationIdOnly(notificationId?: string) {
 /**
  * Simulate a regular pong message without notification
  */
-export function simulateRegularPong() {
+  function simulateRegularPong() {
   const pongData: PongMessageData = {
     timestamp: new Date().toISOString()
   }
@@ -68,21 +72,23 @@ export function simulateRegularPong() {
   websocketService.simulatePongMessage(pongData)
 
   console.log('Simulated regular pong message')
-}
-
-/**
- * Add these functions to the global window for easy testing in browser console
- */
-if (typeof window !== 'undefined') {
-  (window as any).testPongNotifications = {
-    simulatePongNotification,
-    simulatePongNotificationIdOnly,
-    simulateRegularPong
   }
-  
-  console.log('Pong notification test functions added to window.testPongNotifications')
-  console.log('Usage:')
-  console.log('  window.testPongNotifications.simulatePongNotification()')
-  console.log('  window.testPongNotifications.simulatePongNotificationIdOnly()')
-  console.log('  window.testPongNotifications.simulateRegularPong()')
-}
+
+  /**
+   * Add these functions to the global window for easy testing in browser console
+   */
+  if (typeof window !== 'undefined') {
+    (window as any).testPongNotifications = {
+      simulatePongNotification,
+      simulatePongNotificationIdOnly,
+      simulateRegularPong
+    }
+    
+    console.log('Pong notification test functions added to window.testPongNotifications')
+    console.log('Usage:')
+    console.log('  window.testPongNotifications.simulatePongNotification()')
+    console.log('  window.testPongNotifications.simulatePongNotificationIdOnly()')
+    console.log('  window.testPongNotifications.simulateRegularPong()')
+  }
+
+} // End of WebSocket enabled check

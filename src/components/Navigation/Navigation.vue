@@ -684,7 +684,10 @@ watch(
     if (currentUser && !wsConnected.value) {
       // User is authenticated, connect WebSocket
       wsConnect().catch(error => {
-        console.warn('WebSocket auto-connect on auth failed:', error instanceof Error ? error.message : 'Unknown error')
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+        if (errorMessage !== 'WebSocket feature is disabled') {
+          console.warn('WebSocket auto-connect on auth failed:', errorMessage)
+        }
       })
     } else if (!currentUser && wsConnected.value) {
       // User logged out, disconnect WebSocket
@@ -709,7 +712,10 @@ onMounted(() => {
   setTimeout(() => {
     if (user.value && !wsConnected.value) {
       wsConnect().catch(error => {
-        console.warn('Navigation WebSocket connection failed:', error instanceof Error ? error.message : 'Unknown error')
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+        if (errorMessage !== 'WebSocket feature is disabled') {
+          console.warn('Navigation WebSocket connection failed:', errorMessage)
+        }
       })
     }
   }, 500) // Longer delay to ensure auth is ready

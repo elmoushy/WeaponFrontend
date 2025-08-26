@@ -31,18 +31,18 @@ class NotificationService {
       }
       
       const url = `${this.baseURL}/${params.toString() ? `?${params.toString()}` : ''}`
-      console.log('NotificationService: Making request to:', url)
+      // console.log('NotificationService: Making request to:', url)
       
       // Get JWT token and send it explicitly like surveyService
       const token = getAccessToken()
-      console.log('NotificationService: Using token:', token ? 'Token present' : 'No token')
+      // console.log('NotificationService: Using token:', token ? 'Token present' : 'No token')
       
       const response = await apiClient.get(url, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       })
-      console.log('NotificationService: Response received:', response.data)
+      // console.log('NotificationService: Response received:', response.data)
       
       // Handle response similar to surveyService pattern
       if (response.data && response.data.status === 'success') {
@@ -240,14 +240,14 @@ class NotificationService {
    */
   async getRecentNotifications(lang?: 'en' | 'ar'): Promise<Notification[]> {
     try {
-      console.log('NotificationService: Getting recent notifications with lang:', lang)
+      // console.log('NotificationService: Getting recent notifications with lang:', lang)
       const response = await this.getNotifications({
         page_size: 10,
         ordering: '-created_at',
         exclude_expired: true,
         lang
       })
-      console.log('NotificationService: Received response:', response)
+      // console.log('NotificationService: Received response:', response)
       return response.results || []
     } catch (error) {
       console.error('Failed to get recent notifications:', error)

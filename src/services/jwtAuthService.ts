@@ -1,5 +1,6 @@
 import axios, { type AxiosInstance, type AxiosResponse, type AxiosError } from 'axios'
 import Swal from 'sweetalert2'
+import { logger } from '../utils/logger'
 import type { 
   HealthCheckResponse,
   UserProfileResponse,
@@ -44,7 +45,7 @@ const initializeTokensFromStorage = (): void => {
       // Don't set access token here - it should be refreshed
     }
   } catch (error) {
-    console.warn('Failed to load refresh token from session storage:', error)
+    logger.warn('Failed to load refresh token from session storage:', error)
   }
 }
 
@@ -57,7 +58,7 @@ const storeRefreshToken = (token: string | null): void => {
       sessionStorage.removeItem(REFRESH_TOKEN_KEY)
     }
   } catch (error) {
-    console.warn('Failed to store refresh token in session storage:', error)
+    logger.warn('Failed to store refresh token in session storage:', error)
   }
 }
 
@@ -123,7 +124,7 @@ export const silentRefreshAccessToken = async (): Promise<string | null> => {
       
       // Handle 401 Unauthorized specifically - token is expired or invalid
       if (response.status === 401) {
-        console.warn('Refresh token expired or invalid, logging out user')
+        logger.warn('Refresh token expired or invalid, logging out user')
         clearTokens()
         await showSessionExpiredAlert()
         return null
@@ -140,7 +141,7 @@ export const silentRefreshAccessToken = async (): Promise<string | null> => {
     } catch (error) {
       refreshFailureCount++
       refreshDisabled = true
-      console.warn('Silent token refresh failed:', error)
+      logger.warn('Silent token refresh failed:', error)
       if (refreshFailureCount >= MAX_REFRESH_FAILURES) {
         clearTokens()
         await showSessionExpiredAlert()
