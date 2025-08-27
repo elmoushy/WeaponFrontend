@@ -926,7 +926,7 @@
       // loadSurveyResponses()
     }
 
-const onAnalyticsFiltersChange = async (filters: any) => {
+const onAnalyticsFiltersChange = async () => {
   if (isProgrammaticAnalyticsUpdate.value) return
   if (analyticsLoading.value || analyticsLoadingPromise.value || isHandlingAnalyticsFilters.value) return
   if (!surveyAnalytics.value) return
