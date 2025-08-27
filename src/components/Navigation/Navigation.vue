@@ -306,18 +306,12 @@ const {
 
 // Add direct WebSocket service event listener for pong notifications
 const handlePongNotificationEvent = (data: any) => {
-  console.log('🔔 [Navigation] Pong notification event received:', data)
-  console.log('🔔 [Navigation] Current hasNewWebSocketNotification state:', hasNewWebSocketNotification.value)
   
   if (data.trigger === 'new_notification') {
-    console.log('🎯 [Navigation] Triggering notification indicator!')
     showNewNotificationIndicator()
     
     // Force reload notifications on next open
     hasLoadedNotifications.value = false
-    console.log('🔄 [Navigation] Forced notification reload flag set')
-  } else {
-    console.log('⚠️ [Navigation] Pong trigger not recognized:', data.trigger)
   }
 }
 
@@ -523,26 +517,18 @@ const toggleNotifications = () => {
 
 // New notification indicator methods
 const showNewNotificationIndicator = () => {
-  console.log('🎯 [Navigation] showNewNotificationIndicator called!')
-  console.log('🎯 [Navigation] Before state change:', hasNewWebSocketNotification.value)
   
   hasNewWebSocketNotification.value = true
   
-  console.log('🎯 [Navigation] After state change:', hasNewWebSocketNotification.value)
-  
   // Clear any existing timer
   if (newNotificationTimer.value) {
-    console.log('🕒 [Navigation] Clearing existing timer')
     clearTimeout(newNotificationTimer.value)
   }
   
   // Auto-hide the indicator after 5 seconds
   newNotificationTimer.value = setTimeout(() => {
-    console.log('🕒 [Navigation] Auto-hiding indicator after 5 seconds')
     hasNewWebSocketNotification.value = false
   }, 5000)
-  
-  console.log('🕒 [Navigation] Timer set for auto-hide')
 }
 
 const hideNewNotificationIndicator = () => {
@@ -632,7 +618,6 @@ watch(
   (newLength, oldLength) => {
     // Show indicator when new WebSocket notifications arrive
     if (newLength > (oldLength || 0)) {
-      console.log('🔔 New WebSocket notification received, showing indicator')
       showNewNotificationIndicator()
     }
   }
@@ -643,7 +628,6 @@ watch(
   () => hasNewNotifications.value,
   (hasNew) => {
     if (hasNew) {
-      console.log('🔔 New notification flag set, showing indicator')
       showNewNotificationIndicator()
     }
   }

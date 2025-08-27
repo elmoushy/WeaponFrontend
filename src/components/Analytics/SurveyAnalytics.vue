@@ -72,7 +72,7 @@
           </div>
         </div>
 
-        <div :class="$style.kpiCard">
+        <!-- <div :class="$style.kpiCard">
           <div :class="$style.kpiIcon">
             <i class="fas fa-percentage" style="color: #FF9800;"></i>
           </div>
@@ -80,9 +80,9 @@
             <div :class="$style.kpiNumber">{{ formatPercentage(kpis.completion_rate) }}</div>
             <div :class="$style.kpiLabel">معدل الإكمال</div>
           </div>
-        </div>
+        </div> -->
 
-        <div :class="$style.kpiCard">
+        <!-- <div :class="$style.kpiCard">
           <div :class="$style.kpiIcon">
             <i class="fas fa-clock" style="color: #9C27B0;"></i>
           </div>
@@ -90,7 +90,7 @@
             <div :class="$style.kpiNumber">{{ formatDuration(kpis.average_completion_time) }}</div>
             <div :class="$style.kpiLabel">متوسط زمن الإكمال</div>
           </div>
-        </div>
+        </div> -->
 
         <div :class="$style.kpiCard">
           <div :class="$style.kpiIcon">
@@ -495,13 +495,13 @@ const formatPercentage = (value: number) => {
   return `${(value * 100).toFixed(1)}%`
 }
 
-const formatDuration = (seconds: number) => {
-  if (!seconds && seconds !== 0) return '0s'
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = Math.floor(seconds % 60)
-  if (minutes > 0) return `${minutes}m ${remainingSeconds}s`
-  return `${remainingSeconds}s`
-}
+// const formatDuration = (seconds: number) => {
+//   if (!seconds && seconds !== 0) return '0s'
+//   const minutes = Math.floor(seconds / 60)
+//   const remainingSeconds = Math.floor(seconds % 60)
+//   if (minutes > 0) return `${minutes}m ${remainingSeconds}s`
+//   return `${remainingSeconds}s`
+// }
 
 const formatDateTime = (dateString: string) => {
   if (!dateString) return NEVER_TEXT

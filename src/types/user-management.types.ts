@@ -239,6 +239,42 @@ export interface GroupModalMode {
 }
 
 export interface BulkActionMode {
-  type: 'add_to_group' | 'remove_from_group' | 'change_role'
+  type: 'add_to_group' | 'remove_from_group' | 'change_role' | 'bulk_delete'
   selected_users: User[]
+}
+
+// Bulk Delete Types
+export interface BulkDeleteRequest {
+  user_ids: number[]
+}
+
+export interface BulkDeleteSuccessfulUser {
+  id: number
+  email: string
+  username: string
+  role: string
+}
+
+export interface BulkDeleteFailedUser {
+  id: number
+  email?: string
+  username?: string
+  error: string
+}
+
+export interface BulkDeleteSummary {
+  total_requested: number
+  successful_deletions: number
+  failed_deletions: number
+}
+
+export interface BulkDeleteResults {
+  successful: BulkDeleteSuccessfulUser[]
+  failed: BulkDeleteFailedUser[]
+}
+
+export interface BulkDeleteResponse {
+  message: string
+  summary: BulkDeleteSummary
+  results: BulkDeleteResults
 }

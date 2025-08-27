@@ -185,7 +185,7 @@
             </div>
 
             <!-- Text Questions -->
-            <div v-else-if="question?.type === 'text' || question?.type === 'textarea'" :class="styles.chartSection">
+            <!-- <div v-else-if="question?.type === 'text' || question?.type === 'textarea'" :class="styles.chartSection">
               <h3 :class="styles.sectionTitle">تحليل النصوص</h3>
               <div v-if="details.distributions?.textual_analysis" :class="styles.textAnalysis">
                 <div :class="styles.textStats">
@@ -217,12 +217,15 @@
                   </div>
                 </div>
               </div>
-            </div>
+            </div> -->
           </div>
 
           <!-- Recent Responses -->
-          <div v-if="details.recent_responses?.length" :class="styles.recentSection">
-            <h3 :class="styles.sectionTitle">أحدث الردود</h3>
+          <div
+            v-if="details.recent_responses?.length && (question?.type !== 'text' && question?.type !== 'textarea')"
+            :class="styles.recentSection"
+          >         
+          <h3 :class="styles.sectionTitle">أحدث الردود</h3>
             <div :class="styles.responsesList">
               <div
                 v-for="response in details.recent_responses.slice(0, 5)"
@@ -242,9 +245,9 @@
                     </span>
                   </div>
                 </div>
-                <div v-if="response.completion_time_seconds" :class="styles.completionTime">
+                <!-- <div v-if="response.completion_time_seconds" :class="styles.completionTime">
                   {{ formatDuration(response.completion_time_seconds) }}
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
@@ -345,13 +348,13 @@ const formatDateTime = (dateString: string) => {
   })
 }
 
-const formatDuration = (seconds: number) => {
-  if (!seconds && seconds !== 0) return '0s'
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = Math.floor(seconds % 60)
-  if (minutes > 0) return `${minutes}د ${remainingSeconds}ث`
-  return `${remainingSeconds}ث`
-}
+// const formatDuration = (seconds: number) => {
+//   if (!seconds && seconds !== 0) return '0s'
+//   const minutes = Math.floor(seconds / 60)
+//   const remainingSeconds = Math.floor(seconds % 60)
+//   if (minutes > 0) return `${minutes}د ${remainingSeconds}ث`
+//   return `${remainingSeconds}ث`
+// }
 
 const getQuestionTypeIcon = (type: string) => {
   const icons: Record<string, string> = {

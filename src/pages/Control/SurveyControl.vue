@@ -169,8 +169,8 @@
           <p :class="$style.cardDescription">{{ survey.description }}</p>
           
           <div :class="$style.cardMeta">
-            <span>{{ t('survey.card.createdBy') }}: {{ survey.creator_email }}</span>
-            <span>{{ formatDate(survey.updated_at) }}</span>
+            <span>{{ t('survey.card.createdBy') }}: {{ getCreatorDisplayName(survey.creator_email) }}</span>
+            <span>{{ formatDate(survey.updated_at, survey.created_at) }}</span>
           </div>
           
           <div :class="$style.cardStats">
@@ -205,6 +205,17 @@
             >
               <i class="fas fa-paper-plane"></i>
               <span :class="$style.actionButtonText">{{ isRTL ? 'إرسال' : 'Submit' }}</span>
+            </button>
+            
+            <!-- Manage Access button - for submitted surveys with zero responses -->
+            <button 
+              v-if="survey.status === 'submitted' && survey.response_count === 0" 
+              :class="$style.actionButton" 
+              @click.stop="manageSurveyAccess(survey)" 
+              :title="isRTL ? 'إدارة الوصول' : 'Manage Access'"
+            >
+              <i class="fas fa-share-alt"></i>
+              <span :class="$style.actionButtonText">{{ isRTL ? 'إدارة الوصول' : 'Manage Access' }}</span>
             </button>
             
             <!-- Share/Manage Access button - hidden for submitted and draft surveys -->
@@ -279,7 +290,7 @@
             <h4 :class="$style.listItemTitle">{{ survey.title }}</h4>
             <p :class="$style.listItemDescription">{{ survey.description }}</p>
             <div :class="$style.listItemMeta">
-              <span>{{ t('survey.card.createdBy') }}: {{ survey.creator_email }}</span>
+              <span>{{ t('survey.card.createdBy') }}: {{ getCreatorDisplayName(survey.creator_email) }}</span>
             </div>
           </div>
           
@@ -319,7 +330,7 @@
           </div>
           
           <div :class="$style.listItemDate">
-            {{ formatDate(survey.updated_at) }}
+            {{ formatDate(survey.updated_at, survey.created_at) }}
           </div>
           
           <div :class="$style.listItemActions">
@@ -343,6 +354,14 @@
                 >
                   <i class="fas fa-paper-plane"></i>
                   {{ isRTL ? 'إرسال' : 'Submit' }}
+                </button>
+                <button 
+                  v-if="survey.status === 'submitted' && survey.response_count === 0" 
+                  :class="$style.actionMenuItem" 
+                  @click.stop="manageSurveyAccess(survey)"
+                >
+                  <i class="fas fa-share-alt"></i>
+                  {{ isRTL ? 'إدارة الوصول' : 'Manage Access' }}
                 </button>
                 <button 
                   v-if="survey.status !== 'submitted' && survey.status !== 'draft'" 
@@ -372,9 +391,6 @@
 
       <!-- Pagination Controls -->
       <div :class="$style.paginationSection">
-        <div :class="$style.paginationInfo">
-          <span>{{ t('survey.pagination.showing') }} {{ ((currentPage - 1) * itemsPerPage) + 1 }} - {{ Math.min(currentPage * itemsPerPage, totalCount) }} {{ t('survey.pagination.of') }} {{ totalCount }} {{ t('survey.pagination.items') }}</span>
-        </div>
         
         <div :class="$style.paginationControls">
           <button 
@@ -614,9 +630,7 @@ const loadSurveys = async (resetPage = false) => {
       params.sort_by = selectedSort.value
     }
     
-    console.log('Loading surveys with params:', params)
     const response = await surveyService.getAllSurveys(params)
-    console.log('Survey service response:', response)
     
     // Handle the new paginated response structure
     if (response && 'results' in response) {
@@ -624,8 +638,6 @@ const loadSurveys = async (resetPage = false) => {
         ...survey,
         questions: survey.questions || []
       }))
-      
-      console.log('Mapped surveys:', surveys.value)
       
       // Update pagination info
       totalCount.value = response.count || 0
@@ -635,15 +647,7 @@ const loadSurveys = async (resetPage = false) => {
       appliedFilters.value = response.applied_filters || {}
       availableFilters.value = response.available_filters || {}
       
-      console.log('Pagination info updated:', {
-        totalCount: totalCount.value,
-        totalPages: totalPages.value,
-        hasNext: hasNext.value,
-        hasPrevious: hasPrevious.value
-      })
-      
     } else {
-      console.log('No results in response, setting empty arrays')
       surveys.value = []
       totalCount.value = 0
       totalPages.value = 0
@@ -1004,9 +1008,8 @@ const handleLinkGenerated = (link: any) => {
   publicLinkForSharing.value = link
 }
 
-const handleStatusUpdate = (message: string, type: string) => {
-  // You can add toast notifications or other status handling here
-  console.log(`${type}: ${message}`)
+const handleStatusUpdate = (_message: string, _type: string) => {
+  // Status handling functionality for production
 }
 
 const viewResponses = (surveyId: string) => {
@@ -1237,8 +1240,27 @@ const performBulkOperation = async (operation: string) => {
   }
 }
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString()
+const formatDate = (dateString: string | null | undefined, fallbackDate?: string | null) => {
+  // Try the main date first, then fallback date
+  const dateToUse = dateString || fallbackDate
+  
+  if (!dateToUse) {
+    return isRTL.value ? 'تاريخ غير متاح' : 'Date not available'
+  }
+  
+  const date = new Date(dateToUse)
+  if (isNaN(date.getTime())) {
+    return isRTL.value ? 'تاريخ غير صحيح' : 'Invalid date'
+  }
+  
+  return date.toLocaleDateString()
+}
+
+const getCreatorDisplayName = (creatorEmail: string | null) => {
+  if (!creatorEmail) {
+    return isRTL.value ? 'هذا الشخص لم يعد متاح' : 'This person is no longer available'
+  }
+  return creatorEmail
 }
 
 const toggleSelectAll = () => {

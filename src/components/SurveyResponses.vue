@@ -740,18 +740,15 @@ const getQuestionTypeLabel = (type: string) => {
 }
 
 // Analytics event handlers
-const onAnalyticsPeriodClick = (period: any) => {
-  console.log('Period clicked:', period)
+const onAnalyticsPeriodClick = (_period: any) => {
   // Handle period change logic here
 }
 
-const onAnalyticsFiltersChange = (filters: any) => {
-  console.log('Filters changed:', filters)
+const onAnalyticsFiltersChange = (_filters: any) => {
   // Handle filters change logic here
 }
 
-const onAnalyticsQuestionClick = (data: any) => {
-  console.log('Analytics question clicked:', data)
+const onAnalyticsQuestionClick = (_data: any) => {
   // Handle analytics question click logic here
 }
 

@@ -11,6 +11,13 @@
             :value="filters.search || ''"
             @input="onSearchChange"
             :class="$style.searchInput"
+            autocomplete="off"
+            autocapitalize="off"
+            autocorrect="off"
+            spellcheck="false"
+            data-lpignore="true"
+            data-1p-ignore="true"
+            data-bwignore="true"
           />
         </div>
         
@@ -53,6 +60,14 @@
         >
           <i class="fas fa-users"></i>
           {{ t('userManagement.users.actions.addToGroup') }}
+        </button>
+        <button 
+          :class="[$style.bulkBtn, $style.dangerBtn]"
+          @click="$emit('bulk-action', 'bulk_delete')"
+          :disabled="!canBulkDelete"
+        >
+          <i class="fas fa-trash"></i>
+          {{ t('userManagement.users.actions.bulkDelete') }}
         </button>
         <button 
           :class="[$style.bulkBtn, $style.secondaryBtn]"
@@ -132,6 +147,7 @@
                 >
                   <i class="fas fa-eye"></i>
                 </button> -->
+                
                 <button 
                   v-if="canEditUser(user)"
                   :class="[$style.actionBtn, $style.editBtn]"
@@ -140,14 +156,24 @@
                 >
                   <i class="fas fa-edit"></i>
                 </button>
-                <!-- <button 
+                
+                <button 
+                  v-if="canResetPassword(user)"
+                  :class="[$style.actionBtn, $style.resetPasswordBtn]"
+                  @click="$emit('user-action', 'reset_password', user)"
+                  :title="t('userManagement.tooltips.resetPassword')"
+                >
+                  <i class="fas fa-key"></i>
+                </button>
+                
+                <button 
                   v-if="canDeleteUser(user)"
                   :class="[$style.actionBtn, $style.deleteBtn]"
                   @click="$emit('user-action', 'delete', user)"
                   :title="t('userManagement.tooltips.deleteUser')"
                 >
                   <i class="fas fa-trash"></i>
-                </button> -->
+                </button>
               </div>
             </td>
           </tr>
@@ -255,6 +281,25 @@ const isAllSelected = computed(() => {
   return (props.users?.length || 0) > 0 && (props.selectedUsers?.length || 0) === (props.users?.length || 0)
 })
 
+const canBulkDelete = computed(() => {
+  if (!props.currentUser || props.selectedUsers.length === 0) return false
+  
+  // Check if user has admin privileges
+  if (props.currentUser.role !== 'admin' && props.currentUser.role !== 'super_admin') return false
+  
+  // Check if trying to delete self
+  const hasSelfSelected = props.selectedUsers.some(user => user.id === props.currentUser?.id)
+  if (hasSelfSelected) return false
+  
+  // Check if trying to delete super_admin while not being super_admin
+  if (props.currentUser.role === 'admin') {
+    const hasSuperAdminSelected = props.selectedUsers.some(user => user.role === 'super_admin')
+    if (hasSuperAdminSelected) return false
+  }
+  
+  return true
+})
+
 // Methods
 const isUserSelected = (user: User) => {
   return props.selectedUsers.some(selected => selected.id === user.id)
@@ -264,6 +309,40 @@ const canEditUser = (user: User) => {
   if (!props.currentUser) return false
   return props.currentUser.role === 'super_admin' || 
          (props.currentUser.role === 'admin' && user.role !== 'super_admin')
+}
+
+const canDeleteUser = (user: User) => {
+  if (!props.currentUser) return false
+  
+  // Cannot delete self
+  if (user.id === props.currentUser.id) return false
+  
+  // Only admin and super_admin can delete users
+  if (props.currentUser.role !== 'admin' && props.currentUser.role !== 'super_admin') return false
+  
+  // Admin cannot delete super_admin
+  if (props.currentUser.role === 'admin' && user.role === 'super_admin') return false
+  
+  return true
+}
+
+const canResetPassword = (user: User) => {
+  if (!props.currentUser) return false
+  
+  // Cannot reset own password using this method
+  if (user.id === props.currentUser.id) return false
+  
+  // Only admin and super_admin can reset passwords
+  if (props.currentUser.role !== 'admin' && props.currentUser.role !== 'super_admin') return false
+  
+  // Admin cannot reset super_admin password
+  if (props.currentUser.role === 'admin' && user.role === 'super_admin') return false
+  
+  // Only works for regular authentication users (not Azure AD users)
+  // Note: We assume users without azure_object_id are regular auth users
+  if (user.azure_object_id) return false
+  
+  return true
 }
 
 const getRoleDisplay = (role: string) => {
@@ -401,6 +480,23 @@ const onSortChange = (field: string) => {
   border: 1px solid var(--border-color);
 }
 
+.dangerBtn {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  color: white;
+}
+
+.dangerBtn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ee5a52, #dc4c3e);
+  transform: translateY(-1px);
+}
+
+.dangerBtn:disabled {
+  background: var(--bg-glass);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .tableContainer {
   overflow-x: auto;
 }
@@ -523,6 +619,16 @@ const onSortChange = (field: string) => {
 
 .editBtn:hover {
   background: #4facfe;
+  color: white;
+}
+
+.resetPasswordBtn {
+  background: var(--bg-glass);
+  color: var(--text-secondary);
+}
+
+.resetPasswordBtn:hover {
+  background: #f39c12;
   color: white;
 }
 

@@ -301,7 +301,6 @@ const showSessionExpiredAlert = async (): Promise<void> => {
   
   // CRITICAL: Don't show session expired alert on survey pages - surveys are public!
   if (isSurveyContext()) {
-    console.log('Skipping session expired alert - user is on a public survey page')
     return
   }
   
@@ -311,7 +310,6 @@ const showSessionExpiredAlert = async (): Promise<void> => {
       currentPath.includes('/survey/password/') ||
       currentPath.includes('/survey/auth/') ||
       currentPath.startsWith('/survey/')) {
-    console.log('Extra safety check: Skipping session expired alert for survey URL:', currentPath)
     return
   }
   
@@ -346,7 +344,6 @@ const showSessionExpiredAlert = async (): Promise<void> => {
 const redirectToLogin = (): void => {
   // CRITICAL: Don't redirect if we're on a survey page - surveys are public!
   if (isSurveyContext()) {
-    console.log('Skipping login redirect - user is on a public survey page')
     return
   }
   
@@ -356,7 +353,6 @@ const redirectToLogin = (): void => {
       currentPath.includes('/survey/password/') ||
       currentPath.includes('/survey/auth/') ||
       currentPath.startsWith('/survey/')) {
-    console.log('Extra safety check: Skipping login redirect for survey URL:', currentPath)
     return
   }
   
@@ -369,14 +365,12 @@ apiClient.interceptors.request.use(
   async (config) => {
     // CRITICAL: Skip auth token injection for survey contexts - surveys are public!
     if (isSurveyContext(config.url)) {
-      console.log('Skipping auth token injection for survey API endpoint:', config.url)
       return config
     }
     
     // Extra safety check for survey URLs in the current page
     const currentPath = window.location.pathname
     if (currentPath.startsWith('/survey/')) {
-      console.log('Extra safety: Skipping auth token injection - user is on survey page:', currentPath)
       return config
     }
     
@@ -406,14 +400,12 @@ apiClient.interceptors.response.use(
     
     // CRITICAL: Don't attempt refresh or show alerts for survey API endpoints - surveys are public!
     if (isSurveyContext(originalRequest?.url)) {
-      console.log('Skipping auth handling for survey API endpoint:', originalRequest.url)
       return Promise.reject(error)
     }
     
     // Extra safety check for survey URLs in the current page
     const currentPath = window.location.pathname
     if (currentPath.startsWith('/survey/')) {
-      console.log('Extra safety: Skipping auth handling - user is on survey page:', currentPath)
       return Promise.reject(error)
     }
     

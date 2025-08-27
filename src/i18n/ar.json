@@ -450,6 +450,7 @@
     "cancel": "إلغاء",
     "close": "إغلاق",
     "save": "حفظ",
+    "saving": "جارٍ الحفظ...",
     "create": "إنشاء",
     "copy": "نسخ",
     "saveChanges": "حفظ التغييرات",
@@ -1121,7 +1122,8 @@
         "changeRole": "تغيير الدور",
         "addToGroup": "إضافة إلى مجموعة",
         "removeFromGroup": "إزالة من المجموعة",
-        "viewGroups": "عرض المجموعات"
+        "viewGroups": "عرض المجموعات",
+        "bulkDelete": "حذف جماعي"
       }
     },
     "groups": {
@@ -1165,6 +1167,9 @@
           "title": "دعوة مستخدم",
           "subtitle": "إرسال دعوة لمستخدم جديد"
         },
+        "resetPassword": {
+          "title": "إعادة تعيين كلمة مرور المستخدم"
+        },
         "delete": {
           "title": "حذف المستخدم",
           "subtitle": "هل أنت متأكد من حذف هذا المستخدم؟",
@@ -1195,7 +1200,8 @@
         "subtitle": "تطبيق إجراءات على المستخدمين المحددين",
         "addToGroup": "إضافة إلى مجموعة",
         "removeFromGroup": "إزالة من مجموعة",
-        "changeRole": "تغيير الدور"
+        "changeRole": "تغيير الدور",
+        "bulkDelete": "حذف المستخدمين المحددين"
       },
       "addUsersToGroup": {
         "title": "إضافة مستخدمين إلى المجموعة",
@@ -1232,6 +1238,8 @@
         "authTypeAzure": "Azure AD",
         "password": "كلمة المرور",
         "passwordPlaceholder": "أدخل كلمة مرور آمنة",
+        "showPassword": "إظهار كلمة المرور",
+        "hidePassword": "إخفاء كلمة المرور",
         "groups": "المجموعات",
         "isActive": "مستخدم نشط",
         "makeGroupAdmin": "مدير المجموعة"
@@ -1300,7 +1308,91 @@
       "error": "حدث خطأ",
       "permissionDenied": "ليس لديك صلاحية لهذا الإجراء",
       "networkError": "خطأ في الشبكة",
-      "unknownError": "خطأ غير معروف"
+      "unknownError": "خطأ غير معروف",
+      "bulkDelete": {
+        "confirm": {
+          "title": "حذف المستخدمين المحددين؟",
+          "text": "هذا الإجراء لا يمكن التراجع عنه.",
+          "confirmButtonText": "تأكيد الحذف",
+          "cancelButtonText": "إلغاء",
+          "largeBatchWarning": "أنت على وشك حذف {{count}} مستخدمًا. يرجى التأكيد."
+        },
+        "results": {
+          "success": {
+            "title": "تم الحذف بنجاح",
+            "text": "اكتمل حذف المستخدمين.\nالإجمالي المطلوب: {{total}} • تم الحذف: {{success}} • فشل: {{failed}}",
+            "confirmButtonText": "حسنًا"
+          },
+          "partial": {
+            "title": "تم الحذف جزئيًا",
+            "text": "بعض المستخدمين لم يتم حذفهم.\nالإجمالي المطلوب: {{total}} • تم الحذف: {{success}} • فشل: {{failed}}\nتفاصيل الإخفاقات ستظهر في الجدول.",
+            "confirmButtonText": "عرض التفاصيل"
+          },
+          "badRequest": {
+            "title": "تعذر تنفيذ العملية",
+            "texts": {
+              "invalidData": "بيانات غير صالحة. يرجى التحقق من القائمة.",
+              "cannotDeleteSelf": "لا يمكنك حذف حسابك الشخصي.",
+              "noUsersDeleted": "لم يتم حذف أي مستخدم. تحقق من المعرفات.",
+              "cannotDeleteCurrentUser": "لا يمكن حذف الحساب الحالي",
+              "cannotDeleteCurrentUserDesc": "لا يُسمح بحذف حساب المستخدم الذي قام بتسجيل الدخول.",
+              "cannotDeleteLastSuperAdmin": "عملية مرفوضة",
+              "cannotDeleteLastSuperAdminDesc": "لا يمكن حذف آخر حساب مدير عام (Super Admin)."
+            },
+            "confirmButtonText": "فهمت"
+          },
+          "unauthorized": {
+            "title": "غير مصرح",
+            "text": "يرجى تسجيل الدخول بصلاحيات إدارية ثم المحاولة مرة أخرى.",
+            "confirmButtonText": "تسجيل الدخول"
+          },
+          "forbidden": {
+            "title": "صلاحيات غير كافية",
+            "text": "ليست لديك صلاحية تنفيذ هذا الإجراء.",
+            "confirmButtonText": "فهمت"
+          },
+          "serverError": {
+            "title": "خطأ غير متوقع",
+            "text": "حدث خطأ أثناء حذف المستخدمين. يرجى المحاولة لاحقًا.",
+            "confirmButtonText": "إعادة المحاولة"
+          }
+        }
+      },
+      "singleDelete": {
+        "confirm": {
+          "title": "تأكيد حذف المستخدم",
+          "text": "هل أنت متأكد من حذف المستخدم '{{email}}'؟ هذا الإجراء لا يمكن التراجع عنه.",
+          "confirmButtonText": "نعم، احذف المستخدم",
+          "cancelButtonText": "إلغاء"
+        },
+        "results": {
+          "success": {
+            "title": "تم حذف المستخدم بنجاح",
+            "text": "تم حذف المستخدم '{{email}}' بنجاح.",
+            "confirmButtonText": "موافق"
+          },
+          "error": {
+            "title": "فشل في حذف المستخدم",
+            "text": "حدث خطأ أثناء حذف المستخدم. يرجى المحاولة مرة أخرى لاحقاً.",
+            "confirmButtonText": "موافق"
+          }
+        }
+      },
+      "resetPassword": {
+        "success": {
+          "title": "تم إعادة تعيين كلمة المرور بنجاح",
+          "text": "تم إعادة تعيين كلمة المرور للمستخدم '{{email}}' بنجاح."
+        },
+        "error": {
+          "title": "فشل في إعادة تعيين كلمة المرور",
+          "text": "حدث خطأ أثناء إعادة تعيين كلمة المرور للمستخدم. يرجى المحاولة مرة أخرى لاحقاً.",
+          "userNotFound": "المستخدم غير موجود أو غير متاح.",
+          "forbidden": {
+            "title": "تم رفض الإذن",
+            "text": "ليس لديك صلاحية لإعادة تعيين كلمة المرور لهذا المستخدم."
+          }
+        }
+      }
     },
     "buttons": {
       "save": "حفظ",
@@ -1324,13 +1416,19 @@
       "selectAll": "تحديد الكل",
       "deselectAll": "إلغاء تحديد الكل",
       "addUsers": "إضافة مستخدمين",
-      "changeRole": "تغيير الدور"
+      "changeRole": "تغيير الدور",
+      "resetPassword": "إعادة تعيين كلمة المرور",
+      "ok": "موافق"
     },
     "validation": {
       "required": "هذا الحقل مطلوب",
       "password": {
+        "requirements": "متطلبات كلمة المرور:",
         "minLength": "يجب أن تكون كلمة المرور 8 أحرف على الأقل",
-        "tooCommon": "كلمة المرور شائعة جداً. يرجى اختيار كلمة مرور أكثر أماناً",
+        "notOnlyNumbers": "لا يجب أن تحتوي على أرقام فقط",
+        "notCommon": "يجب ألا تكون كلمة مرور شائعة",
+        "notSimilar": "يجب ألا تكون مشابهة لمعلوماتك الشخصية",
+        "tooCommon": "هذه كلمة المرور شائعة جدًا.",
         "onlyNumbers": "لا يمكن أن تحتوي كلمة المرور على أرقام فقط",
         "tooSimilar": "كلمة المرور مشابهة جداً لمعلوماتك الشخصية"
       }
@@ -1338,6 +1436,7 @@
     "tooltips": {
       "viewUser": "عرض تفاصيل المستخدم",
       "editUser": "تعديل المستخدم",
+      "resetPassword": "إعادة تعيين كلمة مرور المستخدم",
       "deleteUser": "حذف المستخدم",
       "changeRole": "تغيير دور المستخدم",
       "addToGroup": "إضافة المستخدم إلى مجموعة",

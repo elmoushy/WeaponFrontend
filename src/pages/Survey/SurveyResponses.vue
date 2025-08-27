@@ -11,6 +11,17 @@
             </div>
             
             <div :class="$style.headerActions">
+              <button 
+                :class="$style.downloadAllButton" 
+                @click="downloadAllResponses"
+                :disabled="isExporting"
+                title="تحميل جميع الاستجابات"
+              >
+                <i v-if="isExporting" class="fas fa-spinner fa-spin"></i>
+                <i v-else class="fas fa-download"></i>
+                <span>{{ isExporting ? 'جاري التحميل...' : 'تحميل الكل' }}</span>
+              </button>
+              
               <button :class="$style.backButton" @click="goBack">
                 <i class="fas fa-arrow-right" v-if="isRTL"></i>
                 <i class="fas fa-arrow-left" v-if="!isRTL"></i>
@@ -19,6 +30,7 @@
             </div>
           </div>
 
+          <br>
           <!-- Navigation Tabs -->
           <div :class="$style.tabNavigation">
             <button 
@@ -36,13 +48,6 @@
               <i class="fas fa-chart-line"></i>
               {{ t('survey.analytics.dashboard') }}
             </button>
-            <!-- <button 
-              :class="[$style.tabButton, { [$style.active]: activeTab === 'questions' }]"
-              @click="switchToQuestionAnalytics"
-            >
-              <i class="fas fa-question-circle"></i>
-  التحليلات للاسئلة 
-            </button> -->
           </div>
         </section>
 
@@ -170,6 +175,57 @@
   </div>
 
                 </div>
+              </div>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div v-if="!isLoading && responses.length > 0" :class="$style.paginationSection">
+              <div :class="$style.paginationControls">
+                <button 
+                  :class="[$style.paginationButton, { [$style.disabled]: !hasPrevious }]"
+                  @click="prevPage"
+                  :disabled="!hasPrevious"
+                >
+                  <i class="fas fa-chevron-right"></i>
+                  {{ t('survey.pagination.previous') }}
+                </button>
+                
+                <div :class="$style.pageNumbers">
+                  <template v-for="page in visiblePages" :key="page">
+                    <span v-if="page === -1" :class="$style.ellipsis">...</span>
+                    <button
+                      v-else
+                      :class="[$style.pageButton, { [$style.active]: page === currentPage }]"
+                      @click="goToPage(page)"
+                    >
+                      {{ page }}
+                    </button>
+                  </template>
+                </div>
+                
+                <button 
+                  :class="[$style.paginationButton, { [$style.disabled]: !hasNext }]"
+                  @click="nextPage"
+                  :disabled="!hasNext"
+                >
+                  {{ t('survey.pagination.next') }}
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+              </div>
+              
+              <div :class="$style.itemsPerPageControl">
+                <label for="itemsPerPage">{{ t('survey.pagination.itemsPerPage') }}:</label>
+                <select 
+                  id="itemsPerPage" 
+                  :class="$style.itemsPerPageSelect" 
+                  :value="itemsPerPage" 
+                  @change="changeItemsPerPage(Number(($event.target as HTMLSelectElement).value))"
+                >
+                  <option value="5">5</option>
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                </select>
               </div>
             </div>
           </div>
@@ -405,10 +461,11 @@
     </template>
 
     <script setup lang="ts">
-    import { ref, computed, onMounted, nextTick } from 'vue'
+    import { ref, computed, onMounted, nextTick, watch } from 'vue'
     import { useRoute, useRouter } from 'vue-router'
     import { useAppStore } from '../../stores/useAppStore'
     import { apiClient } from '../../services/jwtAuthService'
+    import Swal from 'sweetalert2'
     
     // Analytics Components
     import SurveyAnalytics from '../../components/Analytics/SurveyAnalytics.vue'
@@ -482,6 +539,12 @@
     const expandedResponse = ref<string | null>(null)
     const selectedResponse = ref<any>(null)
 
+    // Pagination state
+    const currentPage = ref(1)
+    const itemsPerPage = ref(10)
+    const totalItems = ref(0)
+    const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage.value))
+
     // Export modal state
     const showExportModal = ref(false)
     const selectedExportFormat = ref('csv')
@@ -523,6 +586,51 @@
             !!(questionAnalytics.value && questionAnalytics.value.length > 0)
     })
 
+    // Pagination computed properties
+    const hasPrevious = computed(() => currentPage.value > 1)
+    const hasNext = computed(() => currentPage.value < totalPages.value)
+    const visiblePages = computed(() => {
+      const pages = []
+      const total = totalPages.value
+      const current = currentPage.value
+      
+      if (total <= 7) {
+        for (let i = 1; i <= total; i++) {
+          pages.push(i)
+        }
+      } else {
+        if (current <= 4) {
+          for (let i = 1; i <= 5; i++) {
+            pages.push(i)
+          }
+          pages.push(-1) // ellipsis
+          pages.push(total)
+        } else if (current >= total - 3) {
+          pages.push(1)
+          pages.push(-1) // ellipsis
+          for (let i = total - 4; i <= total; i++) {
+            pages.push(i)
+          }
+        } else {
+          pages.push(1)
+          pages.push(-1) // ellipsis
+          for (let i = current - 1; i <= current + 1; i++) {
+            pages.push(i)
+          }
+          pages.push(-1) // ellipsis
+          pages.push(total)
+        }
+      }
+      
+      return pages
+    })
+
+    // Watchers to reset pagination when filters change
+    watch([searchQuery, completionFilter, respondentFilter, sortOrder, startDate, endDate], () => {
+      currentPage.value = 1
+      loadSurveyResponses()
+    })
+
     // Removed unused computed property
 
     // Methods
@@ -531,6 +639,11 @@
         isLoading.value = true
         
         const params = new URLSearchParams()
+        
+        // Add pagination parameters
+        params.append('page', currentPage.value.toString())
+        params.append('per_page', itemsPerPage.value.toString())
+        
         if (completionFilter.value !== 'all') {
           params.append('is_complete', completionFilter.value === 'complete' ? 'true' : 'false')
         }
@@ -554,11 +667,17 @@
         
         // Handle the actual API response structure
         if (response.data) {
+          // Check if data is nested (response.data.data) or direct (response.data)
+          const dataContainer = response.data.data || response.data
+          
           // Extract survey data from the response
-          survey.value = response.data.survey
+          survey.value = dataContainer.survey
           
           // Extract responses from the paginated results
-          responses.value = response.data.results || []
+          responses.value = dataContainer.results || []
+          
+          // Update pagination data
+          totalItems.value = dataContainer.count || 0
           
         } else {
           throw new Error('Invalid response format')
@@ -576,12 +695,42 @@
         }
         
         responses.value = []
+        totalItems.value = 0
       } finally {
         isLoading.value = false
       }
     }
 
     const refreshData = () => {
+      currentPage.value = 1
+      loadSurveyResponses()
+    }
+
+    // Pagination methods
+    const prevPage = () => {
+      if (hasPrevious.value) {
+        currentPage.value--
+        loadSurveyResponses()
+      }
+    }
+
+    const nextPage = () => {
+      if (hasNext.value) {
+        currentPage.value++
+        loadSurveyResponses()
+      }
+    }
+
+    const goToPage = (page: number) => {
+      if (page >= 1 && page <= totalPages.value && page !== currentPage.value) {
+        currentPage.value = page
+        loadSurveyResponses()
+      }
+    }
+
+    const changeItemsPerPage = (newItemsPerPage: number) => {
+      itemsPerPage.value = newItemsPerPage
+      currentPage.value = 1
       loadSurveyResponses()
     }
 
@@ -643,10 +792,226 @@
         }
       } catch (error) {
         // Logging removed for production
-        alert('فشل في تصدير البيانات')
+        Swal.fire({
+          title: 'خطأ في التصدير',
+          text: 'فشل في تصدير البيانات',
+          icon: 'error',
+          confirmButtonText: 'موافق'
+        })
       } finally {
         isExporting.value = false
       }
+    }
+
+    // Enhanced export function for downloading ALL responses (no pagination)
+    const downloadAllResponses = async () => {
+      try {
+        isExporting.value = true
+        
+        // Fetch ALL responses using the direct endpoint
+        const response = await apiClient.get(`/surveys/admin/surveys/${surveyId.value}/responses/?ordering=-submitted_at`)
+        
+        // Extract responses from the API response
+        let allResponses: any[] = []
+        if (response.data) {
+          const dataContainer = response.data.data || response.data
+          allResponses = dataContainer.results || dataContainer || []
+        }
+        
+        if (allResponses.length === 0) {
+          Swal.fire({
+            title: 'لا توجد بيانات',
+            text: 'لا توجد استجابات لتصديرها',
+            icon: 'info',
+            confirmButtonText: 'موافق'
+          })
+          return
+        }
+        
+        // Generate CSV content with proper Arabic encoding
+        const csvContent = generateArabicCSV(allResponses)
+        
+        // Create blob with proper UTF-8 BOM for Arabic text
+        const BOM = '\uFEFF' // UTF-8 BOM for proper Arabic display in Excel
+        const blob = new Blob([BOM + csvContent], { 
+          type: 'text/csv;charset=utf-8;' 
+        })
+        
+        // Download file
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        
+        const timestamp = new Date().toISOString().split('T')[0]
+        const filename = `جميع_استجابات_الاستبيان_${surveyId.value}_${timestamp}.csv`
+        link.download = filename
+        
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+        
+        Swal.fire({
+          title: 'تم التصدير بنجاح',
+          text: `تم تحميل ${allResponses.length} استجابة بنجاح`,
+          icon: 'success',
+          confirmButtonText: 'موافق'
+        })
+        
+      } catch (error) {
+        console.error('Export error:', error)
+        Swal.fire({
+          title: 'خطأ في التصدير',
+          text: 'فشل في تحميل جميع الاستجابات',
+          icon: 'error',
+          confirmButtonText: 'موافق'
+        })
+      } finally {
+        isExporting.value = false
+      }
+    }
+
+
+
+    // Generate CSV content with proper Arabic support
+    const generateArabicCSV = (responses: any[]) => {
+      if (responses.length === 0) return ''
+      
+      // Get all unique questions from all responses
+      const allQuestions = new Map()
+      responses.forEach(response => {
+        response.answers?.forEach((answer: any) => {
+          if (!allQuestions.has(answer.question_id)) {
+            allQuestions.set(answer.question_id, {
+              order: answer.question_order || 0,
+              text: answer.question_text || `سؤال ${answer.question_order || answer.question_id}`,
+              type: answer.question_type || 'text'
+            })
+          }
+        })
+      })
+      
+      // Sort questions by order
+      const sortedQuestions = Array.from(allQuestions.entries()).sort((a, b) => a[1].order - b[1].order)
+      
+      // Create header row with questions and answers
+      const headers = [
+        'رقم الاستجابة',
+        'المستجيب',
+        'نوع المستجيب',
+        'تاريخ الإرسال',
+        'نسبة الإكمال'
+      ]
+      
+      // Add question-answer pairs to headers
+      sortedQuestions.forEach(([_, q]) => {
+        headers.push(`السؤال ${q.order}: ${q.text}`)
+        headers.push(`الإجابة ${q.order}`)
+      })
+      
+      // Create data rows
+      const rows = responses.map((response, index) => {
+        const answerMap = new Map()
+        response.answers?.forEach((answer: any) => {
+          answerMap.set(answer.question_id, {
+            question: answer.question_text || `سؤال ${answer.question_order}`,
+            answer: formatAnswerForCSV(answer),
+            type: answer.question_type,
+            order: answer.question_order
+          })
+        })
+        
+        const row = [
+          index + 1,
+          response.respondent?.email || 'مجهول',
+          response.respondent?.type === 'authenticated' ? 'مسجل' : 'مجهول',
+          formatDateForCSV(response.submitted_at),
+          `${getCompletionPercentage(response)}%`
+        ]
+        
+        // Add question-answer pairs to row
+        sortedQuestions.forEach(([questionId]) => {
+          const qa = answerMap.get(questionId)
+          if (qa) {
+            row.push(qa.question)
+            row.push(qa.answer)
+          } else {
+            row.push('لا يوجد سؤال')
+            row.push('لا يوجد إجابة')
+          }
+        })
+        
+        return row
+      })
+      
+      // Combine headers and rows
+      const allRows = [headers, ...rows]
+      
+      // Convert to CSV format with proper escaping
+      return allRows.map(row => 
+        row.map(cell => {
+          const cellStr = String(cell || '')
+          // Escape quotes and wrap in quotes if contains comma, quote, or newline
+          if (cellStr.includes('"') || cellStr.includes(',') || cellStr.includes('\n')) {
+            return `"${cellStr.replace(/"/g, '""')}"`
+          }
+          return cellStr
+        }).join(',')
+      ).join('\n')
+    }
+
+    // Format answer for CSV export
+    const formatAnswerForCSV = (answer: any) => {
+      if (!answer.answer_text) return 'لا يوجد إجابة'
+      
+      let formattedAnswer = answer.answer_text.toString()
+      
+      // Handle different question types
+      switch (answer.question_type) {
+        case 'rating':
+          const maxRating = answer.question_options ? answer.question_options.length : 5
+          formattedAnswer = `${answer.answer_text}/${maxRating}`
+          break
+          
+        case 'yes_no':
+          formattedAnswer = answer.answer_text === 'yes' || answer.answer_text === 'نعم' || answer.answer_text === '1' ? 'نعم' : 'لا'
+          break
+          
+        case 'multiple_choice':
+          // Handle multiple selections
+          if (Array.isArray(answer.answer_text)) {
+            formattedAnswer = answer.answer_text.join('؛ ')
+          }
+          break
+          
+        case 'single_choice':
+        case 'text':
+        case 'textarea':
+        default:
+          // Keep original text, but clean up newlines for CSV
+          formattedAnswer = formattedAnswer.replace(/\n/g, ' ').replace(/\r/g, ' ')
+          break
+      }
+      
+      return formattedAnswer
+    }
+
+    // Format date for CSV export
+    const formatDateForCSV = (dateString: string) => {
+      if (!dateString) return ''
+      
+      const date = new Date(dateString)
+      
+      // Format in Arabic locale
+      return date.toLocaleString('ar-SA', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        timeZone: 'Asia/Riyadh' // Adjust timezone as needed
+      })
     }
 
     // Keep this function since it uses completedResponses
@@ -733,7 +1098,6 @@
     // Analytics methods
     const switchToAnalytics = async () => {
       if (activeTab.value === 'analytics') return // Prevent unnecessary calls
-      console.log(activeTab);
 
       activeTab.value = 'analytics'
       
@@ -748,7 +1112,6 @@
 
     // const switchToQuestionAnalytics = async () => {
     //   if (activeTab.value === 'questions') return // Prevent unnecessary calls
-    //   console.log(activeTab);
 
     //   activeTab.value = 'questions'
       
@@ -776,7 +1139,6 @@
 
             // Load survey-level analytics using the correct endpoint from JSON
             const surveyAnalyticsResponse = await apiClient.get(`/surveys/admin/surveys/${surveyId.value}/dashboard/`)
-            console.log(surveyAnalyticsResponse,"surveyAnalyticsResponse");
 
       if (surveyAnalyticsResponse.status === 200) {
               // Store the response data
@@ -907,18 +1269,16 @@
     }
 
     // Analytics event handlers
-    const onAnalyticsQuestionClick = (question: any) => {
+    const onAnalyticsQuestionClick = (_question: any) => {
       // Switch to question analytics tab and highlight specific question
       activeTab.value = 'questions'
       
       // If we have question analytics loaded, scroll to specific question
       // You could implement scrolling to specific question here
-      console.log('Question clicked in analytics:', question)
     }
 
-    const onAnalyticsPeriodClick = (period: any) => {
+    const onAnalyticsPeriodClick = (_period: any) => {
       // Handle period click (could filter responses by this period)
-      console.log('Analytics period clicked:', period)
       
       // Example: filter responses by this period
       // startDate.value = period.start

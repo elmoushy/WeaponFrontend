@@ -28,7 +28,9 @@ import type {
   BulkAddUsersRequest,
   InviteUserRequest,
   CreateUserRequest,
-  SearchUsersQuery
+  SearchUsersQuery,
+  BulkDeleteRequest,
+  BulkDeleteResponse
   // ApiResponse // Unused - commenting out
 } from '../types/user-management.types'
 
@@ -84,6 +86,20 @@ export const updateUserRole = async (userId: number, roleData: UpdateUserRoleReq
 }
 
 /**
+ * Reset user password (admin and super_admin only)
+ */
+export const resetUserPassword = async (userId: number, newPassword: string): Promise<{ message: string; user: { id: number; email: string; username: string } }> => {
+  const response: AxiosResponse<{ message: string; user: { id: number; email: string; username: string } }> = await apiClient.post(
+    '/auth/users/reset-password/',
+    {
+      user_id: userId,
+      new_password: newPassword
+    }
+  )
+  return response.data
+}
+
+/**
  * Get all groups a specific user belongs to
  */
 export const getUserGroups = async (userId: number): Promise<UserGroupsResponse> => {
@@ -96,6 +112,14 @@ export const getUserGroups = async (userId: number): Promise<UserGroupsResponse>
  */
 export const inviteUser = async (inviteData: InviteUserRequest): Promise<InviteUserResponse> => {
   const response: AxiosResponse<InviteUserResponse> = await apiClient.post('/auth/users/invite/', inviteData)
+  return response.data
+}
+
+/**
+ * Bulk delete users (admin and super_admin only)
+ */
+export const bulkDeleteUsers = async (deleteData: BulkDeleteRequest): Promise<BulkDeleteResponse> => {
+  const response: AxiosResponse<BulkDeleteResponse> = await apiClient.post('/auth/users/bulk-delete/', deleteData)
   return response.data
 }
 
@@ -271,6 +295,7 @@ export default {
   updateUserRole,
   getUserGroups,
   inviteUser,
+  bulkDeleteUsers,
   
   // Group endpoints
   getGroups,

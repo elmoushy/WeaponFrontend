@@ -199,11 +199,9 @@ const router = createRouter({
    Global Guards
    ========================= */
 
-router.beforeEach(async (to, from, next) => {
-  console.log(from);
+router.beforeEach(async (to, _from, next) => {
   
   if (to.path.startsWith("/survey/")) {
-    console.log("SURVEY ROUTE DETECTED - COMPLETE BYPASS:", to.path);
     return next();
   }
 

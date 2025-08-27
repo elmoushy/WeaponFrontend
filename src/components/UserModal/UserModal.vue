@@ -75,14 +75,30 @@
           
           <div v-if="mode.type === 'create' && formData.auth_type === 'regular'" :class="$style.formGroup">
             <label :class="$style.label">{{ t('userManagement.forms.user.password') }}</label>
-            <input 
-              v-model="formData.password"
-              type="password" 
-              required
-              :class="[$style.input, validationErrors.password ? $style.inputError : '']"
-              :placeholder="t('userManagement.forms.user.passwordPlaceholder')"
-              autocomplete="new-password"
-            />
+            <div :class="$style.passwordInputContainer">
+              <input 
+                v-model="formData.password"
+                :type="showPassword ? 'text' : 'password'" 
+                required
+                :class="[$style.input, validationErrors.password ? $style.inputError : '']"
+                :placeholder="t('userManagement.forms.user.passwordPlaceholder')"
+                autocomplete="new-password"
+                autocapitalize="off"
+                autocorrect="off"
+                spellcheck="false"
+                data-lpignore="true"
+                data-1p-ignore="true"
+                data-bwignore="true"
+              />
+              <button 
+                type="button"
+                :class="$style.passwordToggle"
+                @click="showPassword = !showPassword"
+                :title="showPassword ? t('userManagement.forms.user.hidePassword') : t('userManagement.forms.user.showPassword')"
+              >
+                <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+              </button>
+            </div>
             <div v-if="validationErrors.password" :class="$style.errorMessage">
               {{ validationErrors.password }}
             </div>
@@ -160,6 +176,7 @@ const formData = ref({
 })
 
 const validationErrors = ref<Record<string, string>>({})
+const showPassword = ref(false)
 
 // Form validation computed properties
 const isFormValid = computed(() => {
@@ -524,5 +541,44 @@ watch(() => props.user, (user) => {
 .saveBtn:disabled {
   transform: none !important;
   box-shadow: none !important;
+}
+
+.passwordInputContainer {
+  position: relative;
+  width: 100%;
+}
+
+.passwordInputContainer .input {
+  padding-right: 2.5rem;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.passwordToggle:hover {
+  color: var(--text-primary);
+  background: var(--bg-glass);
+}
+
+.passwordToggle:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(207, 163, 101, 0.3);
 }
 </style>

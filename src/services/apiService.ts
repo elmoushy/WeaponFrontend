@@ -79,7 +79,6 @@ apiClient.interceptors.response.use(
       
       // CRITICAL: Don't redirect if we're on a survey page - surveys are public!
       if (window.location.pathname.startsWith('/survey/')) {
-        console.log('Skipping login redirect from API service - user is on a public survey page')
         return Promise.reject(error)
       }
       

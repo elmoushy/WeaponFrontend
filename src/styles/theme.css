@@ -101,3 +101,33 @@ body {
     background: var(--bg-surface);
   }
 }
+
+/* SweetAlert2 RTL Support */
+.swal-rtl-popup {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+.swal-rtl-title {
+  text-align: right !important;
+}
+
+.swal-rtl-content {
+  text-align: right !important;
+}
+
+.swal2-popup[dir="rtl"] {
+  direction: rtl !important;
+}
+
+.swal2-popup[dir="rtl"] .swal2-title {
+  text-align: right !important;
+}
+
+.swal2-popup[dir="rtl"] .swal2-html-container {
+  text-align: right !important;
+}
+
+.swal2-popup[dir="rtl"] .swal2-actions {
+  flex-direction: row-reverse !important;
+}

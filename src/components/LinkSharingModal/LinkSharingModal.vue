@@ -334,7 +334,6 @@ const loadCurrentLink = async () => {
     }
   } catch (error: any) {
     // If no link exists, that's fine - we'll show the generate button
-    console.log('No current link found:', error.message)
     currentLinkData.value = null
   }
 }
@@ -625,7 +624,6 @@ watch(() => currentLinkData.value, async (newData) => {
     await nextTick()
     const link = currentLink.value
     if (link) {
-      console.log('Generating QR code for current link:', link)
       generateQRCode(link)
     }
   }

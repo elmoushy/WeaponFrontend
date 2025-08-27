@@ -274,10 +274,10 @@
           </div>
 
           <!-- Validation Error -->
-          <div v-if="questionError" :class="$style.errorMessage">
+          <!-- <div v-if="questionError" :class="$style.errorMessage">
             <i class="fas fa-exclamation-triangle"></i>
             <span>{{ questionError }}</span>
-          </div>
+          </div> -->
         </div>
       </div>
 

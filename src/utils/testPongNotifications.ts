@@ -39,7 +39,6 @@ if (envConfig.websocketEnabled) {
   // Simulate receiving the pong message using the test method
   websocketService.simulatePongMessage(pongData)
 
-  console.log('Simulated pong notification matching provided structure:', mockNotification)
   return mockNotification
 }
 
@@ -56,7 +55,6 @@ if (envConfig.websocketEnabled) {
   // Simulate receiving the pong message
   websocketService.simulatePongMessage(pongData)
 
-  console.log('Simulated pong notification (ID only):', pongData)
   return pongData
 }
 
@@ -71,7 +69,6 @@ if (envConfig.websocketEnabled) {
   // Simulate receiving the pong message
   websocketService.simulatePongMessage(pongData)
 
-  console.log('Simulated regular pong message')
   }
 
   /**
@@ -84,11 +81,7 @@ if (envConfig.websocketEnabled) {
       simulateRegularPong
     }
     
-    console.log('Pong notification test functions added to window.testPongNotifications')
-    console.log('Usage:')
-    console.log('  window.testPongNotifications.simulatePongNotification()')
-    console.log('  window.testPongNotifications.simulatePongNotificationIdOnly()')
-    console.log('  window.testPongNotifications.simulateRegularPong()')
+    // Test functions available in browser console for development testing
   }
 
 } // End of WebSocket enabled check

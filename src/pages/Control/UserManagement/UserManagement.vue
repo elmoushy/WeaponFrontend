@@ -198,6 +198,15 @@
       @close="closeUserRoleModal"
     />
 
+    <!-- Reset Password Modal -->
+    <ResetPasswordModal
+      :visible="resetPasswordModalVisible"
+      :user="selectedUserForResetPassword"
+      :loading="resetPasswordLoading"
+      @save="handleResetPasswordSubmit"
+      @close="closeResetPasswordModal"
+    />
+
     <!-- Loading Overlay -->
     <div v-if="loading" :class="$style.loadingOverlay">
       <div :class="$style.loadingSpinner">
@@ -223,6 +232,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAppStore } from '../../../stores/useAppStore'
 import { useUserManagement } from '../../../composables/useUserManagement'
+import { useBulkDelete } from '../../../composables/useBulkDelete'
+import { bulkDeleteUsers, resetUserPassword } from '../../../services/userManagementService'
 import userManagementService from '../../../services/userManagementService'
 import Swal from 'sweetalert2'
 import UserManagementTable from '../../../components/UserManagementTable/UserManagementTable.vue'
@@ -232,6 +243,7 @@ import GroupModal from '../../../components/GroupModal/GroupModal.vue'
 import BulkActionModal from '../../../components/BulkActionModal/BulkActionModal.vue'
 import AddUsersToGroupModal from '../../../components/AddUsersToGroupModal/AddUsersToGroupModal.vue'
 import UserRoleModal from '../../../components/UserRoleModal/UserRoleModal.vue'
+import ResetPasswordModal from '../../../components/ResetPasswordModal/ResetPasswordModal.vue'
 import type { 
   User, 
   Group,
@@ -242,12 +254,14 @@ import type {
   UpdateGroupRequest,
   InviteUserRequest,
   UpdateUserRoleRequest,
-  CreateUserRequest
+  CreateUserRequest,
+  BulkDeleteRequest
 } from '../../../types/user-management.types'
 
 // Store and composables
 const store = useAppStore()
 const userManagement = useUserManagement()
+const bulkDelete = useBulkDelete()
 
 // Computed properties
 const currentTheme = computed(() => store.currentTheme)
@@ -318,6 +332,9 @@ const addUsersToGroupModalVisible = ref(false)
 const selectedGroupForAddUsers = ref<Group | null>(null)
 const userRoleModalVisible = ref(false)
 const selectedUserForRole = ref<User | null>(null)
+const resetPasswordModalVisible = ref(false)
+const selectedUserForResetPassword = ref<User | null>(null)
+const resetPasswordLoading = ref(false)
 
 // Methods
 const setActiveTab = (tab: 'users' | 'groups') => {
@@ -355,6 +372,102 @@ const closeBulkActionModal = () => {
   bulkActionModalVisible.value = false
 }
 
+const handleResetPassword = (user: User) => {
+  selectedUserForResetPassword.value = user
+  resetPasswordModalVisible.value = true
+}
+
+const closeResetPasswordModal = () => {
+  resetPasswordModalVisible.value = false
+  selectedUserForResetPassword.value = null
+  resetPasswordLoading.value = false
+}
+
+const handleResetPasswordSubmit = async (newPassword: string) => {
+  if (!selectedUserForResetPassword.value) return
+  
+  try {
+    resetPasswordLoading.value = true
+    
+    // Call the reset password API
+    await resetUserPassword(selectedUserForResetPassword.value.id, newPassword)
+    
+    // Store user email before closing modal
+    const userEmail = selectedUserForResetPassword.value.email
+    
+    // Close modal and show success message
+    closeResetPasswordModal()
+    
+    await Swal.fire({
+      title: t.value('userManagement.messages.resetPassword.success.title'),
+      text: t.value('userManagement.messages.resetPassword.success.text').replace('{{email}}', userEmail),
+      icon: 'success',
+      confirmButtonText: t.value('userManagement.buttons.ok'),
+      confirmButtonColor: '#28a745',
+      customClass: {
+        popup: 'swal-rtl-popup',
+        title: 'swal-rtl-title',
+        htmlContainer: 'swal-rtl-content'
+      }
+    })
+  } catch (error: any) {
+    console.error('API Error:', error)
+    resetPasswordLoading.value = false
+    
+    let title = t.value('userManagement.messages.resetPassword.error.title')
+    let text = t.value('userManagement.messages.resetPassword.error.text')
+    
+    if (error.response) {
+      const status = error.response.status
+      const data = error.response.data
+      
+      switch (status) {
+        case 400:
+          if (data.errors?.new_password) {
+            const serverMessage = data.errors.new_password[0] || text
+            // Translate specific password validation messages
+            if (serverMessage.includes('too common')) {
+              text = t.value('userManagement.validation.password.tooCommon')
+            } else if (serverMessage.includes('only numbers')) {
+              text = t.value('userManagement.validation.password.onlyNumbers')
+            } else if (serverMessage.includes('too similar')) {
+              text = t.value('userManagement.validation.password.tooSimilar')
+            } else if (serverMessage.includes('at least 8 characters')) {
+              text = t.value('userManagement.validation.password.minLength')
+            } else {
+              text = serverMessage
+            }
+          } else if (data.errors?.user_id) {
+            text = data.errors.user_id[0] || text
+          } else {
+            text = data.detail || text
+          }
+          break
+        case 403:
+          title = t.value('userManagement.messages.resetPassword.error.forbidden.title')
+          text = t.value('userManagement.messages.resetPassword.error.forbidden.text')
+          break
+        case 404:
+          text = t.value('userManagement.messages.resetPassword.error.userNotFound')
+          break
+      }
+    }
+    
+    await Swal.fire({
+      title,
+      text,
+      icon: 'error',
+      confirmButtonText: t.value('userManagement.buttons.ok'),
+      confirmButtonColor: '#dc3545',
+      customClass: {
+        popup: 'swal-rtl-popup',
+        title: 'swal-rtl-title',
+        htmlContainer: 'swal-rtl-content'
+      }
+    })
+  }
+}
+
 const handleUserAction = async (action: string, user: User) => {
   try {
     switch (action) {
@@ -366,30 +479,107 @@ const handleUserAction = async (action: string, user: User) => {
         break
       case 'delete':
         const userDeleteResult = await Swal.fire({
-          title: 'تأكيد حذف المستخدم',
-          text: 'هل أنت متأكد من حذف هذا المستخدم؟ لا يمكن التراجع عن هذا الإجراء.',
+          title: t.value('userManagement.messages.singleDelete.confirm.title'),
+          text: t.value('userManagement.messages.singleDelete.confirm.text').replace('{{email}}', user.email),
           icon: 'warning',
           showCancelButton: true,
-          confirmButtonText: 'نعم، احذف',
-          cancelButtonText: 'إلغاء',
-          confirmButtonColor: '#dc3545',
-          cancelButtonColor: '#6c757d'
+          confirmButtonText: t.value('userManagement.messages.singleDelete.confirm.confirmButtonText'),
+          cancelButtonText: t.value('userManagement.messages.singleDelete.confirm.cancelButtonText'),
+          confirmButtonColor: '#ff6b6b',
+          cancelButtonColor: '#6c757d',
+          reverseButtons: true,
+          customClass: {
+            popup: 'swal-rtl-popup',
+            title: 'swal-rtl-title',
+            htmlContainer: 'swal-rtl-content'
+          }
         })
         
         if (userDeleteResult.isConfirmed) {
-          // TODO: Implement user deletion
-          await refreshData()
-          await Swal.fire({
-            title: 'تم الحذف',
-            text: 'تم حذف المستخدم بنجاح',
-            icon: 'success',
-            confirmButtonText: 'موافق',
-            confirmButtonColor: '#28a745'
-          })
+          try {
+            // Use the same bulk delete API with single user
+            const deleteRequest: BulkDeleteRequest = {
+              user_ids: [user.id]
+            }
+            
+            const response = await bulkDeleteUsers(deleteRequest)
+            
+            // Refresh data after successful deletion
+            await refreshData()
+            
+            // Show success message for single user
+            if (response.summary.successful_deletions === 1) {
+              await Swal.fire({
+                title: t.value('userManagement.messages.singleDelete.results.success.title'),
+                text: t.value('userManagement.messages.singleDelete.results.success.text').replace('{{email}}', user.email),
+                icon: 'success',
+                confirmButtonText: t.value('userManagement.messages.singleDelete.results.success.confirmButtonText'),
+                customClass: {
+                  popup: 'swal-rtl-popup',
+                  title: 'swal-rtl-title',
+                  htmlContainer: 'swal-rtl-content'
+                }
+              })
+            } else {
+              // Show error if deletion failed
+              await Swal.fire({
+                title: t.value('userManagement.messages.singleDelete.results.error.title'),
+                text: response.results.failed[0]?.error || t.value('userManagement.messages.singleDelete.results.error.text'),
+                icon: 'error',
+                confirmButtonText: t.value('userManagement.messages.singleDelete.results.error.confirmButtonText'),
+                customClass: {
+                  popup: 'swal-rtl-popup',
+                  title: 'swal-rtl-title',
+                  htmlContainer: 'swal-rtl-content'
+                }
+              })
+            }
+          } catch (deleteError: any) {
+            let title = t.value('userManagement.messages.singleDelete.results.error.title')
+            let text = t.value('userManagement.messages.singleDelete.results.error.text')
+            
+            if (deleteError.response) {
+              const status = deleteError.response.status
+              const data = deleteError.response.data
+              
+              switch (status) {
+                case 400:
+                  if (data.message?.includes('cannot delete yourself') || data.message?.includes('self')) {
+                    title = t.value('userManagement.messages.bulkDelete.results.badRequest.texts.cannotDeleteCurrentUser')
+                    text = t.value('userManagement.messages.bulkDelete.results.badRequest.texts.cannotDeleteCurrentUserDesc')
+                  } else if (data.message?.includes('last super admin')) {
+                    title = t.value('userManagement.messages.bulkDelete.results.badRequest.texts.cannotDeleteLastSuperAdmin')
+                    text = t.value('userManagement.messages.bulkDelete.results.badRequest.texts.cannotDeleteLastSuperAdminDesc')
+                  } else {
+                    text = data.message || text
+                  }
+                  break
+                case 403:
+                  title = t.value('userManagement.messages.bulkDelete.results.forbidden.title')
+                  text = t.value('userManagement.messages.bulkDelete.results.forbidden.text')
+                  break
+              }
+            }
+            
+            await Swal.fire({
+              title,
+              text,
+              icon: 'error',
+              confirmButtonText: t.value('userManagement.messages.singleDelete.results.error.confirmButtonText'),
+              customClass: {
+                popup: 'swal-rtl-popup',
+                title: 'swal-rtl-title',
+                htmlContainer: 'swal-rtl-content'
+              }
+            })
+          }
         }
         break
       case 'change_role':
         openUserRoleModal(user)
+        break
+      case 'reset_password':
+        await handleResetPassword(user)
         break
       case 'view_groups':
         // TODO: Show user groups modal
@@ -460,10 +650,19 @@ const handleGroupAction = async (action: string, group: Group) => {
   }
 }
 
-const handleBulkAction = (action: string) => {
+const handleBulkAction = async (action: string) => {
   if (selectedUsers.value.length === 0) return
   
-  openBulkActionModal(action as 'add_to_group' | 'remove_from_group' | 'change_role')
+  if (action === 'bulk_delete') {
+    const success = await bulkDelete.executeBulkDelete(selectedUsers.value, currentUser.value)
+    if (success) {
+      // Refresh the user list and clear selection
+      await refreshData()
+      clearUserSelection()
+    }
+  } else {
+    openBulkActionModal(action as 'add_to_group' | 'remove_from_group' | 'change_role')
+  }
 }
 
 const handleUserSave = async (userData: any) => {

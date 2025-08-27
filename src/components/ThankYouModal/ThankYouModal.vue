@@ -102,7 +102,6 @@ const handlePrimaryAction = () => {
         window.location.href = 'about:blank'
       }, 100)
     } catch (error) {
-      console.log('Window close failed:', error)
       // Fallback to about:blank
       window.location.href = 'about:blank'
     }

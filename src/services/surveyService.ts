@@ -114,8 +114,6 @@ class SurveyService {
     try {
       // Use apiClient directly since Django returns paginated response
       const response = await apiClient.get(`${this.baseURL}${endpoint}`)
-      // Debug log - Response structure should match new API format
-      console.log('API Response:', response.data)
       
       // Handle the nested response structure: response.data.data contains the actual paginated data
       const responseData = response.data?.data || response.data
@@ -285,25 +283,13 @@ class SurveyService {
     // Build update data
     const updateData: any = { visibility }
     
-    // Debug logging
-    console.log('updateSurveyAccess Debug:', {
-      visibility,
-      perDeviceAccess,
-      contactMethod,
-      perDeviceAccessType: typeof perDeviceAccess
-    })
-    
     // Add per_device_access if enabled for public surveys
     if (visibility === 'PUBLIC' && perDeviceAccess === true) {
       updateData.per_device_access = true
-      console.log('Setting per_device_access to true')
     } else if (visibility === 'PUBLIC' && contactMethod && perDeviceAccess !== true) {
       // Only add contact method if per_device_access is not enabled
       updateData.public_contact_method = contactMethod
-      console.log('Setting public_contact_method to', contactMethod)
     }
-    
-    console.log('Final updateData:', updateData)
     
     return this.updateSurvey(surveyId, updateData)
   }
@@ -468,14 +454,10 @@ class SurveyService {
       // Add new array-based restrictions
       if (options.restricted_email && options.restricted_email.length > 0) {
         requestData.restricted_email = options.restricted_email
-        console.log('Service: Adding restricted_email to request:', options.restricted_email)
       }
       if (options.restricted_phone && options.restricted_phone.length > 0) {
         requestData.restricted_phone = options.restricted_phone
-        console.log('Service: Adding restricted_phone to request:', options.restricted_phone)
       }
-
-      console.log('Service: Final requestData being sent to API:', requestData)
 
       const response = await apiClient.post(`/surveys/surveys/${surveyId}/generate-password-link/`, requestData)
       
@@ -1268,7 +1250,7 @@ class SurveyService {
       } else if (error.response?.status === 404) {
         throw new Error('Survey not found')
       } else if (error.response?.status === 409) {
-        throw new Error('You have already submitted a response to this survey')
+        throw new Error('لقد قمت بتقديم إجابة لهذا الاستطلاع من قبل')
       }
       
       throw new Error(error.response?.data?.message || error.message || 'Failed to submit response')

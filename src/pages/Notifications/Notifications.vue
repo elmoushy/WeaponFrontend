@@ -175,27 +175,27 @@
               >
                 <i class="fas fa-check"></i>
               </button>
-              <button 
+              <!-- <button 
                 v-if="notification.action_url"
                 @click.stop="goToAction(notification)"
                 :class="[$style.actionBtn, $style.primaryAction]"
                 :title="t('notifications.actions.goToSurvey')"
               >
                 <i class="fas fa-arrow-right"></i>
-              </button>
+              </button> -->
             </div>
           </div>
         </div>
       </div>
 
       <!-- Pagination -->
-      <div v-if="pagination.total > pagination.pageSize" :class="$style.pagination">
+      <div :class="$style.pagination">
         <button 
           @click="goToPage(pagination.current - 1)"
           :disabled="pagination.current <= 1"
           :class="$style.paginationBtn"
         >
-          <i class="fas fa-chevron-left"></i>
+          <i class="fas fa-chevron-right"></i>
           {{ currentLanguage === 'ar' ? 'السابق' : 'Previous' }}
         </button>
         
@@ -212,7 +212,8 @@
           :class="$style.paginationBtn"
         >
           {{ currentLanguage === 'ar' ? 'التالي' : 'Next' }}
-          <i class="fas fa-chevron-right"></i>
+                    <i class="fas fa-chevron-left"></i>
+
         </button>
       </div>
     </div>
@@ -353,12 +354,6 @@ const markAsRead = async (notification: Notification) => {
 
 const handleNotificationClick = async (notification: Notification) => {
   await markAsRead(notification)
-  if (notification.action_url) {
-    router.push(notification.action_url)
-  }
-}
-
-const goToAction = (notification: Notification) => {
   if (notification.action_url) {
     router.push(notification.action_url)
   }

@@ -1214,15 +1214,6 @@ const handleSave = async () => {
     const contactMethod = selectedAccess.value === 'PUBLIC' && !perDeviceAccessEnabled.value ? selectedContactMethod.value : undefined
     const surveyId = String(props.survey.id) // Ensure ID is string
     
-    // Debug logging
-    console.log('Modal Debug - Before service call:', {
-      selectedAccess: selectedAccess.value,
-      perDeviceAccessEnabled: perDeviceAccessEnabled.value,
-      selectedContactMethod: selectedContactMethod.value,
-      contactMethod,
-      accessLevel
-    })
-    
     await surveyService.updateSurveyAccess(surveyId, accessLevel, contactMethod, perDeviceAccessEnabled.value)
     
     // Handle private access sharing if needed
