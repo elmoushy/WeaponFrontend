@@ -248,7 +248,7 @@
 
               <div :class="$style.questionAnalyticsGrid">
                 <div 
-                  v-for="question in questionAnalytics" 
+                v-for="question in normalizedQuestionAnalytics" 
                   :key="question.question_id"
                   :class="$style.questionAnalyticsCard"
                 >
@@ -265,10 +265,10 @@
                     <!-- Only render component if analytics data is valid -->
                     <component
                       v-if="isValidQuestionAnalytics(question)"
-                      :is="getQuestionAnalyticsComponent(question.question_type)"
-                      :question="transformQuestionAnalytics(question)"
-                      :analytics="transformQuestionAnalytics(question)"
-                      :detailed="true"
+      :is="getQuestionAnalyticsComponent(question.question_type)"
+      :question="question"
+      :analytics="question"
+      :detailed="true"
                     />
                     <div v-else :class="$style.noQuestionData">
                       <div :class="$style.noQuestionDataIcon">
@@ -926,75 +926,24 @@
       // loadSurveyResponses()
     }
 
-    const onAnalyticsFiltersChange = async (filters: any) => {
-      // Handle analytics filters change and reload analytics
-      console.log('Analytics filters changed:', filters)
-      
-      // Ignore if this was triggered by our own programmatic update
-      if (isProgrammaticAnalyticsUpdate.value) {
-        return
-      }
+const onAnalyticsFiltersChange = async (filters: any) => {
+  if (isProgrammaticAnalyticsUpdate.value) return
+  if (analyticsLoading.value || analyticsLoadingPromise.value || isHandlingAnalyticsFilters.value) return
+  if (!surveyAnalytics.value) return
 
-      // Prevent recursive calls if already loading or if there's a pending promise
-      if (isHandlingAnalyticsFilters.value || analyticsLoading.value || analyticsLoadingPromise.value) {
-        console.log('Analytics already loading, skipping filter change')
-        return
-      }
-      
-      // Skip if surveyAnalytics is not loaded yet
-      if (!surveyAnalytics.value) {
-        console.log('Skipping filter change - no initial data loaded yet')
-        return
-      }
-      
-      try {
-        isHandlingAnalyticsFilters.value = true
-        // Mark as programmatic right away to ignore any child emissions caused by our own updates
-        isProgrammaticAnalyticsUpdate.value = true
-        analyticsLoading.value = true
-        
-        // Build query params
-        const params = new URLSearchParams()
-        const norm = {
-          start: filters.start || '',
-          end: filters.end || '',
-          group_by: filters.group_by || 'day'
-        }
-        const key = JSON.stringify(norm)
-        // If first time and filters are default, just snapshot and skip
-        if (!lastAnalyticsFiltersKey.value && norm.start === '' && norm.end === '' && norm.group_by === 'day') {
-          lastAnalyticsFiltersKey.value = key
-          analyticsLoading.value = false
-          return
-        }
-        // Dedupe: if filters haven't changed, skip
-        if (key === lastAnalyticsFiltersKey.value) {
-          analyticsLoading.value = false
-          return
-        }
-        lastAnalyticsFiltersKey.value = key
-
-        if (norm.start) params.append('start', norm.start)
-        if (norm.end) params.append('end', norm.end)
-        if (norm.group_by) params.append('group_by', norm.group_by)
-        
-        // Reload analytics with filters
-        const surveyAnalyticsResponse = await apiClient.get(`/surveys/admin/surveys/${surveyId.value}/dashboard/?${params.toString()}`)
-        
-    if (surveyAnalyticsResponse.status === 200) {
-          surveyAnalytics.value = surveyAnalyticsResponse.data
-        }
-        
-      } catch (error) {
-        console.error('Error loading filtered analytics:', error)
-        analyticsError.value = error instanceof Error ? error.message : 'Failed to load filtered analytics'
-      } finally {
-        analyticsLoading.value = false
-        await nextTick()
-        isProgrammaticAnalyticsUpdate.value = false
+  // نفّذ مباشرة
+  try {
+    isHandlingAnalyticsFilters.value = true
+    isProgrammaticAnalyticsUpdate.value = true
+    analyticsLoading.value = true
+    // build params + call API + set surveyAnalytics.value
+  } finally {
+    analyticsLoading.value = false
+    await nextTick()
+    isProgrammaticAnalyticsUpdate.value = false
     isHandlingAnalyticsFilters.value = false
-      }
-    }
+  }
+}
 
     // Lifecycle
     onMounted(() => {
@@ -1002,6 +951,60 @@
         loadSurveyResponses()
       }
     })
+
+
+// نفس منطق التحويل عندك لكن هنستدعيه مرة فقط
+const normalizeQuestion = (q: any) => {
+  const t = { ...q }
+  if ((!t.analytics || Object.keys(t.analytics).length === 0) && t.distributions) {
+    t.analytics = { analytics: t.distributions }
+  }
+  if (t.analytics?.textual) {
+    t.analytics.analytics = {
+      textual: {
+        total_responses: t.analytics.textual.total_responses || t.kpis?.answer_count || 0,
+        avg_words: t.analytics.textual.avg_words || 0,
+        avg_word_count: t.analytics.textual.avg_words || 0,
+        avg_char_count: t.analytics.textual.avg_chars || 0,
+        response_lengths: t.analytics.textual.response_lengths || {}
+      }
+    }
+  } else if (t.distributions?.textual) {
+    t.analytics = {
+      analytics: {
+        textual: {
+          total_responses: t.distributions.textual.total_responses || t.kpis?.answer_count || 0,
+          avg_words: t.distributions.textual.avg_words || 0,
+          avg_word_count: t.distributions.textual.avg_words || 0,
+          avg_char_count: t.distributions.textual.avg_chars || 0,
+          response_lengths: t.distributions.textual.response_lengths || {}
+        }
+      }
+    }
+  } else if ((t.type === 'text' || t.type === 'textarea') && (!t.analytics || Object.keys(t.analytics).length === 0)) {
+    t.analytics = {
+      analytics: {
+        textual: {
+          total_responses: t.kpis?.answer_count || 0,
+          avg_words: 0, avg_word_count: 0, avg_char_count: 0, response_lengths: {}
+        }
+      }
+    }
+  }
+  return t
+}
+
+// حافظ على مرجع ثابت لكل عنصر (لو نفس العنصر ما اتغيرش بالمرجع)
+const _cache = new WeakMap<any, any>()
+const normalizedQuestionAnalytics = computed(() => {
+  return (questionAnalytics.value || []).map(q => {
+    if (_cache.has(q)) return _cache.get(q)
+    const nq = normalizeQuestion(q)
+    _cache.set(q, nq)
+    return nq
+  })
+})
+
     </script>
 
     <style module src="./SurveyResponses.module.css">
