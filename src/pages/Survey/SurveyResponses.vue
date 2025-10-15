@@ -13,7 +13,7 @@
             <div :class="$style.headerActions">
               <button 
                 :class="$style.downloadAllButton" 
-                @click="downloadAllResponses"
+                @click="showFormatModal = true"
                 :disabled="isExporting"
                 title="تحميل جميع الاستجابات"
               >
@@ -348,6 +348,79 @@
             </div>
           </div>
 
+        <!-- Format Selection Modal -->
+        <div v-if="showFormatModal" :class="$style.modalOverlay" @click="showFormatModal = false">
+          <div :class="$style.formatModal" @click.stop>
+            <div :class="$style.modalHeader">
+              <h3 :class="$style.modalTitle">
+                <i class="fas fa-file-export"></i>
+                اختر صيغة التصدير
+              </h3>
+              <button :class="$style.modalClose" @click="showFormatModal = false">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            
+            <div :class="$style.modalContent">
+              <p :class="$style.formatDescription">اختر الصيغة المناسبة لتصدير جميع استجابات الاستبيان</p>
+              
+              <div :class="$style.formatOptions">
+                <div 
+                  :class="[$style.formatOption, { [$style.selected]: selectedFormat === 'excel' }]" 
+                  @click="selectFormatAndDownload('excel')"
+                >
+                  <div :class="$style.formatIcon">
+                    <i class="fas fa-file-excel" style="color: #217346;"></i>
+                  </div>
+                  <div :class="$style.formatInfo">
+                    <h4 :class="$style.formatTitle">Excel</h4>
+                    <p :class="$style.formatDesc">جداول منظمة مع إمكانية التحليل والفرز</p>
+                  </div>
+                </div>
+                
+                <div 
+                  :class="[$style.formatOption, { [$style.selected]: selectedFormat === 'csv' }]" 
+                  @click="selectFormatAndDownload('csv')"
+                >
+                  <div :class="$style.formatIcon">
+                    <i class="fas fa-file-csv" style="color: #10793F;"></i>
+                  </div>
+                  <div :class="$style.formatInfo">
+                    <h4 :class="$style.formatTitle">CSV</h4>
+                    <p :class="$style.formatDesc">بيانات خام متوافقة مع جميع البرامج</p>
+                  </div>
+                </div>
+                
+                <div 
+                  :class="[$style.formatOption, { [$style.selected]: selectedFormat === 'pdf' }]" 
+                  @click="selectFormatAndDownload('pdf')"
+                >
+                  <div :class="$style.formatIcon">
+                    <i class="fas fa-file-pdf" style="color: #D32F2F;"></i>
+                  </div>
+                  <div :class="$style.formatInfo">
+                    <h4 :class="$style.formatTitle">PDF</h4>
+                    <p :class="$style.formatDesc">تقرير منسق وجاهز للطباعة</p>
+                  </div>
+                </div>
+                
+                <div 
+                  :class="[$style.formatOption, { [$style.selected]: selectedFormat === 'word' }]" 
+                  @click="selectFormatAndDownload('word')"
+                >
+                  <div :class="$style.formatIcon">
+                    <i class="fas fa-file-word" style="color: #2B579A;"></i>
+                  </div>
+                  <div :class="$style.formatInfo">
+                    <h4 :class="$style.formatTitle">Word</h4>
+                    <p :class="$style.formatDesc">مستند قابل للتحرير والتخصيص</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Export Modal -->
         <div v-if="showExportModal" :class="$style.modalOverlay" @click="showExportModal = false">
           <div :class="$style.exportModal" @click.stop>
@@ -519,7 +592,11 @@
 
   const toggleExpand = (id: string | number) => {
     const e = new Set(expanded.value)
-    e.has(id) ? e.delete(id) : e.add(id)
+    if (e.has(id)) {
+      e.delete(id)
+    } else {
+      e.add(id)
+    }
     expanded.value = e
   }
 
@@ -547,7 +624,9 @@
 
     // Export modal state
     const showExportModal = ref(false)
+    const showFormatModal = ref(false)
     const selectedExportFormat = ref('csv')
+    const selectedFormat = ref<'excel' | 'csv' | 'pdf' | 'word'>('csv')
     const includeIncomplete = ref(true)
     const isExporting = ref(false)
 
@@ -803,8 +882,11 @@
       }
     }
 
-    // Enhanced export function for downloading ALL responses (no pagination)
-    const downloadAllResponses = async () => {
+    // Main function to select format and download
+    const selectFormatAndDownload = async (format: 'excel' | 'csv' | 'pdf' | 'word') => {
+      selectedFormat.value = format
+      showFormatModal.value = false
+      
       try {
         isExporting.value = true
         
@@ -828,32 +910,25 @@
           return
         }
         
-        // Generate CSV content with proper Arabic encoding
-        const csvContent = generateArabicCSV(allResponses)
-        
-        // Create blob with proper UTF-8 BOM for Arabic text
-        const BOM = '\uFEFF' // UTF-8 BOM for proper Arabic display in Excel
-        const blob = new Blob([BOM + csvContent], { 
-          type: 'text/csv;charset=utf-8;' 
-        })
-        
-        // Download file
-        const url = window.URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        
-        const timestamp = new Date().toISOString().split('T')[0]
-        const filename = `جميع_استجابات_الاستبيان_${surveyId.value}_${timestamp}.csv`
-        link.download = filename
-        
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        window.URL.revokeObjectURL(url)
+        // Generate content based on format
+        switch (format) {
+          case 'excel':
+            await downloadAsExcel(allResponses)
+            break
+          case 'csv':
+            await downloadAsCSV(allResponses)
+            break
+          case 'pdf':
+            await downloadAsPDF(allResponses)
+            break
+          case 'word':
+            await downloadAsWord(allResponses)
+            break
+        }
         
         Swal.fire({
           title: 'تم التصدير بنجاح',
-          text: `تم تحميل ${allResponses.length} استجابة بنجاح`,
+          text: `تم تحميل ${allResponses.length} استجابة بصيغة ${getFormatName(format)}`,
           icon: 'success',
           confirmButtonText: 'موافق'
         })
@@ -862,13 +937,456 @@
         console.error('Export error:', error)
         Swal.fire({
           title: 'خطأ في التصدير',
-          text: 'فشل في تحميل جميع الاستجابات',
+          text: 'فشل في تحميل الاستجابات',
           icon: 'error',
           confirmButtonText: 'موافق'
         })
       } finally {
         isExporting.value = false
       }
+    }
+
+    // Get format display name
+    const getFormatName = (format: string) => {
+      const names: Record<string, string> = {
+        excel: 'Excel',
+        csv: 'CSV',
+        pdf: 'PDF',
+        word: 'Word'
+      }
+      return names[format] || format
+    }
+
+    // Download as CSV
+    const downloadAsCSV = async (responses: any[]) => {
+      const csvContent = generateArabicCSV(responses)
+      const BOM = '\uFEFF'
+      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
+      downloadFile(blob, `استجابات_الاستبيان_${surveyId.value}.csv`)
+    }
+
+    // Download as Excel (using CSV format but with .xls extension for simplicity)
+    const downloadAsExcel = async (responses: any[]) => {
+      // For a basic implementation, we'll use CSV with BOM which Excel handles well
+      // For advanced Excel features, you'd need a library like xlsx
+      const csvContent = generateArabicCSV(responses)
+      const BOM = '\uFEFF'
+      const blob = new Blob([BOM + csvContent], { 
+        type: 'application/vnd.ms-excel;charset=utf-8;' 
+      })
+      downloadFile(blob, `استجابات_الاستبيان_${surveyId.value}.xls`)
+    }
+
+    // Download as PDF using browser's print-to-PDF feature
+    const downloadAsPDF = async (responses: any[]) => {
+      try {
+        const timestamp = new Date().toLocaleDateString('ar-SA')
+        
+        // Generate HTML content with proper Arabic styling
+        let htmlContent = `
+          <!DOCTYPE html>
+          <html lang="ar" dir="rtl">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>تقرير استجابات الاستبيان</title>
+            <style>
+              * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+              }
+              
+              body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                direction: rtl;
+                text-align: right;
+                line-height: 1.6;
+                padding: 20mm;
+                color: #333;
+                background: white;
+              }
+              
+              .header {
+                text-align: center;
+                border-bottom: 3px solid #2563eb;
+                padding-bottom: 15px;
+                margin-bottom: 30px;
+              }
+              
+              .header h1 {
+                color: #1e40af;
+                font-size: 28pt;
+                margin: 10px 0;
+                font-weight: bold;
+              }
+              
+              .header p {
+                color: #666;
+                font-size: 14pt;
+                margin: 5px 0;
+              }
+              
+              .response-section {
+                margin-bottom: 30px;
+                padding: 15px;
+                border: 1px solid #e2e8f0;
+                background: #f8fafc;
+                page-break-inside: avoid;
+                border-radius: 8px;
+              }
+              
+              .response-title {
+                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                color: white;
+                padding: 12px 15px;
+                font-size: 16pt;
+                font-weight: bold;
+                margin: -15px -15px 15px -15px;
+                border-radius: 8px 8px 0 0;
+              }
+              
+              .info-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 15px;
+                background: white;
+                border-radius: 4px;
+                overflow: hidden;
+              }
+              
+              .info-table tr:nth-child(even) {
+                background: #f9fafb;
+              }
+              
+              .info-table td {
+                padding: 10px 15px;
+                border: 1px solid #e5e7eb;
+                font-size: 12pt;
+              }
+              
+              .info-table td:first-child {
+                background: #f1f5f9;
+                font-weight: bold;
+                width: 30%;
+                color: #1e40af;
+              }
+              
+              .answers-title {
+                color: #1e40af;
+                font-size: 14pt;
+                font-weight: bold;
+                margin: 20px 0 15px 0;
+                padding-right: 10px;
+                border-right: 4px solid #3b82f6;
+              }
+              
+              .question-block {
+                margin: 15px 0;
+                padding: 15px;
+                background: white;
+                border-right: 4px solid #60a5fa;
+                border-radius: 4px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+              }
+              
+              .question-text {
+                color: #1e40af;
+                font-weight: bold;
+                margin-bottom: 8px;
+                font-size: 13pt;
+                line-height: 1.5;
+              }
+              
+              .question-meta {
+                font-size: 11pt;
+                color: #64748b;
+                margin-bottom: 10px;
+                font-style: italic;
+              }
+              
+              .answer-text {
+                background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                padding: 12px 15px;
+                border-radius: 6px;
+                font-size: 12pt;
+                border: 1px solid #e2e8f0;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+              }
+              
+              @media print {
+                body {
+                  padding: 15mm;
+                }
+                
+                .response-section {
+                  page-break-inside: avoid;
+                }
+                
+                .question-block {
+                  page-break-inside: avoid;
+                }
+              }
+              
+              @page {
+                size: A4;
+                margin: 15mm;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>تقرير استجابات الاستبيان</h1>
+              <p>عدد الاستجابات: ${responses.length} | تاريخ التصدير: ${timestamp}</p>
+            </div>
+        `
+        
+        // Add each response
+        responses.forEach((response, index) => {
+          const isComplete = response.is_complete ? 'مكتملة' : 'غير مكتملة'
+          const respondentName = response.respondent?.email || 'مستجيب مجهول'
+          const respondentType = response.respondent?.type === 'authenticated' ? 'مستخدم مسجل' : 'مستخدم مجهول'
+          
+          htmlContent += `
+            <div class="response-section">
+              <div class="response-title">
+                الاستجابة رقم ${index + 1} - ${formatDateForCSV(response.submitted_at)}
+              </div>
+              
+              <table class="info-table">
+                <tr>
+                  <td>المستجيب</td>
+                  <td>${respondentName}</td>
+                </tr>
+                <tr>
+                  <td>نوع المستجيب</td>
+                  <td>${respondentType}</td>
+                </tr>
+                <tr>
+                  <td>الحالة</td>
+                  <td>${isComplete}</td>
+                </tr>
+                <tr>
+                  <td>نسبة الإكمال</td>
+                  <td>${getCompletionPercentage(response)}%</td>
+                </tr>
+              </table>
+              
+              <h4 class="answers-title">الإجابات</h4>
+          `
+          
+          // Add each answer
+          response.answers?.forEach((answer: any) => {
+            const questionType = getQuestionTypeLabel(answer.question_type)
+            const answerText = formatAnswerForCSV(answer)
+            
+            htmlContent += `
+              <div class="question-block">
+                <div class="question-text">
+                  السؤال ${answer.question_order}: ${answer.question_text}
+                </div>
+                <div class="question-meta">
+                  نوع السؤال: ${questionType}
+                </div>
+                <div class="answer-text">${answerText}</div>
+              </div>
+            `
+          })
+          
+          htmlContent += `</div>`
+        })
+        
+        htmlContent += `
+          </body>
+          </html>
+        `
+        
+        // Open in new window and trigger print dialog which allows "Save as PDF"
+        const printWindow = window.open('', '_blank')
+        if (printWindow) {
+          printWindow.document.write(htmlContent)
+          printWindow.document.close()
+          
+          // Wait for content to load, then trigger print
+          printWindow.onload = () => {
+            setTimeout(() => {
+              printWindow.print()
+              // Note: Window will close automatically after print/save
+            }, 250)
+          }
+        } else {
+          throw new Error('Failed to open print window. Please allow popups for this site.')
+        }
+        
+      } catch (error) {
+        console.error('PDF generation error:', error)
+        throw error
+      }
+    }
+
+    // Download as Word
+    const downloadAsWord = async (responses: any[]) => {
+      const wordContent = generateWordContent(responses)
+      
+      // Create HTML with Word-compatible styling
+      const htmlContent = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+              xmlns:w='urn:schemas-microsoft-com:office:word' 
+              xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+          <meta charset='utf-8'>
+          <title>تقرير استجابات الاستبيان</title>
+          <style>
+            body {
+              font-family: 'Arial', sans-serif;
+              direction: rtl;
+              text-align: right;
+              line-height: 1.6;
+            }
+            .header {
+              text-align: center;
+              border-bottom: 2px solid #2563eb;
+              padding-bottom: 15px;
+              margin-bottom: 30px;
+            }
+            .header h1 {
+              color: #1e40af;
+              font-size: 24pt;
+            }
+            .response-section {
+              margin-bottom: 30px;
+              padding: 15px;
+              border: 1px solid #e2e8f0;
+              background: #f8fafc;
+            }
+            .response-title {
+              background: #3b82f6;
+              color: white;
+              padding: 10px;
+              font-size: 14pt;
+              font-weight: bold;
+              margin-bottom: 15px;
+            }
+            .info-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 15px;
+            }
+            .info-table td {
+              padding: 8px;
+              border: 1px solid #cbd5e1;
+            }
+            .info-table td:first-child {
+              background: #f1f5f9;
+              font-weight: bold;
+              width: 30%;
+            }
+            .question-block {
+              margin: 15px 0;
+              padding: 12px;
+              background: white;
+              border-right: 3px solid #60a5fa;
+            }
+            .question-text {
+              color: #1e40af;
+              font-weight: bold;
+              margin-bottom: 8px;
+            }
+            .answer-text {
+              background: #f1f5f9;
+              padding: 10px;
+              border-radius: 4px;
+            }
+          </style>
+        </head>
+        <body>
+          ${wordContent}
+        </body>
+        </html>
+      `
+      
+      const blob = new Blob(['\ufeff', htmlContent], { 
+        type: 'application/msword;charset=utf-8' 
+      })
+      downloadFile(blob, `استجابات_الاستبيان_${surveyId.value}.doc`)
+    }
+
+    // Helper function to download file
+    const downloadFile = (blob: Blob, filename: string) => {
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    }
+
+    // Generate Word content (formatted document)
+    const generateWordContent = (responses: any[]) => {
+      const timestamp = new Date().toLocaleDateString('ar-SA')
+      
+      let content = `
+        <div class="header">
+          <h1>تقرير استجابات الاستبيان</h1>
+          <p>عدد الاستجابات: ${responses.length} | تاريخ التصدير: ${timestamp}</p>
+        </div>
+      `
+      
+      responses.forEach((response, index) => {
+        const isComplete = response.is_complete ? 'مكتملة' : 'غير مكتملة'
+        const respondentName = response.respondent?.email || 'مستجيب مجهول'
+        const respondentType = response.respondent?.type === 'authenticated' ? 'مستخدم مسجل' : 'مستخدم مجهول'
+        
+        content += `
+          <div class="response-section">
+            <div class="response-title">الاستجابة رقم ${index + 1} - ${formatDateForCSV(response.submitted_at)}</div>
+            
+            <table class="info-table">
+              <tr>
+                <td>المستجيب</td>
+                <td>${respondentName}</td>
+              </tr>
+              <tr>
+                <td>نوع المستجيب</td>
+                <td>${respondentType}</td>
+              </tr>
+              <tr>
+                <td>الحالة</td>
+                <td>${isComplete}</td>
+              </tr>
+              <tr>
+                <td>نسبة الإكمال</td>
+                <td>${getCompletionPercentage(response)}%</td>
+              </tr>
+            </table>
+            
+            <h4>الإجابات:</h4>
+        `
+        
+        response.answers?.forEach((answer: any) => {
+          const questionType = getQuestionTypeLabel(answer.question_type)
+          content += `
+            <div class="question-block">
+              <div class="question-text">
+                السؤال ${answer.question_order}: ${answer.question_text}
+              </div>
+              <div style="font-size: 11pt; color: #64748b; margin-bottom: 8px;">
+                نوع السؤال: ${questionType}
+              </div>
+              <div class="answer-text">
+                ${formatAnswerForCSV(answer)}
+              </div>
+            </div>
+          `
+        })
+        
+        content += `</div>`
+      })
+      
+      return content
     }
 
 
