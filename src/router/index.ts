@@ -207,6 +207,7 @@ const router = createRouter({
 
 router.beforeEach(async (to, _from, next) => {
   
+  // ✅ Allow public survey routes to bypass all authentication checks
   if (to.path.startsWith("/survey/")) {
     return next();
   }
@@ -219,6 +220,7 @@ router.beforeEach(async (to, _from, next) => {
 
   let authenticated = isAuthenticated.value;
 
+  // ✅ Check authentication for protected routes
   if (requiresAuth && !authenticated) {
     try {
       authenticated = await checkAuth();
@@ -227,19 +229,36 @@ router.beforeEach(async (to, _from, next) => {
     }
 
     if (!authenticated) {
-      // Redirect unauthenticated users to the root domain (UnauthorizedAccess page)
-      return next("/");
+      // Redirect unauthenticated users to login page
+      return next("/login");
     }
   }
 
+  // ✅ Redirect authenticated users away from guest-only pages (login, register)
   if (requiresGuest && authenticated) {
     const redirectTo = (to.query.redirect as string) || "/surveys";
     return next(redirectTo);
   }
 
-  if (requiresAdmin && authenticated) {
+  // ✅ Check admin role for admin-only routes
+  if (requiresAdmin) {
+    // Re-check authentication if needed
+    if (!authenticated) {
+      try {
+        authenticated = await checkAuth();
+      } catch {
+        authenticated = false;
+      }
+    }
+
+    if (!authenticated) {
+      return next("/login");
+    }
+
     const currentUser = user.value;
     const ADMIN_ROLES = new Set(["admin", "super_admin"]);
+    
+    // If user is authenticated but not an admin, redirect to surveys
     if (!currentUser || !ADMIN_ROLES.has(currentUser.role)) {
       return next("/surveys");
     }
