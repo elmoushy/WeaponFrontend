@@ -207,8 +207,14 @@ const router = createRouter({
 
 router.beforeEach(async (to, _from, next) => {
   
-  // ✅ Allow public survey routes to bypass all authentication checks
+  // ✅ CRITICAL: Public survey routes MUST bypass all authentication checks
+  // This ensures survey links like /survey/public/:token are always accessible
   if (to.path.startsWith("/survey/")) {
+    return next();
+  }
+
+  // ✅ Prevent infinite redirect loops
+  if (to.path === "/" && _from.path === "/") {
     return next();
   }
 
@@ -229,8 +235,8 @@ router.beforeEach(async (to, _from, next) => {
     }
 
     if (!authenticated) {
-      // Redirect unauthenticated users to login page
-      return next("/login");
+      // Redirect unauthenticated users to UnauthorizedAccess page
+      return next("/");
     }
   }
 
@@ -252,7 +258,8 @@ router.beforeEach(async (to, _from, next) => {
     }
 
     if (!authenticated) {
-      return next("/login");
+      // Unauthenticated users trying to access admin routes → UnauthorizedAccess
+      return next("/");
     }
 
     const currentUser = user.value;
