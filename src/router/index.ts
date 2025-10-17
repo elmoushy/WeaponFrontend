@@ -227,8 +227,8 @@ router.beforeEach(async (to, _from, next) => {
     }
 
     if (!authenticated) {
-      const redirectPath = to.fullPath !== "/" ? to.fullPath : "/surveys";
-      return next({ path: "/login", query: { redirect: redirectPath } });
+      // Redirect unauthenticated users to the root domain (UnauthorizedAccess page)
+      return next("/");
     }
   }
 
