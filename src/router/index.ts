@@ -213,11 +213,6 @@ router.beforeEach(async (to, _from, next) => {
     return next();
   }
 
-  // ✅ Prevent infinite redirect loops
-  if (to.path === "/" && _from.path === "/") {
-    return next();
-  }
-
   const { isAuthenticated, checkAuth, user } = useSimpleAuth();
 
   const requiresAuth = to.matched.some((r) => r.meta?.requiresAuth);
@@ -226,6 +221,15 @@ router.beforeEach(async (to, _from, next) => {
 
   let authenticated = isAuthenticated.value;
 
+  // ✅ If authenticated user tries to access UnauthorizedAccess page, redirect to /surveys
+  if (to.path === "/" && authenticated) {
+    return next("/surveys");
+  }
+
+  // ✅ Prevent infinite redirect loops on root path
+  if (to.path === "/" && _from.path === "/") {
+    return next();
+  }
   // ✅ Check authentication for protected routes
   if (requiresAuth && !authenticated) {
     try {
