@@ -20,6 +20,7 @@ declare module "vue-router" {
    ========================= */
 
 // Auth & Public
+const UnauthorizedAccess = () => import("../pages/Auth/UnauthorizedAccess.vue");
 const JWTLogin = () => import("../pages/Auth/JWTLogin.vue");
 // const Register = () => import('../pages/Auth/Register.vue') 
 
@@ -51,7 +52,12 @@ const Notifications = () => import("../pages/Notifications");
    Routes
    ========================= */
 const routes: RouteRecordRaw[] = [
-  { path: "/", redirect: "/login" },
+  { 
+    path: "/", 
+    name: "UnauthorizedAccess",
+    component: UnauthorizedAccess,
+    meta: { title: "Unauthorized Access - WPC | WeaponpowerCloud App" }
+  },
 
   {
     path: "/login",
