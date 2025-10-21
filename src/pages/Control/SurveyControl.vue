@@ -1,5 +1,16 @@
 <template>
   <div :class="$style.surveyPanel" :data-theme="currentTheme" :dir="isRTL ? 'rtl' : 'ltr'">
+    <!-- Survey Editor View (When Active) -->
+    <SurveyEditor
+      v-if="showEditorView"
+      :template="selectedTemplateForEditor"
+      @back="closeEditorView"
+      @publish="handleEditorPublish"
+      @saveDraft="handleEditorSaveDraft"
+    />
+    
+    <!-- Main Survey Control View (When Editor is Not Active) -->
+    <template v-else>
     <!-- Hero Section -->
     <section :class="$style.heroSection">
       <div :class="$style.heroContent">
@@ -19,10 +30,59 @@
             <i class="fas fa-chart-bar"></i>
             {{ t('responses.title') }}
           </button> -->
-          <button :class="$style.primaryButton" @click="showCreateModal = true">
-            <i class="fas fa-plus"></i>
-            {{ t('survey.list.createSurvey') }}
-          </button>
+          
+          <!-- Create Survey Dropdown Button -->
+          <div :class="$style.createButtonContainer" ref="createButtonRef">
+            <button 
+              :class="$style.primaryButton" 
+              @click="toggleCreateDropdown"
+            >
+              <i class="fas fa-plus"></i>
+              {{ t('survey.list.createSurvey') }}
+              <i :class="['fas', showCreateDropdown ? 'fa-chevron-up' : 'fa-chevron-down', $style.dropdownIcon]"></i>
+            </button>
+          </div>
+          
+          <!-- Dropdown Menu - Teleported to body -->
+          <Teleport to="body">
+            <div 
+              v-if="showCreateDropdown" 
+              :class="$style.createDropdown"
+              :style="dropdownPosition"
+              data-dropdown="create-survey"
+              @mousedown.prevent
+            >
+              <button 
+                :class="$style.dropdownItem" 
+                @click="createDefaultSurvey"
+              >
+                <i class="fas fa-file-alt"></i>
+                <div :class="$style.dropdownItemContent">
+                  <span :class="$style.dropdownItemTitle">
+                    {{ isRTL ? 'استطلاع افتراضي' : 'Default Survey' }}
+                  </span>
+                  <span :class="$style.dropdownItemDescription">
+                    {{ isRTL ? 'إنشاء استطلاع فارغ من البداية' : 'Create a blank survey from scratch' }}
+                  </span>
+                </div>
+              </button>
+              
+              <button 
+                :class="$style.dropdownItem" 
+                @click="openTemplateGallery"
+              >
+                <i class="fas fa-layer-group"></i>
+                <div :class="$style.dropdownItemContent">
+                  <span :class="$style.dropdownItemTitle">
+                    {{ isRTL ? 'من قالب' : 'From Template' }}
+                  </span>
+                  <span :class="$style.dropdownItemDescription">
+                    {{ isRTL ? 'اختر من القوالب الجاهزة أو استطلاعاتك السابقة' : 'Choose from ready templates or your previous surveys' }}
+                  </span>
+                </div>
+              </button>
+            </div>
+          </Teleport>
         </div>
       </div>
     </section>
@@ -123,7 +183,7 @@
       </div>
     </div>
 
-    <!-- Surveys Grid/List -->
+    <!-- Surveys Grid -->
     <section v-if="!isLoading && surveys?.length > 0" :class="$style.surveysSection">
       <!-- Grid View -->
       <div :class="$style.surveysGrid" v-if="viewMode === 'grid'">
@@ -194,6 +254,17 @@
             >
               <i class="fas fa-edit"></i>
               <span :class="$style.actionButtonText">{{ t('survey.card.edit') }}</span>
+            </button>
+            
+            <!-- Edit with Survey Editor button - only for draft surveys -->
+            <button 
+              v-if="survey.status === 'draft'" 
+              :class="[$style.actionButton, $style.editorAction]" 
+              @click.stop="editSurveyWithEditor(survey)" 
+              :title="isRTL ? 'تحرير باستخدام المحرر' : 'Edit with Editor'"
+            >
+              <i class="fas fa-pen-fancy"></i>
+              <span :class="$style.actionButtonText">{{ isRTL ? 'محرر' : 'Editor' }}</span>
             </button>
             
             <!-- Submit button - only for draft surveys -->
@@ -349,6 +420,14 @@
                 </button>
                 <button 
                   v-if="survey.status === 'draft'" 
+                  :class="[$style.actionMenuItem, $style.editorAction]" 
+                  @click.stop="editSurveyWithEditor(survey)"
+                >
+                  <i class="fas fa-pen-fancy"></i>
+                  {{ isRTL ? 'محرر' : 'Editor' }}
+                </button>
+                <button 
+                  v-if="survey.status === 'draft'" 
                   :class="[$style.actionMenuItem, $style.submitAction]" 
                   @click.stop="submitDraftSurvey(survey.id)"
                 >
@@ -493,6 +572,16 @@
       @link-generated="handleLinkGenerated"
       @status-update="handleStatusUpdate"
     />
+    
+    <!-- Template Gallery Modal -->
+    <TemplateGalleryModal
+      v-if="showTemplateGallery"
+      @close="closeTemplateGallery"
+      @template-selected="handleTemplateSelected"
+      @recent-survey-selected="handleRecentSurveySelected"
+      @create-new-template="handleCreateNewTemplate"
+    />
+    </template>
   </div>
 </template>
 
@@ -501,11 +590,13 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../../stores/useAppStore'
 import { surveyService } from '../../services/surveyService'
-import type { Survey, SurveyAnalytics, SurveyVisibility, QuestionType, PublicContactMethod } from '../../types/survey.types'
+import type { Survey, SurveyAnalytics, SurveyVisibility, QuestionType, PublicContactMethod, PredefinedTemplate, SurveyTemplate, RecentSurvey } from '../../types/survey.types'
 import SurveyModal from '../../components/SurveyModal/SurveyModal.vue'
 import AnalyticsModal from '../../components/AnalyticsModal/AnalyticsModal.vue'
 import SurveyAccessModal from '../../components/SurveyAccessModal/SurveyAccessModal.vue'
 import LinkSharingModal from '../../components/LinkSharingModal/LinkSharingModal.vue'
+import TemplateGalleryModal from '../../components/TemplateGalleryModal/TemplateGalleryModal.vue'
+import SurveyEditor from '../../components/SurveyEditor/SurveyEditor.vue'
 import Swal from 'sweetalert2'
 
 // Router
@@ -530,15 +621,46 @@ const viewMode = ref<'grid' | 'list'>('grid')
 const selectedSurveys = ref<string[]>([])
 const bulkOperationLoading = ref(false)
 const activeActionMenu = ref<string | null>(null)
+const createButtonRef = ref<HTMLElement | null>(null)
+const dropdownPosition = computed(() => {
+  if (!createButtonRef.value) {
+    return {
+      position: 'fixed' as const,
+      top: '0px',
+      left: '0px',
+      zIndex: '9999'
+    }
+  }
+  
+  const rect = createButtonRef.value.getBoundingClientRect()
+  const style: any = {
+    position: 'fixed' as const,
+    top: `${rect.bottom + 8}px`,
+    zIndex: '9999'
+  }
+  
+  // Handle RTL positioning
+  if (isRTL.value) {
+    style.right = `${window.innerWidth - rect.right}px`
+  } else {
+    style.left = `${rect.left}px`
+  }
+  
+  return style
+})
 
 // Modals
 const showCreateModal = ref(false)
 const showAnalytics = ref(false)
 const showAccessModal = ref(false)
 const showLinkSharingModal = ref(false)
+const showTemplateGallery = ref(false)
+const showCreateDropdown = ref(false)
+const showEditorView = ref(false)
 const selectedSurveyForEdit = ref<Survey | null>(null)
 const selectedSurveyForAccess = ref<Survey | null>(null)
 const selectedSurveyForLinkSharing = ref<Survey | null>(null)
+const selectedTemplateForEditor = ref<PredefinedTemplate | SurveyTemplate | RecentSurvey | Survey | null>(null)
 const publicLinkForSharing = ref<any | null>(null)
 const isSubmissionFlow = ref(false)
 
@@ -852,6 +974,40 @@ const toggleSurveySelection = (surveyId: string) => {
 const editSurvey = (survey: Survey) => {
   selectedSurveyForEdit.value = survey
   showCreateModal.value = true
+}
+
+const editSurveyWithEditor = async (survey: Survey) => {
+  try {
+    const isArabic = store.currentLanguage === 'ar'
+    
+    // Show loading
+    Swal.fire({
+      title: isArabic ? 'جاري تحميل الاستطلاع...' : 'Loading Survey...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      }
+    })
+    
+    // Fetch full survey data with questions
+    const response = await surveyService.getSurvey(survey.id)
+    const fullSurvey = response.data
+    
+    // Close loading
+    Swal.close()
+    
+    // Open editor with full survey data
+    selectedTemplateForEditor.value = fullSurvey
+    showEditorView.value = true
+  } catch (error: any) {
+    const isArabic = store.currentLanguage === 'ar'
+    Swal.fire({
+      icon: 'error',
+      title: isArabic ? 'خطأ' : 'Error',
+      text: error.message || (isArabic ? 'فشل في تحميل الاستطلاع' : 'Failed to load survey'),
+      confirmButtonText: isArabic ? 'موافق' : 'OK'
+    })
+  }
 }
 
 const manageSurveyAccess = (survey: Survey) => {
@@ -1256,11 +1412,217 @@ const formatDate = (dateString: string | null | undefined, fallbackDate?: string
   return date.toLocaleDateString()
 }
 
+// Template Gallery Methods
+const toggleCreateDropdown = () => {
+  showCreateDropdown.value = !showCreateDropdown.value
+  if (showCreateDropdown.value) {
+    // Force position recalculation on next tick
+    setTimeout(() => {
+      if (createButtonRef.value) {
+        createButtonRef.value.dispatchEvent(new Event('click'))
+      }
+    }, 0)
+  }
+}
+
+const handleDropdownClickOutside = (event: MouseEvent) => {
+  if (!showCreateDropdown.value) return
+  
+  const target = event.target as Element
+  if (createButtonRef.value && !createButtonRef.value.contains(target)) {
+    const dropdown = document.querySelector('[data-dropdown="create-survey"]')
+    if (dropdown && !dropdown.contains(target)) {
+      showCreateDropdown.value = false
+    }
+  }
+}
+
+const createDefaultSurvey = () => {
+  showCreateDropdown.value = false
+  selectedTemplateForEditor.value = null // Start with a blank survey
+  showEditorView.value = true
+}
+
+const openTemplateGallery = () => {
+  showCreateDropdown.value = false
+  showTemplateGallery.value = true
+}
+
+const closeTemplateGallery = () => {
+  showTemplateGallery.value = false
+}
+
+const handleTemplateSelected = async (template: PredefinedTemplate | SurveyTemplate) => {
+  // Close template gallery and open editor with template
+  closeTemplateGallery()
+  selectedTemplateForEditor.value = template
+  showEditorView.value = true
+}
+
+const handleRecentSurveySelected = async (survey: RecentSurvey) => {
+  try {
+    // Fetch full survey data with questions
+    const response = await surveyService.getSurvey(survey.id)
+    const fullSurvey = response.data
+    
+    // Close template gallery and open editor with full survey data
+    closeTemplateGallery()
+    selectedTemplateForEditor.value = fullSurvey
+    showEditorView.value = true
+  } catch (error: any) {
+    const isArabic = store.currentLanguage === 'ar'
+    Swal.fire({
+      icon: 'error',
+      title: isArabic ? 'خطأ' : 'Error',
+      text: error.message || (isArabic ? 'فشل في تحميل الاستطلاع' : 'Failed to load survey'),
+      confirmButtonText: isArabic ? 'موافق' : 'OK'
+    })
+  }
+}
+
+const handleCreateNewTemplate = () => {
+  const isArabic = store.currentLanguage === 'ar'
+  
+  // Show info message
+  Swal.fire({
+    icon: 'info',
+    title: isArabic ? 'إنشاء قالب جديد' : 'Create New Template',
+    html: isArabic 
+      ? 'سيتم فتح محرر الاستطلاع حيث يمكنك إنشاء استطلاع جديد.<br><br>بعد إنشاء الاستطلاع ونشره، يمكنك حفظه كقالب من قائمة الاستطلاعات.' 
+      : 'The survey editor will open where you can create a new survey.<br><br>After creating and publishing the survey, you can save it as a template from the surveys list.',
+    confirmButtonText: isArabic ? 'متابعة' : 'Continue',
+    showCancelButton: true,
+    cancelButtonText: isArabic ? 'إلغاء' : 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Close the template gallery and open the editor to create a new survey
+      closeTemplateGallery()
+      selectedTemplateForEditor.value = null // Start with blank survey
+      showEditorView.value = true
+    }
+  })
+}
+
 const getCreatorDisplayName = (creatorEmail: string | null) => {
   if (!creatorEmail) {
     return isRTL.value ? 'هذا الشخص لم يعد متاح' : 'This person is no longer available'
   }
   return creatorEmail
+}
+
+// Editor methods
+const closeEditorView = () => {
+  showEditorView.value = false
+  selectedTemplateForEditor.value = null
+}
+
+const handleEditorSaveDraft = async (surveyData: any) => {
+  try {
+    const isArabic = store.currentLanguage === 'ar'
+    
+    // Check if we're editing an existing draft
+    const isEditingExisting = selectedTemplateForEditor.value && 'id' in selectedTemplateForEditor.value
+    
+    // Show loading
+    Swal.fire({
+      title: isArabic ? 'جاري حفظ المسودة...' : 'Saving Draft...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      }
+    })
+    
+    if (isEditingExisting) {
+      // Update existing draft
+      const surveyId = (selectedTemplateForEditor.value as Survey).id
+      await surveyService.updateSurvey(surveyId, surveyData)
+    } else {
+      // Create new draft
+      await surveyService.createDraft(surveyData)
+    }
+    
+    // Close loading
+    Swal.close()
+    
+    // Close editor
+    closeEditorView()
+    
+    // Show success message
+    Swal.fire({
+      icon: 'success',
+      title: isArabic ? 'تم الحفظ بنجاح' : 'Saved Successfully',
+      text: isArabic 
+        ? (isEditingExisting ? 'تم تحديث المسودة بنجاح' : 'تم حفظ المسودة بنجاح')
+        : (isEditingExisting ? 'Draft has been updated successfully' : 'Draft has been saved successfully'),
+      confirmButtonText: isArabic ? 'موافق' : 'OK'
+    }).then(() => {
+      // Refresh the surveys list
+      refreshData()
+    })
+    
+  } catch (error: any) {
+    const isArabic = store.currentLanguage === 'ar'
+    Swal.fire({
+      icon: 'error',
+      title: isArabic ? 'خطأ' : 'Error',
+      text: error.message || (isArabic ? 'فشل في حفظ المسودة' : 'Failed to save draft'),
+      confirmButtonText: isArabic ? 'موافق' : 'OK'
+    })
+  }
+}
+
+const handleEditorPublish = async (surveyData: any) => {
+  try {
+    const isArabic = store.currentLanguage === 'ar'
+    
+    // Check if we're editing an existing draft
+    const isEditingExisting = selectedTemplateForEditor.value && 'id' in selectedTemplateForEditor.value
+    
+    // Show loading
+    Swal.fire({
+      title: isArabic ? 'جاري إنشاء الاستطلاع...' : 'Creating Survey...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      }
+    })
+    
+    let createdSurvey: Survey
+    
+    if (isEditingExisting) {
+      // Update existing draft
+      const surveyId = (selectedTemplateForEditor.value as Survey).id
+      const updateResponse = await surveyService.updateSurvey(surveyId, surveyData)
+      createdSurvey = updateResponse.data
+    } else {
+      // Create new draft
+      const draftResponse = await surveyService.createDraft(surveyData)
+      createdSurvey = draftResponse.data
+    }
+    
+    // Close loading
+    Swal.close()
+    
+    // Close editor
+    closeEditorView()
+    
+    // Open the SurveyAccessModal to configure access settings before submitting
+    selectedSurveyForAccess.value = createdSurvey
+    isSubmissionFlow.value = true // Mark as submission flow
+    showAccessModal.value = true
+    
+    // Store the intent that this is for submission
+    ;(createdSurvey as any)._isSubmissionFlow = true
+    
+  } catch (error: any) {
+    const isArabic = store.currentLanguage === 'ar'
+    Swal.fire({
+      icon: 'error',
+      title: isArabic ? 'خطأ' : 'Error',
+      text: error.message || (isArabic ? 'فشل في إنشاء الاستطلاع' : 'Failed to create survey'),
+      confirmButtonText: isArabic ? 'موافق' : 'OK'
+    })
+  }
 }
 
 const toggleSelectAll = () => {
@@ -1289,10 +1651,12 @@ const handleClickOutside = (event: Event) => {
 onMounted(() => {
   refreshData()
   document.addEventListener('click', handleClickOutside)
+  document.addEventListener('click', handleDropdownClickOutside)
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('click', handleDropdownClickOutside)
   // Clean up search debounce timer
   if (searchDebounceTimer.value) {
     clearTimeout(searchDebounceTimer.value)

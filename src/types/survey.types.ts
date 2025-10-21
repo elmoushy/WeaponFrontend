@@ -580,3 +580,93 @@ export interface AdminGroupsResponse {
   total_count: number
   user_role: string
 }
+
+// Survey Template Types
+export type TemplateCategory = 'contact' | 'event' | 'feedback' | 'registration' | 'custom'
+
+export interface SurveyTemplate {
+  id: string
+  name: string
+  name_ar: string
+  description: string
+  description_ar: string
+  category: TemplateCategory
+  icon: string
+  preview_image?: string
+  is_predefined: boolean // Built-in vs user-created
+  usage_count?: number
+  created_by?: number
+  created_at: string
+  updated_at: string
+  questions: TemplateQuestion[]
+}
+
+export interface TemplateQuestion {
+  text: string
+  text_ar: string
+  question_type: QuestionType
+  options?: string
+  is_required: boolean
+  order: number
+  placeholder?: string
+  placeholder_ar?: string
+}
+
+export interface PredefinedTemplate {
+  id: string
+  name: string
+  name_ar: string
+  description: string
+  description_ar: string
+  category: TemplateCategory
+  icon: string
+  preview_image?: string
+  questions: TemplateQuestion[]
+}
+
+export interface RecentSurvey {
+  id: string
+  title: string
+  description: string
+  created_at: string
+  updated_at: string
+  questions_count: number
+  response_count: number
+  visibility: SurveyVisibility
+  status: string
+  can_use_as_template: boolean
+}
+
+export interface TemplateGalleryResponse {
+  predefined_templates: PredefinedTemplate[]
+  user_templates: SurveyTemplate[]
+  recent_surveys: RecentSurvey[]
+  total_predefined: number
+  total_user: number
+  total_recent: number
+}
+
+export interface CreateTemplateRequest {
+  name: string
+  name_ar?: string
+  description: string
+  description_ar?: string
+  category: TemplateCategory
+  survey_id: string // Source survey to create template from
+}
+
+export interface CreateTemplateResponse {
+  template: SurveyTemplate
+  message: string
+}
+
+export interface CreateSurveyFromTemplateRequest {
+  template_id: string
+  title?: string // Optional custom title
+  description?: string // Optional custom description
+}
+
+export interface CreateSurveyFromTemplateResponse {
+  survey: Survey
+  message: string
+}

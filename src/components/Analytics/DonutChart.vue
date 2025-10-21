@@ -5,7 +5,7 @@
       <p :class="$style.loadingText">جاري تحميل الرسم البياني...</p>
     </div>
 
-    <div v-else-if="!data || data.length === 0 || total === 0" :class="$style.emptyContainer">
+    <div v-else-if="!data || data.length === 0" :class="$style.emptyContainer">
       <div :class="$style.emptyIcon">
         <i class="fas fa-chart-pie"></i>
       </div>
@@ -20,18 +20,32 @@
         :height="size"
         :viewBox="`0 0 ${size} ${size}`"
       >
-        <!-- Donut segments -->
+        <!-- Donut segments or placeholder when total is 0 -->
         <g :transform="`translate(${center}, ${center})`">
-          <path
-            v-for="(segment, index) in segments"
-            :key="index"
-            :d="segment.path"
-            :fill="segment.color"
-            :class="$style.donutSegment"
-            @mouseover="onSegmentHover(segment, index, $event)"
-            @mouseleave="onSegmentLeave"
-            @click="onSegmentClick(segment, index)"
-          />
+          <!-- Show placeholder circle when total is 0 -->
+          <template v-if="total === 0">
+            <path
+              :d="placeholderPath"
+              fill="none"
+              :stroke="placeholderColor"
+              :stroke-width="strokeWidth"
+              opacity="0.3"
+              :class="$style.placeholderCircle"
+            />
+          </template>
+          <!-- Show actual segments when there is data -->
+          <template v-else>
+            <path
+              v-for="(segment, index) in segments"
+              :key="index"
+              :d="segment.path"
+              :fill="segment.color"
+              :class="$style.donutSegment"
+              @mouseover="onSegmentHover(segment, index, $event)"
+              @mouseleave="onSegmentLeave"
+              @click="onSegmentClick(segment, index)"
+            />
+          </template>
         </g>
         
         <!-- Center text -->
@@ -146,6 +160,26 @@ const t = computed(() => store.t)
 const innerRadius = computed(() => props.size * 0.3)
 const outerRadius = computed(() => props.size * 0.45)
 const center = computed(() => props.size / 2)
+const strokeWidth = computed(() => (outerRadius.value - innerRadius.value))
+const placeholderColor = computed(() => store.currentTheme === 'night' ? '#4a5568' : '#e2e8f0')
+
+// Placeholder circle path (full circle when total is 0)
+const placeholderPath = computed(() => {
+  const startX = 0
+  const startY = -outerRadius.value
+  const endX = 0
+  const endY = outerRadius.value
+  
+  return [
+    `M ${startX} ${startY}`,
+    `A ${outerRadius.value} ${outerRadius.value} 0 0 1 ${endX} ${endY}`,
+    `A ${outerRadius.value} ${outerRadius.value} 0 0 1 ${startX} ${startY}`,
+    `M ${startX} ${-innerRadius.value}`,
+    `A ${innerRadius.value} ${innerRadius.value} 0 0 0 ${endX} ${innerRadius.value}`,
+    `A ${innerRadius.value} ${innerRadius.value} 0 0 0 ${startX} ${-innerRadius.value}`,
+    'Z'
+  ].join(' ')
+})
 
 // State
 const highlightedIndex = ref<number | null>(null)
@@ -281,7 +315,8 @@ const onLegendClick = (item: any, index: number) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 32px;
+  padding: 20px;
+  min-height: 350px;
   position: relative;
 }
 
@@ -292,6 +327,7 @@ const onLegendClick = (item: any, index: number) => {
   align-items: center;
   justify-content: center;
   height: 100%;
+  min-height: 250px;
   gap: 16px;
 }
 
@@ -325,7 +361,8 @@ const onLegendClick = (item: any, index: number) => {
 .chartContainer {
   display: flex;
   align-items: center;
-  gap: 32px;
+  justify-content: center;
+  gap: 40px;
   width: 100%;
   height: 100%;
   position: relative;
@@ -333,30 +370,46 @@ const onLegendClick = (item: any, index: number) => {
 
 .chartSvg {
   flex-shrink: 0;
+  display: block;
+}
+
+.placeholderCircle {
+  stroke-dasharray: 4 4;
+  animation: dash 20s linear infinite;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -100;
+  }
 }
 
 .donutSegment {
   cursor: pointer;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease, filter 0.2s ease;
   transform-origin: center;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .donutSegment:hover {
-  opacity: 0.8;
-  transform: scale(1.02);
+  opacity: 0.85;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 }
 
 .centerTotal {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
   fill: var(--ink);
+  dominant-baseline: middle;
 }
 
 .centerLabel {
   font-size: 12px;
   fill: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
+  font-weight: 600;
+  dominant-baseline: middle;
 }
 
 .legend {
@@ -364,30 +417,36 @@ const onLegendClick = (item: any, index: number) => {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-width: 200px;
+  max-width: 220px;
+  min-width: 180px;
 }
 
 .legendItem {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px;
-  border-radius: 6px;
+  padding: 10px 12px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  background: var(--surface);
+  border: 1px solid transparent;
 }
 
 .legendItem:hover,
 .legendItem.highlighted {
   background-color: var(--surface-variant);
   transform: translateX(4px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border-color: var(--border);
 }
 
 .legendColor {
-  width: 16px;
-  height: 16px;
-  border-radius: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
   flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .legendContent {
@@ -399,27 +458,31 @@ const onLegendClick = (item: any, index: number) => {
   font-size: 13px;
   font-weight: 600;
   color: var(--ink);
-  margin-bottom: 2px;
+  margin-bottom: 3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.2;
 }
 
 .legendStats {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap;
 }
 
 .legendValue {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--brand);
+  line-height: 1;
 }
 
 .legendPercentage {
   font-size: 11px;
   color: var(--muted);
+  font-weight: 500;
 }
 
 .tooltip {
@@ -428,23 +491,26 @@ const onLegendClick = (item: any, index: number) => {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   z-index: 1000;
   pointer-events: none;
   min-width: 150px;
+  max-width: 200px;
 }
 
 .tooltipHeader {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--ink);
   margin-bottom: 8px;
   font-size: 13px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
 }
 
 .tooltipContent {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .tooltipItem {
@@ -468,7 +534,7 @@ const onLegendClick = (item: any, index: number) => {
 
 .tooltipValue {
   color: var(--ink);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Dark theme */
@@ -481,28 +547,74 @@ const onLegendClick = (item: any, index: number) => {
   --brand: #a17d23;
 }
 
+.donutChart[data-theme="dark"] .legendItem {
+  background: #1a202c;
+}
+
+.donutChart[data-theme="dark"] .tooltip {
+  background: #1a202c;
+  border-color: #2d3748;
+}
+
 /* Responsive */
+@media (max-width: 968px) {
+  .chartContainer {
+    gap: 28px;
+  }
+
+  .legend {
+    max-width: 180px;
+    min-width: 150px;
+    gap: 10px;
+  }
+
+  .legendItem {
+    padding: 8px 10px;
+  }
+
+  .legendLabel {
+    font-size: 12px;
+  }
+
+  .legendValue {
+    font-size: 14px;
+  }
+}
+
 @media (max-width: 768px) {
+  .donutChart {
+    padding: 16px;
+    min-height: 300px;
+  }
+
   .chartContainer {
     flex-direction: column;
-    gap: 20px;
+    gap: 24px;
   }
   
   .legend {
     max-width: none;
     width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
   }
   
   .legendItem {
-    padding: 6px;
+    padding: 8px 10px;
   }
-  
+
+  .legendItem:hover,
+  .legendItem.highlighted {
+    transform: translateY(-2px);
+  }
+
   .centerTotal {
-    font-size: 20px;
+    font-size: 24px;
   }
   
   .centerLabel {
-    font-size: 10px;
+    font-size: 11px;
   }
 }
 
@@ -512,15 +624,16 @@ const onLegendClick = (item: any, index: number) => {
   }
   
   .legend {
+    grid-template-columns: 1fr;
     gap: 8px;
   }
   
   .legendItem {
-    padding: 4px;
+    padding: 8px;
   }
   
   .legendLabel {
-    font-size: 12px;
+    font-size: 11px;
   }
   
   .legendValue {
@@ -528,6 +641,14 @@ const onLegendClick = (item: any, index: number) => {
   }
   
   .legendPercentage {
+    font-size: 10px;
+  }
+
+  .centerTotal {
+    font-size: 20px;
+  }
+  
+  .centerLabel {
     font-size: 10px;
   }
 }

@@ -281,6 +281,112 @@ Beige/Tan Variants:
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
+/* Create Button Dropdown Styles */
+.createButtonContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdownIcon {
+  margin-left: 8px;
+  font-size: 0.875rem;
+  transition: transform 0.3s ease;
+}
+
+[dir="rtl"] .dropdownIcon {
+  margin-left: 0;
+  margin-right: 8px;
+}
+
+.createDropdown {
+  position: fixed;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-stroke);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  z-index: 9999;
+  min-width: 320px;
+  max-width: 400px;
+  overflow: hidden;
+  animation: dropdownSlideIn 0.2s ease-out;
+}
+
+[dir="rtl"] .createDropdown {
+  left: auto !important;
+}
+
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdownItem {
+  width: 100%;
+  padding: 16px 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid var(--glass-stroke);
+  text-align: left;
+}
+
+[dir="rtl"] .dropdownItem {
+  text-align: right;
+}
+
+.dropdownItem:last-child {
+  border-bottom: none;
+}
+
+.dropdownItem:hover {
+  background: rgba(161, 125, 35, 0.1);
+  transform: translateX(4px);
+}
+
+[dir="rtl"] .dropdownItem:hover {
+  transform: translateX(-4px);
+}
+
+.dropdownItem i {
+  font-size: 24px;
+  color: var(--brand-strong);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.dropdownItemContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.dropdownItemTitle {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--ink);
+  display: block;
+}
+
+.dropdownItemDescription {
+  font-size: 0.875rem;
+  color: var(--muted);
+  line-height: 1.4;
+  display: block;
+}
+
+
 .secondaryButton {
   background: rgba(255, 255, 255, 0.2);
   color: #A17D23;
@@ -907,6 +1013,18 @@ Beige/Tan Variants:
   color: #218838;
 }
 
+.actionButton.editorAction {
+  background: rgba(183, 138, 65, 0.1);
+  border-color: rgba(183, 138, 65, 0.2);
+  color: #B78A41;
+}
+
+.actionButton.editorAction:hover {
+  background: rgba(183, 138, 65, 0.15);
+  border-color: rgba(183, 138, 65, 0.3);
+  color: #A17D23;
+}
+
 .actionButtonText {
   display: inline;
 }
@@ -1128,6 +1246,15 @@ Beige/Tan Variants:
 .actionMenuItem.submitAction:hover {
   background: rgba(40, 167, 69, 0.1);
   color: #218838;
+}
+
+.actionMenuItem.editorAction {
+  color: #B78A41;
+}
+
+.actionMenuItem.editorAction:hover {
+  background: rgba(183, 138, 65, 0.1);
+  color: #A17D23;
 }
 
 .actionMenuItem:first-child {

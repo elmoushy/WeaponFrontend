@@ -52,94 +52,100 @@
     <!-- KPIs Section -->
     <div :class="$style.kpisSection">
       <div :class="$style.kpisGrid">
-        <div :class="$style.kpiCard">
-          <div :class="$style.kpiIcon">
-            <i class="fas fa-users" style="color: #4CAF50;"></i>
-          </div>
-          <div :class="$style.kpiContent">
-            <div :class="$style.kpiNumber">{{ formatNumber(kpis.total_responses) }}</div>
-            <div :class="$style.kpiLabel">إجمالي الردود</div>
-          </div>
-        </div>
+        <ModernKPICard
+          :value="kpis.total_responses || 0"
+          label="إجمالي الردود"
+          icon="fas fa-users"
+          color="#4CAF50"
+          :percentage="(kpis.completion_rate || 0) * 100"
+          :show-progress="true"
+          :subtitle="`معدل الإكمال: ${formatPercentage(kpis.completion_rate || 0)}`"
+        />
 
-        <div :class="$style.kpiCard">
-          <div :class="$style.kpiIcon">
-            <i class="fas fa-user-check" style="color: #2196F3;"></i>
-          </div>
-          <div :class="$style.kpiContent">
-            <div :class="$style.kpiNumber">{{ formatNumber(kpis.unique_respondents) }}</div>
-            <div :class="$style.kpiLabel">المشاركون الفريدون</div>
-          </div>
-        </div>
+        <ModernKPICard
+          :value="kpis.unique_respondents || 0"
+          label="المشاركون الفريدون"
+          icon="fas fa-user-check"
+          color="#2196F3"
+          :subtitle="`متوسط وقت الرد: ${formatResponseTime(kpis.avg_response_time || 0)}`"
+        />
 
-        <!-- <div :class="$style.kpiCard">
-          <div :class="$style.kpiIcon">
-            <i class="fas fa-percentage" style="color: #FF9800;"></i>
-          </div>
-          <div :class="$style.kpiContent">
-            <div :class="$style.kpiNumber">{{ formatPercentage(kpis.completion_rate) }}</div>
-            <div :class="$style.kpiLabel">معدل الإكمال</div>
-          </div>
-        </div> -->
+        <ModernKPICard
+          :value="kpis.authenticated_count || 0"
+          label="ردود موثقة"
+          icon="fas fa-shield-alt"
+          color="#795548"
+          :percentage="kpis.total_responses > 0 ? ((kpis.authenticated_count || 0) / kpis.total_responses) * 100 : 0"
+          :show-progress="true"
+        />
 
-        <!-- <div :class="$style.kpiCard">
-          <div :class="$style.kpiIcon">
-            <i class="fas fa-clock" style="color: #9C27B0;"></i>
-          </div>
-          <div :class="$style.kpiContent">
-            <div :class="$style.kpiNumber">{{ formatDuration(kpis.average_completion_time) }}</div>
-            <div :class="$style.kpiLabel">متوسط زمن الإكمال</div>
-          </div>
-        </div> -->
+        <ModernKPICard
+          :value="kpis.anonymous_count || 0"
+          label="ردود مجهولة"
+          icon="fas fa-user-secret"
+          color="#607D8B"
+          :percentage="kpis.total_responses > 0 ? ((kpis.anonymous_count || 0) / kpis.total_responses) * 100 : 0"
+          :show-progress="true"
+        />
 
-        <div :class="$style.kpiCard">
-          <div :class="$style.kpiIcon">
-            <i class="fas fa-shield-alt" style="color: #795548;"></i>
-          </div>
-          <div :class="$style.kpiContent">
-            <div :class="$style.kpiNumber">{{ formatNumber(kpis.authenticated_count) }}</div>
-            <div :class="$style.kpiLabel">ردود موثقة</div>
-          </div>
-        </div>
+        <ModernKPICard
+          :value="(kpis.response_velocity || 0).toFixed(1)"
+          label="سرعة الاستجابة"
+          icon="fas fa-tachometer-alt"
+          color="#9C27B0"
+          suffix="ردود/يوم"
+          :format-as-number="false"
+          :subtitle="`المتوقع خلال 7 أيام: ${formatNumber(Math.round((kpis.response_velocity || 0) * 7))}`"
+        />
 
-        <div :class="$style.kpiCard">
-          <div :class="$style.kpiIcon">
-            <i class="fas fa-user-secret" style="color: #607D8B;"></i>
-          </div>
-          <div :class="$style.kpiContent">
-            <div :class="$style.kpiNumber">{{ formatNumber(kpis.anonymous_count) }}</div>
-            <div :class="$style.kpiLabel">ردود مجهولة</div>
-          </div>
-        </div>
+        <ModernKPICard
+          :value="formatPercentage(kpis.completion_rate || 0)"
+          label="معدل الإكمال"
+          icon="fas fa-check-circle"
+          color="#00BCD4"
+          :format-as-number="false"
+          :percentage="(kpis.completion_rate || 0) * 100"
+          :show-progress="true"
+        />
       </div>
     </div>
 
     <!-- Charts Section -->
     <div :class="$style.chartsSection">
-      <!-- Time Series Chart commented for now-->
-      <!-- <div :class="$style.chartCard">
-        <div :class="$style.chartHeader">
-          <h3 :class="$style.chartTitle">الردود عبر الزمن</h3>
-          <div :class="$style.chartLegend">
-            <div :class="$style.legendItem">
-              <div :class="$style.legendColor" style="background-color: #4CAF50;"></div>
-              <span>الردود</span>
-            </div>
-            <div :class="$style.legendItem">
-              <div :class="$style.legendColor" style="background-color: #2196F3;"></div>
-              <span>معدل الإكمال</span>
+      <!-- NPS & CSAT Row -->
+      <div :class="$style.chartsRow">
+        <!-- NPS Tracking -->
+        <div :class="$style.chartCard">
+          <div :class="$style.chartHeader">
+            <div>
+              <h3 :class="$style.chartTitle">مؤشر صافي الترويج (NPS)</h3>
+              <p :class="$style.chartSubtitle">مقياس ولاء العملاء واحتمالية التوصية</p>
             </div>
           </div>
+          <div :class="$style.chartContainer">
+            <NPSGauge
+              :nps-data="kpis.nps"
+              :loading="loading"
+            />
+          </div>
         </div>
-        <div :class="$style.chartContainer">
-          <TimeSeriesChart
-            :data="timeSeriesData"
-            :loading="loading"
-            @period-click="onPeriodClick"
-          />
-        </div>
-      </div> -->
 
+        <!-- CSAT Tracking -->
+        <div :class="$style.chartCard">
+          <div :class="$style.chartHeader">
+            <div>
+              <h3 :class="$style.chartTitle">رضا العملاء (CSAT)</h3>
+              <p :class="$style.chartSubtitle">مستوى رضا العملاء عن الخدمات</p>
+            </div>
+          </div>
+          <div :class="$style.chartContainer">
+            <CSATBar
+              :csat-data="kpis.csat"
+              :loading="loading"
+            />
+          </div>
+        </div>
+      </div>
 
       <!-- Segments Charts Row -->
       <div :class="$style.chartsRow">
@@ -313,6 +319,9 @@ import { useAppStore } from '../../stores/useAppStore'
 import { surveyService } from '../../services/surveyService'
 // import TimeSeriesChart from './TimeSeriesChart.vue'
 import DonutChart from './DonutChart.vue'
+import NPSGauge from './NPSGauge.vue'
+import CSATBar from './CSATBar.vue'
+import ModernKPICard from './ModernKPICard.vue'
 import QuestionDetailsModal from './QuestionDetailsModal'
 
 // Props
@@ -493,6 +502,16 @@ const formatNumber = (value: number) => {
 const formatPercentage = (value: number) => {
   if (!value && value !== 0) return '0%'
   return `${(value * 100).toFixed(1)}%`
+}
+
+const formatResponseTime = (hours: number) => {
+  if (!hours && hours !== 0) return '0س'
+  if (hours < 1) return `${Math.round(hours * 60)}د`
+  if (hours < 24) return `${hours.toFixed(1)}س`
+  const days = Math.floor(hours / 24)
+  const remainingHours = Math.round(hours % 24)
+  if (remainingHours > 0) return `${days}ي ${remainingHours}س`
+  return `${days}ي`
 }
 
 // const formatDuration = (seconds: number) => {
@@ -740,54 +759,8 @@ onMounted(() => { isMounted.value = true })
 
 .kpisGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-}
-
-.kpiCard {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px;
-  background: var(--surface);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.kpiCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.kpiIcon {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: rgba(161, 125, 35, 0.1);
-  font-size: 18px;
-}
-
-.kpiContent {
-  flex: 1;
-}
-
-.kpiNumber {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--ink);
-  line-height: 1;
-  margin-bottom: 4px;
-}
-
-.kpiLabel {
-  font-size: 13px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
 }
 
 /* Charts Section */
@@ -814,6 +787,12 @@ onMounted(() => { isMounted.value = true })
   font-size: 18px;
   font-weight: 600;
   color: var(--ink);
+}
+
+.chartSubtitle {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .chartLegend {
