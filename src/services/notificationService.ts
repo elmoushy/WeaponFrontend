@@ -275,7 +275,7 @@ class NotificationService {
       if (days < 7) {
         return `${days} day${days > 1 ? 's' : ''} ago`
       } else {
-        return notificationDate.toLocaleDateString()
+        return notificationDate.toLocaleDateString('en-US', { calendar: 'gregory' })
       }
     }
   }
@@ -300,7 +300,7 @@ class NotificationService {
       if (days < 7) {
         return `منذ ${days} يوم`
       } else {
-        return notificationDate.toLocaleDateString('ar-EG')
+        return notificationDate.toLocaleDateString('ar-EG', { calendar: 'gregory' })
       }
     }
   }

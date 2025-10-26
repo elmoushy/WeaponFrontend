@@ -244,11 +244,12 @@ class DataTransformService {
   }
 
   /**
-   * Format date for display based on locale
+   * Format date for display based on locale with Gregorian calendar
    */
   formatDate(dateString: string, locale: string = 'en-US'): string {
     const date = new Date(dateString)
     return new Intl.DateTimeFormat(locale, {
+      calendar: 'gregory',
       year: 'numeric',
       month: 'short',
       day: 'numeric',

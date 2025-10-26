@@ -47,6 +47,9 @@ export type PublicContactMethod = 'email' | 'phone'
 // Question types supported by the system
 export type QuestionType = 'text' | 'textarea' | 'single_choice' | 'multiple_choice' | 'rating' | 'yes_no'
 
+// Semantic tag for questions
+export type SemanticTag = 'none' | 'nps' | 'csat'
+
 // Survey Question interface
 export interface SurveyQuestion {
   id: string
@@ -57,6 +60,17 @@ export interface SurveyQuestion {
   order: number
   created_at: string
   updated_at: string
+  NPS_Calculate?: boolean
+  CSAT_Calculate?: boolean
+  min_scale?: number | null
+  max_scale?: number | null
+  semantic_tag?: SemanticTag
+}
+
+// Question Option interface (for single_choice questions with CSAT)
+export interface QuestionOption {
+  text: string
+  satisfaction_value?: 0 | 1 | 2 | null // 0=Dissatisfied, 1=Neutral, 2=Satisfied
 }
 
 // Survey Answer interface
@@ -135,6 +149,12 @@ export interface QuestionCreateRequest {
   options?: string
   is_required?: boolean
   order?: number
+  // Analytics fields
+  NPS_Calculate?: boolean
+  CSAT_Calculate?: boolean
+  min_scale?: number | null
+  max_scale?: number | null
+  semantic_tag?: SemanticTag
 }
 
 // Survey response submission types
@@ -346,6 +366,63 @@ export interface TopSurvey {
   title: string
   response_count: number
   completion_rate: number
+}
+
+// Dashboard API v2 Response Types
+export interface HeatmapData {
+  matrix: number[][] // 7x24 array (days x hours)
+  totals_by_day: number[] // 7 integers
+  totals_by_hour: number[] // 24 integers
+}
+
+export interface NPSDistribution {
+  score: number
+  count: number
+  pct: number
+}
+
+export interface NPSData {
+  score: number // -100 to 100
+  promoters_count: number
+  passives_count: number
+  detractors_count: number
+  promoters_pct: number
+  passives_pct: number
+  detractors_pct: number
+  total_responses: number
+  question_id: string
+  question_text: string
+  scale_min: number
+  scale_max: number
+  detractor_range: string
+  passive_range: string
+  promoter_range: string
+  distribution: NPSDistribution[]
+  interpretation: string
+}
+
+export interface CSATTrackingPoint {
+  period: string // "YYYY-MM-DD" or "YYYY-W##" or "YYYY-MM"
+  score: number // 0-100
+  satisfied: number
+  neutral: number
+  dissatisfied: number
+  total: number
+}
+
+export interface QuestionSummary {
+  question_id: string
+  question_text: string
+  question_type: QuestionType
+  response_count: number
+  answers?: any // Depends on question type
+}
+
+export interface DashboardV2Response {
+  heatmap: HeatmapData
+  nps: NPSData | null
+  csat_tracking: CSATTrackingPoint[]
+  questions_summary: QuestionSummary[]
 }
 
 // Bulk operations

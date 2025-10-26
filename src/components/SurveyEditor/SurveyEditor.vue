@@ -22,14 +22,22 @@
             <i class="fas fa-eye"></i>
             <span>{{ isRTL ? 'معاينة' : 'Preview' }}</span>
           </button>
-          <button :class="[$style.headerButton, $style.draftButton]" @click="handleSaveAsDraft" :disabled="!canPublish">
-            <i class="fas fa-save"></i>
-            <span>{{ isRTL ? 'حفظ كمسودة' : 'Save as Draft' }}</span>
-          </button>
-          <button :class="[$style.headerButton, $style.publishButton]" @click="handlePublish" :disabled="!canPublish">
-            <i class="fas fa-paper-plane"></i>
-            <span>{{ isRTL ? 'نشر' : 'Publish' }}</span>
-          </button>
+          <template v-if="props.isCreatingPredefinedTemplate">
+            <button :class="[$style.headerButton, $style.publishButton]" @click="handleSaveTemplate" :disabled="!canPublish">
+              <i class="fas fa-save"></i>
+              <span>{{ isRTL ? 'حفظ القالب' : 'Save Template' }}</span>
+            </button>
+          </template>
+          <template v-else>
+            <button :class="[$style.headerButton, $style.draftButton]" @click="handleSaveAsDraft" :disabled="!canPublish">
+              <i class="fas fa-save"></i>
+              <span>{{ isRTL ? 'حفظ كمسودة' : 'Save as Draft' }}</span>
+            </button>
+            <button :class="[$style.headerButton, $style.publishButton]" @click="handlePublish" :disabled="!canPublish">
+              <i class="fas fa-paper-plane"></i>
+              <span>{{ isRTL ? 'نشر' : 'Publish' }}</span>
+            </button>
+          </template>
         </div>
       </div>
     </div>
@@ -101,7 +109,11 @@
               
               <!-- Question Type Dropdown -->
               <div :class="$style.questionTypeDropdown">
-                <select v-model="question.question_type" :class="$style.typeSelect">
+                <select 
+                  v-model="question.question_type" 
+                  :class="$style.typeSelect"
+                  @change="clearInvalidAnalyticsFlags(question)"
+                >
                   <option value="text">{{ isRTL ? 'نص قصير' : 'Short Text' }}</option>
                   <option value="textarea">{{ isRTL ? 'نص طويل' : 'Long Text' }}</option>
                   <option value="single_choice">{{ isRTL ? 'اختيار واحد' : 'Single Choice' }}</option>
@@ -150,10 +162,185 @@
                 <i v-for="n in 5" :key="n" class="fas fa-star" :class="$style.ratingStar"></i>
               </div>
             </div>
+
+            <!-- Analytics Settings - Only show when applicable -->
+            <div v-if="canEnableNPS(question.question_type) || canEnableCSAT(question.question_type)" :class="$style.analyticsSection">
+              <div :class="$style.analyticsHeader">
+                <i class="fas fa-chart-line"></i>
+                <span>{{ isRTL ? 'إعدادات التحليلات' : 'Analytics Settings' }}</span>
+              </div>
+              
+              <!-- NPS Toggle (Rating questions only) -->
+              <div v-if="canEnableNPS(question.question_type)" :class="$style.analyticsCard">
+                <div :class="$style.analyticsCardHeader">
+                  <div :class="$style.analyticsCardTitle">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>{{ isRTL ? 'صافي نقاط الترويج (NPS)' : 'Net Promoter Score (NPS)' }}</span>
+                  </div>
+                  <label :class="$style.modernToggle">
+                    <input 
+                      type="checkbox" 
+                      v-model="question.NPS_Calculate"
+                    />
+                    <span :class="$style.toggleSlider"></span>
+                  </label>
+                </div>
+                <p :class="$style.analyticsCardDescription">
+                  {{ isRTL ? 'تتبع ولاء العملاء من خلال حساب NPS التلقائي' : 'Track customer loyalty with automatic NPS calculation' }}
+                </p>
+                
+                <!-- Scale Settings (show when NPS enabled) -->
+                <div v-if="question.NPS_Calculate" :class="$style.scaleSettings">
+                  <div :class="$style.scaleInfoBox">
+                    <div :class="$style.scaleInfoHeader">
+                      <i class="fas fa-info-circle"></i>
+                      <span>{{ isRTL ? 'مقياس NPS الافتراضي (0-5 نجوم)' : 'Default NPS Scale (0-5 Stars)' }}</span>
+                    </div>
+                    <div :class="$style.scaleRanges">
+                      <div :class="$style.scaleRange">
+                        <span :class="$style.rangeLabel">
+                          <i class="fas fa-frown" :class="$style.detractorIcon"></i>
+                          {{ isRTL ? 'المنتقدون (0-2 نجوم)' : 'Detractors (0-2 stars)' }}
+                        </span>
+                        <span :class="$style.rangeDescription">
+                          {{ isRTL ? 'عملاء غير راضين قد يضرون بعلامتك التجارية' : 'Unhappy customers who can harm your brand' }}
+                        </span>
+                      </div>
+                      <div :class="$style.scaleRange">
+                        <span :class="$style.rangeLabel">
+                          <i class="fas fa-meh" :class="$style.passiveIcon"></i>
+                          {{ isRTL ? 'المحايدون (3-4 نجوم)' : 'Passives (3-4 stars)' }}
+                        </span>
+                        <span :class="$style.rangeDescription">
+                          {{ isRTL ? 'عملاء راضون لكن غير متحمسين' : 'Satisfied but unenthusiastic customers' }}
+                        </span>
+                      </div>
+                      <div :class="$style.scaleRange">
+                        <span :class="$style.rangeLabel">
+                          <i class="fas fa-smile" :class="$style.promoterIcon"></i>
+                          {{ isRTL ? 'المروجون (5 نجوم)' : 'Promoters (5 stars)' }}
+                        </span>
+                        <span :class="$style.rangeDescription">
+                          {{ isRTL ? 'مؤيدون مخلصون يوصون بعلامتك التجارية' : 'Loyal advocates who recommend your brand' }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CSAT Toggle (Single choice, Rating, Yes/No questions) -->
+              <div v-if="canEnableCSAT(question.question_type)" :class="$style.analyticsCard">
+                <div :class="$style.analyticsCardHeader">
+                  <div :class="$style.analyticsCardTitle">
+                    <i class="fas fa-smile"></i>
+                    <span>{{ isRTL ? 'درجة رضا العملاء (CSAT)' : 'Customer Satisfaction (CSAT)' }}</span>
+                  </div>
+                  <label :class="$style.modernToggle">
+                    <input 
+                      type="checkbox" 
+                      v-model="question.CSAT_Calculate"
+                    />
+                    <span :class="$style.toggleSlider"></span>
+                  </label>
+                </div>
+                <p :class="$style.analyticsCardDescription">
+                  {{ isRTL ? 'قياس رضا العملاء وتتبع الاتجاهات بمرور الوقت' : 'Measure customer satisfaction and track trends over time' }}
+                </p>
+
+                <!-- Satisfaction Mapping (for single_choice with CSAT enabled) -->
+                <div v-if="question.question_type === 'single_choice' && question.CSAT_Calculate" :class="$style.satisfactionMapping">
+                  <div :class="$style.satisfactionHeader">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>{{ isRTL ? 'تعيين مستوى الرضا' : 'Map Satisfaction Levels' }}</span>
+                  </div>
+                  <div 
+                    v-for="(option, optIndex) in getQuestionOptions(question)" 
+                    :key="`satisfaction-${optIndex}`"
+                    :class="$style.satisfactionRow"
+                  >
+                    <span :class="$style.satisfactionOptionText">{{ option }}</span>
+                    <div :class="$style.satisfactionButtons">
+                      <button
+                        type="button"
+                        :class="[$style.satisfactionButton, { [$style.active]: getSatisfactionValue(question, optIndex) === 2 }]"
+                        @click="setSatisfactionValue(question, optIndex, 2)"
+                        :title="isRTL ? 'راضٍ' : 'Satisfied'"
+                      >
+                        <i class="fas fa-smile"></i>
+                      </button>
+                      <button
+                        type="button"
+                        :class="[$style.satisfactionButton, { [$style.active]: getSatisfactionValue(question, optIndex) === 1 }]"
+                        @click="setSatisfactionValue(question, optIndex, 1)"
+                        :title="isRTL ? 'محايد' : 'Neutral'"
+                      >
+                        <i class="fas fa-meh"></i>
+                      </button>
+                      <button
+                        type="button"
+                        :class="[$style.satisfactionButton, { [$style.active]: getSatisfactionValue(question, optIndex) === 0 }]"
+                        @click="setSatisfactionValue(question, optIndex, 0)"
+                        :title="isRTL ? 'غير راضٍ' : 'Dissatisfied'"
+                      >
+                        <i class="fas fa-frown"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Yes/No Satisfaction Mapping (for yes_no with CSAT enabled) -->
+                <div v-if="question.question_type === 'yes_no' && question.CSAT_Calculate" :class="$style.satisfactionMapping">
+                  <div :class="$style.satisfactionHeader">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>{{ isRTL ? 'تعيين مستوى الرضا للإجابات' : 'Map Satisfaction for Answers' }}</span>
+                  </div>
+                  <div :class="$style.yesNoMappingInfo">
+                    <i class="fas fa-info-circle"></i>
+                    <span>{{ isRTL ? 'حدد كيفية تصنيف كل إجابة (نعم/لا) بناءً على سياق سؤالك' : 'Define how each answer (Yes/No) should be classified based on your question context' }}</span>
+                  </div>
+                  
+                  <!-- YES mapping -->
+                  <div :class="$style.yesNoMappingRow">
+                    <div :class="$style.yesNoLabel">
+                      <i class="fas fa-check-circle" :class="$style.yesIcon"></i>
+                      <span>{{ isRTL ? 'إذا أجاب المستجيب بـ "نعم"، تصنف كـ:' : 'If respondent answers "YES", classify as:' }}</span>
+                    </div>
+                    <select 
+                      :value="getYesNoSatisfactionValue(question, 'yes')"
+                      @change="setYesNoSatisfactionValue(question, 'yes', Number(($event.target as HTMLSelectElement).value) as 0 | 1 | 2)"
+                      :class="$style.yesNoSelect"
+                    >
+                      <option :value="2">{{ isRTL ? '😊 راضٍ' : '😊 Satisfied' }}</option>
+                      <option :value="1">{{ isRTL ? '😐 محايد' : '😐 Neutral' }}</option>
+                      <option :value="0">{{ isRTL ? '☹️ غير راضٍ' : '☹️ Dissatisfied' }}</option>
+                    </select>
+                  </div>
+                  
+                  <!-- NO mapping -->
+                  <div :class="$style.yesNoMappingRow">
+                    <div :class="$style.yesNoLabel">
+                      <i class="fas fa-times-circle" :class="$style.noIcon"></i>
+                      <span>{{ isRTL ? 'إذا أجاب المستجيب بـ "لا"، تصنف كـ:' : 'If respondent answers "NO", classify as:' }}</span>
+                    </div>
+                    <select 
+                      :value="getYesNoSatisfactionValue(question, 'no')"
+                      @change="setYesNoSatisfactionValue(question, 'no', Number(($event.target as HTMLSelectElement).value) as 0 | 1 | 2)"
+                      :class="$style.yesNoSelect"
+                    >
+                      <option :value="2">{{ isRTL ? '😊 راضٍ' : '😊 Satisfied' }}</option>
+                      <option :value="1">{{ isRTL ? '😐 محايد' : '😐 Neutral' }}</option>
+                      <option :value="0">{{ isRTL ? '☹️ غير راضٍ' : '☹️ Dissatisfied' }}</option>
+                    </select>
+                  </div>
+
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Question Actions -->
-          <div :class="$style.questionActions">
+          <div :class="$style.questionActions">`
             <button
               :class="$style.actionButton"
               @click="duplicateQuestion(index)"
@@ -371,12 +558,14 @@ interface Props {
   template?: PredefinedTemplate | SurveyTemplate | RecentSurvey | Survey | null
   mode?: 'create' | 'edit'
   surveyId?: string
+  isCreatingPredefinedTemplate?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   template: null,
   mode: 'create',
-  surveyId: undefined
+  surveyId: undefined,
+  isCreatingPredefinedTemplate: false
 })
 
 // Emits
@@ -384,6 +573,7 @@ const emit = defineEmits<{
   back: []
   publish: [surveyData: any]
   saveDraft: [surveyData: any]
+  saveTemplate: [surveyData: any]
 }>()
 
 // Store
@@ -407,6 +597,13 @@ const surveyData = ref<{
     options?: string[]
     is_required: boolean
     order: number
+    // Analytics fields
+    NPS_Calculate?: boolean
+    CSAT_Calculate?: boolean
+    min_scale?: number | null
+    max_scale?: number | null
+    semantic_tag?: 'none' | 'nps' | 'csat'
+    options_satisfaction_values?: (0 | 1 | 2 | null)[]
   }>
 }>({
   title: '',
@@ -432,11 +629,44 @@ const surveySettings = ref({
 
 // Computed
 const canPublish = computed(() => {
-  return (
-    surveyData.value.title.trim().length > 0 &&
-    surveyData.value.questions.length > 0 &&
-    surveyData.value.questions.every(q => q.text.trim().length > 0)
-  )
+  // Basic validation
+  if (surveyData.value.title.trim().length === 0 || 
+      surveyData.value.questions.length === 0 ||
+      !surveyData.value.questions.every(q => q.text.trim().length > 0)) {
+    return false
+  }
+
+  // Validate analytics requirements (only CSAT needs user input)
+  for (const question of surveyData.value.questions) {
+    // CSAT validation for single_choice
+    if (question.question_type === 'single_choice' && question.CSAT_Calculate) {
+      // Must have satisfaction values mapped for all options
+      if (!question.options_satisfaction_values || 
+          !question.options ||
+          question.options_satisfaction_values.length !== question.options.length) {
+        return false
+      }
+      // Check that all values are set (not undefined/null)
+      if (question.options_satisfaction_values.some(v => v === undefined || v === null)) {
+        return false
+      }
+    }
+
+    // CSAT validation for yes_no
+    if (question.question_type === 'yes_no' && question.CSAT_Calculate) {
+      // Must have satisfaction values for both yes and no
+      if (!question.options_satisfaction_values || 
+          question.options_satisfaction_values.length < 2 ||
+          question.options_satisfaction_values[0] === undefined ||
+          question.options_satisfaction_values[1] === undefined) {
+        return false
+      }
+    }
+
+    // NPS validation removed - NPS values are automatically calculated by the system
+  }
+
+  return true
 })
 
 // Flatpickr configuration
@@ -473,7 +703,7 @@ const schedulingPreview = computed(() => {
       status: isScheduled ? 'scheduled' : 'active',
       icon: isScheduled ? 'fas fa-clock' : 'fas fa-play-circle',
       title: isRTL.value 
-        ? (isScheduled ? `مجدول للبدء ${startDate.toLocaleDateString('ar')}` : 'يبدأ فورًا ويستمر إلى أجل غير مسمى')
+        ? (isScheduled ? `مجدول للبدء ${startDate.toLocaleDateString('ar', { calendar: 'gregory' })}` : 'يبدأ فورًا ويستمر إلى أجل غير مسمى')
         : (isScheduled ? `Scheduled to start ${startDate.toLocaleDateString()}` : 'Starts immediately, runs indefinitely'),
       description: isRTL.value 
         ? (isScheduled ? 'الاستطلاع سيبدأ في التاريخ المحدد ويستمر حتى يتم إيقافه يدوياً' : 'الاستطلاع نشط حالياً ويستمر حتى يتم إيقافه يدوياً')
@@ -488,7 +718,7 @@ const schedulingPreview = computed(() => {
       status: isExpired ? 'expired' : 'active',
       icon: isExpired ? 'fas fa-stop-circle' : 'fas fa-play-circle',
       title: isRTL.value 
-        ? (isExpired ? 'منتهي الصلاحية' : `يبدأ الآن، ينتهي ${endDate.toLocaleDateString('ar')}`)
+        ? (isExpired ? 'منتهي الصلاحية' : `يبدأ الآن، ينتهي ${endDate.toLocaleDateString('ar', { calendar: 'gregory' })}`)
         : (isExpired ? 'Expired' : `Starts now, expires ${endDate.toLocaleDateString()}`),
       description: isRTL.value 
         ? (isExpired ? 'انتهت صلاحية الاستطلاع' : 'الاستطلاع نشط حالياً وسينتهي في التاريخ المحدد')
@@ -513,14 +743,14 @@ const schedulingPreview = computed(() => {
       status = 'scheduled'
       icon = 'fas fa-clock'
       title = isRTL.value 
-        ? `مجدول من ${startDate.toLocaleDateString('ar')} إلى ${endDate.toLocaleDateString('ar')}`
+        ? `مجدول من ${startDate.toLocaleDateString('ar', { calendar: 'gregory' })} إلى ${endDate.toLocaleDateString('ar', { calendar: 'gregory' })}`
         : `Scheduled from ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`
       description = isRTL.value ? 'الاستطلاع سيعمل خلال النافذة الزمنية المحددة' : 'Survey will run within the specified time window'
     } else if (isActive) {
       status = 'active'
       icon = 'fas fa-play-circle'
       title = isRTL.value 
-        ? `نشط حتى ${endDate.toLocaleDateString('ar')}`
+        ? `نشط حتى ${endDate.toLocaleDateString('ar', { calendar: 'gregory' })}`
         : `Active until ${endDate.toLocaleDateString()}`
       description = isRTL.value ? 'الاستطلاع نشط حالياً وسينتهي في التاريخ المحدد' : 'Survey is currently active and will expire on the specified date'
     } else {
@@ -550,7 +780,18 @@ const initializeSurvey = () => {
           question_type: q.question_type,
           options: q.options ? (typeof q.options === 'string' ? JSON.parse(q.options) : q.options) : [],
           is_required: q.is_required || false,
-          order: index + 1
+          order: index + 1,
+          // Analytics fields
+          NPS_Calculate: q.NPS_Calculate || false,
+          CSAT_Calculate: q.CSAT_Calculate || false,
+          min_scale: q.min_scale !== undefined ? q.min_scale : 0,
+          max_scale: q.max_scale !== undefined ? q.max_scale : 5,
+          semantic_tag: q.semantic_tag || 'none',
+          options_satisfaction_values: q.options_satisfaction_values 
+            ? (typeof q.options_satisfaction_values === 'string' 
+              ? JSON.parse(q.options_satisfaction_values) 
+              : q.options_satisfaction_values)
+            : []
         }))
       }
     }
@@ -591,17 +832,99 @@ const addOption = (question: any) => {
   const options = getQuestionOptions(question)
   const newOptionNumber = options.length + 1
   options.push(isRTL.value ? `خيار ${newOptionNumber}` : `Option ${newOptionNumber}`)
+  
+  // Initialize satisfaction values array if needed
+  if (!question.options_satisfaction_values) {
+    question.options_satisfaction_values = []
+  }
+  // Add null for new option
+  question.options_satisfaction_values.push(null)
 }
 
 const removeOption = (question: any, optionIndex: number) => {
   const options = getQuestionOptions(question)
   if (options.length > 1) {
     options.splice(optionIndex, 1)
+    // Also remove from satisfaction values if it exists
+    if (question.options_satisfaction_values && question.options_satisfaction_values.length > optionIndex) {
+      question.options_satisfaction_values.splice(optionIndex, 1)
+    }
   }
 }
 
 const getOptionIcon = (questionType: QuestionType): string => {
   return questionType === 'multiple_choice' ? 'far fa-square' : 'far fa-circle'
+}
+
+// Validation for analytics flags
+const canEnableNPS = (questionType: QuestionType): boolean => {
+  return questionType === 'rating'
+}
+
+const canEnableCSAT = (questionType: QuestionType): boolean => {
+  return ['single_choice', 'rating', 'yes_no'].includes(questionType)
+}
+
+// Clear invalid analytics flags when question type changes
+const clearInvalidAnalyticsFlags = (question: any) => {
+  // Clear NPS if not rating question
+  if (!canEnableNPS(question.question_type)) {
+    question.NPS_Calculate = false
+    question.min_scale = null
+    question.max_scale = null
+  }
+  
+  // Clear CSAT if not eligible question type
+  if (!canEnableCSAT(question.question_type)) {
+    question.CSAT_Calculate = false
+    question.options_satisfaction_values = []
+  }
+  
+  // Initialize satisfaction values for single_choice CSAT questions
+  if (question.question_type === 'single_choice' && question.CSAT_Calculate) {
+    if (!question.options_satisfaction_values || question.options_satisfaction_values.length !== (question.options?.length || 0)) {
+      const length = question.options?.length || 0
+      question.options_satisfaction_values = Array.from({ length }, () => null)
+    }
+  }
+}
+
+const getSatisfactionValue = (question: any, optIndex: number): 0 | 1 | 2 | null => {
+  if (!question.options_satisfaction_values) {
+    const length = question.options?.length || 0
+    question.options_satisfaction_values = Array.from({ length }, () => null)
+  }
+  return question.options_satisfaction_values[optIndex] ?? null
+}
+
+const setSatisfactionValue = (question: any, optIndex: number, value: 0 | 1 | 2 | null) => {
+  if (!question.options_satisfaction_values) {
+    const length = question.options?.length || 0
+    question.options_satisfaction_values = Array.from({ length }, () => null)
+  }
+  question.options_satisfaction_values[optIndex] = value
+}
+
+// Yes/No CSAT mapping helpers
+const getYesNoSatisfactionValue = (question: any, answer: 'yes' | 'no'): 0 | 1 | 2 => {
+  // Initialize options_satisfaction_values for yes/no questions
+  // Index 0 = "yes", Index 1 = "no"
+  if (!question.options_satisfaction_values || question.options_satisfaction_values.length < 2) {
+    question.options_satisfaction_values = [2, 0] // Default: Yes=Satisfied, No=Dissatisfied
+  }
+  
+  const index = answer === 'yes' ? 0 : 1
+  return question.options_satisfaction_values[index] ?? (answer === 'yes' ? 2 : 0)
+}
+
+const setYesNoSatisfactionValue = (question: any, answer: 'yes' | 'no', value: 0 | 1 | 2) => {
+  // Initialize options_satisfaction_values for yes/no questions
+  if (!question.options_satisfaction_values || question.options_satisfaction_values.length < 2) {
+    question.options_satisfaction_values = [2, 0] // Default: Yes=Satisfied, No=Dissatisfied
+  }
+  
+  const index = answer === 'yes' ? 0 : 1
+  question.options_satisfaction_values[index] = value
 }
 
 const addQuestion = () => {
@@ -611,7 +934,14 @@ const addQuestion = () => {
     question_type: 'text' as QuestionType,
     options: [],
     is_required: false,
-    order: surveyData.value.questions.length + 1
+    order: surveyData.value.questions.length + 1,
+    // Analytics fields
+    NPS_Calculate: false,
+    CSAT_Calculate: false,
+    min_scale: 0,
+    max_scale: 5,
+    semantic_tag: 'none' as 'none' | 'nps' | 'csat',
+    options_satisfaction_values: []
   }
   surveyData.value.questions.push(newQuestion)
   
@@ -786,19 +1116,83 @@ const prepareSurveyData = () => {
       question_type: q.question_type,
       options: needsOptions(q.question_type) ? JSON.stringify(q.options) : undefined,
       is_required: q.is_required,
-      order: q.order
+      order: q.order,
+      // Analytics fields
+      NPS_Calculate: q.NPS_Calculate || false,
+      CSAT_Calculate: q.CSAT_Calculate || false,
+      min_scale: q.min_scale !== undefined ? q.min_scale : 0,
+      max_scale: q.max_scale !== undefined ? q.max_scale : 5,
+      options_satisfaction_values: q.options_satisfaction_values && q.options_satisfaction_values.length > 0 
+        ? JSON.stringify(q.options_satisfaction_values) 
+        : undefined
     }))
   }
+}
+
+// Validate and get specific error message
+const getValidationError = (): string | null => {
+  if (surveyData.value.title.trim().length === 0) {
+    return isRTL.value ? 'عنوان الاستطلاع مطلوب' : 'Survey title is required'
+  }
+
+  if (surveyData.value.questions.length === 0) {
+    return isRTL.value ? 'يجب إضافة سؤال واحد على الأقل' : 'At least one question is required'
+  }
+
+  // Check for empty question texts
+  for (let i = 0; i < surveyData.value.questions.length; i++) {
+    const q = surveyData.value.questions[i]
+    if (q.text.trim().length === 0) {
+      return isRTL.value 
+        ? `السؤال رقم ${i + 1} يحتاج إلى نص` 
+        : `Question ${i + 1} needs text`
+    }
+  }
+
+  // Check analytics requirements (only CSAT needs user input)
+  for (let i = 0; i < surveyData.value.questions.length; i++) {
+    const q = surveyData.value.questions[i]
+    const questionNum = i + 1
+
+    // CSAT validation for single_choice
+    if (q.question_type === 'single_choice' && q.CSAT_Calculate) {
+      if (!q.options_satisfaction_values || 
+          !q.options ||
+          q.options_satisfaction_values.length !== q.options.length ||
+          q.options_satisfaction_values.some(v => v === undefined || v === null)) {
+        return isRTL.value 
+          ? `السؤال رقم ${questionNum}: يرجى تعيين مستوى الرضا لجميع الخيارات` 
+          : `Question ${questionNum}: Please map satisfaction levels for all options`
+      }
+    }
+
+    // CSAT validation for yes_no
+    if (q.question_type === 'yes_no' && q.CSAT_Calculate) {
+      if (!q.options_satisfaction_values || 
+          q.options_satisfaction_values.length < 2 ||
+          q.options_satisfaction_values[0] === undefined ||
+          q.options_satisfaction_values[1] === undefined) {
+        return isRTL.value 
+          ? `السؤال رقم ${questionNum}: يرجى تعيين مستوى الرضا لإجابات نعم/لا` 
+          : `Question ${questionNum}: Please map satisfaction levels for Yes/No answers`
+      }
+    }
+
+    // NPS validation removed - NPS values are automatically calculated by the system
+  }
+
+  return null
 }
 
 const handleSaveAsDraft = () => {
   validateTitle()
   
-  if (!canPublish.value) {
+  const validationError = getValidationError()
+  if (validationError) {
     Swal.fire({
       icon: 'error',
-      title: isRTL.value ? 'خطأ' : 'Error',
-      text: isRTL.value ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields',
+      title: isRTL.value ? 'خطأ في التحقق' : 'Validation Error',
+      text: validationError,
       confirmButtonText: isRTL.value ? 'موافق' : 'OK'
     })
     return
@@ -811,11 +1205,12 @@ const handleSaveAsDraft = () => {
 const handlePublish = () => {
   validateTitle()
   
-  if (!canPublish.value) {
+  const validationError = getValidationError()
+  if (validationError) {
     Swal.fire({
       icon: 'error',
-      title: isRTL.value ? 'خطأ' : 'Error',
-      text: isRTL.value ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields',
+      title: isRTL.value ? 'خطأ في التحقق' : 'Validation Error',
+      text: validationError,
       confirmButtonText: isRTL.value ? 'موافق' : 'OK'
     })
     return
@@ -823,6 +1218,24 @@ const handlePublish = () => {
 
   const publishData = prepareSurveyData()
   emit('publish', publishData)
+}
+
+const handleSaveTemplate = () => {
+  validateTitle()
+  
+  const validationError = getValidationError()
+  if (validationError) {
+    Swal.fire({
+      icon: 'error',
+      title: isRTL.value ? 'خطأ في التحقق' : 'Validation Error',
+      text: validationError,
+      confirmButtonText: isRTL.value ? 'موافق' : 'OK'
+    })
+    return
+  }
+
+  const templateData = prepareSurveyData()
+  emit('saveTemplate', templateData)
 }
 
 // Lifecycle

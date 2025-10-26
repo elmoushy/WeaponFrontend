@@ -3,12 +3,6 @@
         <!-- Header Section -->
         <section :class="$style.headerSection">
           <div :class="$style.headerContent">
-            <div :class="$style.titleSection">
-              <button :class="$style.refreshButton" @click="refreshData">
-                <i class="fas fa-sync-alt" :class="{ [$style.spinning]: isLoading }"></i>
-                {{ t('common.refresh') }}
-              </button>
-            </div>
             
             <div :class="$style.headerActions">
               <button 
@@ -780,10 +774,7 @@
       }
     }
 
-    const refreshData = () => {
-      currentPage.value = 1
-      loadSurveyResponses()
-    }
+    // ...existing code...
 
     // Pagination methods
     const prevPage = () => {
@@ -980,7 +971,7 @@
     // Download as PDF using browser's print-to-PDF feature
     const downloadAsPDF = async (responses: any[]) => {
       try {
-        const timestamp = new Date().toLocaleDateString('ar-SA')
+        const timestamp = new Date().toLocaleDateString('ar-SA', { calendar: 'gregory' })
         
         // Generate HTML content with proper Arabic styling
         let htmlContent = `
@@ -1326,7 +1317,7 @@
 
     // Generate Word content (formatted document)
     const generateWordContent = (responses: any[]) => {
-      const timestamp = new Date().toLocaleDateString('ar-SA')
+      const timestamp = new Date().toLocaleDateString('ar-SA', { calendar: 'gregory' })
       
       let content = `
         <div class="header">
@@ -1520,8 +1511,9 @@
       
       const date = new Date(dateString)
       
-      // Format in Arabic locale
+      // Format in Arabic locale with Gregorian calendar
       return date.toLocaleString('ar-SA', {
+        calendar: 'gregory',
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
@@ -1557,6 +1549,7 @@
       const locale = isRTL ? 'ar-SA' : 'en-US'
       
       return date.toLocaleString(locale, {
+        calendar: 'gregory',
         year: 'numeric',
         month: 'short',
         day: 'numeric',
@@ -1661,6 +1654,15 @@
       if (surveyAnalyticsResponse.status === 200) {
               // Store the response data
               const responseData = surveyAnalyticsResponse?.data
+              
+              // Add survey ID to the response data for child components
+              if (responseData?.data) {
+                responseData.data.survey = {
+                  id: surveyId.value,
+                  ...responseData.data.survey
+                }
+                console.log('✅ Added survey ID to analytics data:', surveyId.value)
+              }
               
               surveyAnalytics.value = responseData
 

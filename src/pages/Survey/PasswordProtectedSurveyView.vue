@@ -198,7 +198,25 @@
           <p :class="$style.formSubtitle">استطلاع محمي</p>
         </div>
         
-        <div :class="$style.progressSection">
+        <!-- View Mode Toggle -->
+        <div :class="$style.viewModeToggle">
+          <button 
+            :class="[$style.toggleButton, { [$style.active]: showAllQuestions }]"
+            @click="showAllQuestions = true"
+          >
+            <i class="fas fa-list"></i>
+            <span>جميع الأسئلة</span>
+          </button>
+          <button 
+            :class="[$style.toggleButton, { [$style.active]: !showAllQuestions }]"
+            @click="showAllQuestions = false"
+          >
+            <i class="fas fa-step-forward"></i>
+            <span>سؤال بسؤال</span>
+          </button>
+        </div>
+        
+        <div v-if="!showAllQuestions" :class="$style.progressSection">
           <div :class="$style.progressBar">
             <div :class="$style.progressFill" :style="{ width: `${progressPercentage}%` }"></div>
           </div>
@@ -206,6 +224,221 @@
         </div>
       </div>
 
+      <!-- All Questions View (Google Forms Style) -->
+      <div v-if="showAllQuestions" :class="$style.allQuestionsContainer">
+        <div 
+          v-for="(question, qIndex) in survey.questions" 
+          :key="question.id"
+          :class="$style.currentQuestion"
+        >
+          <div :class="$style.questionHeader">
+            <div :class="$style.questionBadge">
+              <span :class="$style.questionIndex">{{ qIndex + 1 }}</span>
+            </div>
+            <h2 :class="$style.questionTitle">
+              {{ question.text }}
+              <span v-if="question.is_required" :class="$style.required">*</span>
+            </h2>
+            <div v-if="question.is_required" :class="$style.requiredNote">
+              <i class="fas fa-star"></i>
+              <span>هذا السؤال مطلوب</span>
+            </div>
+          </div>
+
+          <!-- Text Input -->
+          <div v-if="question.question_type === 'text'" :class="$style.inputContainer">
+            <div :class="$style.inputWrapper">
+              <input
+                type="text"
+                :class="$style.textInput"
+                v-model="answers[question.id]"
+                placeholder="اكتب إجابتك هنا..."
+              />
+            </div>
+          </div>
+
+          <!-- Textarea Input -->
+          <div v-else-if="question.question_type === 'textarea'" :class="$style.inputContainer">
+            <div :class="$style.inputWrapper">
+              <textarea
+                :class="$style.textArea"
+                v-model="answers[question.id]"
+                placeholder="اكتب إجابتك المفصلة هنا... يمكنك كتابة عدة أسطر"
+                rows="4"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Single Choice -->
+          <div v-else-if="question.question_type === 'single_choice'" :class="$style.choicesContainer">
+            <div :class="$style.choicesTitle">
+              <i class="fas fa-dot-circle"></i>
+              <span>اختر إجابة واحدة:</span>
+            </div>
+            <div
+              v-for="(option, index) in getQuestionOptions(question.options)"
+              :key="index"
+              :class="[$style.choiceOption, { [$style.selected]: answers[question.id] === option }]"
+              @click="answers[question.id] = option"
+            >
+              <div :class="$style.choiceRadio">
+                <div v-if="answers[question.id] === option" :class="$style.radioSelected"></div>
+              </div>
+              <span :class="$style.choiceText">{{ option }}</span>
+              <div :class="$style.choiceCheck" v-if="answers[question.id] === option">
+                <i class="fas fa-check"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Multiple Choice -->
+          <div v-else-if="question.question_type === 'multiple_choice'" :class="$style.choicesContainer">
+            <div :class="$style.choicesTitle">
+              <i class="fas fa-check-square"></i>
+              <span>يمكنك اختيار أكثر من إجابة:</span>
+            </div>
+            <div
+              v-for="(option, index) in getQuestionOptions(question.options)"
+              :key="index"
+              :class="[$style.choiceOption, { [$style.multiSelected]: Array.isArray(answers[question.id]) && answers[question.id].includes(option) }]"
+              @click="toggleMultipleChoice(question.id, option)"
+            >
+              <div :class="$style.choiceCheckbox">
+                <i v-if="Array.isArray(answers[question.id]) && answers[question.id].includes(option)" class="fas fa-check"></i>
+              </div>
+              <span :class="$style.choiceText">{{ option }}</span>
+            </div>
+          </div>
+
+          <!-- Rating -->
+          <div v-else-if="question.question_type === 'rating'" :class="$style.ratingContainer">
+            <div :class="$style.ratingTitle">
+              <i class="fas fa-star"></i>
+              <span>قيم من {{ getRatingRange(question.options) }}:</span>
+            </div>
+            <div :class="$style.ratingScale">
+              <button
+                v-for="rating in getRatingOptions(question.options)"
+                :key="rating"
+                :class="[$style.ratingButton, { [$style.selected]: answers[question.id] === rating }]"
+                @click="answers[question.id] = rating"
+              >
+                <span :class="$style.ratingNumber">{{ rating }}</span>
+              </button>
+            </div>
+            <div :class="$style.ratingLabels">
+              <span>{{ getRatingLabel('min', question.options) }}</span>
+              <span>{{ getRatingLabel('max', question.options) }}</span>
+            </div>
+          </div>
+
+          <!-- Yes/No -->
+          <div v-else-if="question.question_type === 'yes_no'" :class="$style.yesNoContainer">
+            <button
+              :class="[$style.yesNoButton, $style.yesButton, { [$style.selected]: answers[question.id] === 'yes' }]"
+              @click="answers[question.id] = 'yes'"
+            >
+              <i class="fas fa-check-circle"></i>
+              <span>نعم</span>
+            </button>
+            <button
+              :class="[$style.yesNoButton, $style.noButton, { [$style.selected]: answers[question.id] === 'no' }]"
+              @click="answers[question.id] = 'no'"
+            >
+              <i class="fas fa-times-circle"></i>
+              <span>لا</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Contact Form (All Questions View) -->
+        <div v-if="survey.public_contact_method" :class="$style.currentQuestion">
+          <div :class="$style.questionHeader">
+            <div :class="$style.questionBadge">
+              <i class="fas fa-id-card"></i>
+            </div>
+            <h2 :class="$style.questionTitle">معلومات الاتصال</h2>
+            <p :class="$style.contactNote">
+              <i class="fas fa-info-circle"></i>
+              <span>يرجى تقديم معلومات الاتصال الخاصة بك</span>
+            </p>
+          </div>
+
+          <div :class="$style.contactFormContainer">
+            <!-- Email Field -->
+            <div v-if="survey.public_contact_method === 'email'" :class="$style.contactField">
+              <label :class="$style.contactLabel">
+                <i class="fas fa-envelope"></i>
+                <span>البريد الإلكتروني *</span>
+              </label>
+              <div :class="$style.inputWrapper">
+                <input
+                  type="email"
+                  v-model="userEmail"
+                  :class="[$style.textInput, { [$style.error]: contactError && !isValidEmail }]"
+                  placeholder="example@domain.com"
+                  @input="contactError = ''"
+                />
+                <i class="fas fa-at" :class="$style.inputIcon"></i>
+              </div>
+              <div v-if="contactError && !isValidEmail" :class="$style.contactErrorMessage">
+                {{ contactError }}
+              </div>
+            </div>
+
+            <!-- Phone Field -->
+            <div v-else-if="survey.public_contact_method === 'phone'" :class="$style.contactField">
+              <label :class="$style.contactLabel">
+                <i class="fas fa-phone"></i>
+                <span>رقم الهاتف *</span>
+              </label>
+              <div :class="$style.phoneInputGroup">
+                <div :class="$style.countryCodeWrapper">
+                  <select v-model="selectedCountryCode" :class="$style.countryCodeSelect">
+                    <option
+                      v-for="country in countryCodes"
+                      :key="country.code"
+                      :value="country.code"
+                    >
+                      {{ country.flag }} {{ country.dialCode }}
+                    </option>
+                  </select>
+                  <i class="fas fa-chevron-down" :class="$style.selectIcon"></i>
+                </div>
+                <div :class="$style.inputWrapper">
+                  <input
+                    type="tel"
+                    v-model="userPhone"
+                    :class="[$style.phoneInput, { [$style.error]: contactError && !isValidPhone }]"
+                    placeholder="501234567"
+                    @input="contactError = ''"
+                  />
+                  <i class="fas fa-mobile-alt" :class="$style.inputIcon"></i>
+                </div>
+              </div>
+              <div v-if="contactError && !isValidPhone" :class="$style.contactErrorMessage">
+                {{ contactError }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Button Container (All Questions View) -->
+        <div :class="$style.submitContainer">
+          <button
+            :class="[$style.navButton, $style.submit]"
+            @click="submitSurvey"
+            :disabled="!canSubmit || isSubmitting || (!hasValidContactForSubmission && !isContactRestricted)"
+          >
+            <i v-if="isSubmitting" class="fas fa-spinner fa-spin"></i>
+            <i v-else class="fas fa-paper-plane"></i>
+            <span>{{ isSubmitting ? 'جاري الإرسال...' : 'إرسال الاستطلاع' }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Single Question View (One-by-one) -->
+      <div v-else>
       <!-- Current Question -->
       <div :class="$style.questionContainer">
         <div :class="$style.currentQuestion" v-if="currentQuestion">
@@ -474,6 +707,8 @@
           <span>السؤال السابق</span>
         </button>
       </div>
+      </div>
+      <!-- End of Single Question View -->
     </div>
 
     <!-- Error State -->
@@ -569,6 +804,7 @@ const requiresPhone = ref(false)
 
 // Survey form state (reuse from PublicSurveyView)
 const surveyStarted = ref(false)
+const showAllQuestions = ref(true) // Default to showing all questions like Google Forms
 const currentQuestionIndex = ref(0)
 const answers = ref<Record<string, any>>({})
 const questionError = ref('')
@@ -1097,14 +1333,16 @@ const getRatingOptions = (options: string | undefined): any[] => {
   }
 }
 
-const getRatingLabel = (type: 'min' | 'max'): string => {
-  if (!currentQuestion.value || !currentQuestion.value.options) {
+const getRatingLabel = (type: 'min' | 'max', questionOptions?: string): string => {
+  const optionsToUse = questionOptions || currentQuestion.value?.options
+  
+  if (!optionsToUse) {
     return type === 'min' ? 'ضعيف' : 'ممتاز'
   }
   
   try {
-    const optionsArray = typeof currentQuestion.value.options === 'string' 
-      ? JSON.parse(currentQuestion.value.options) : currentQuestion.value.options
+    const optionsArray = typeof optionsToUse === 'string' 
+      ? JSON.parse(optionsToUse) : optionsToUse
       
     if (!Array.isArray(optionsArray) || optionsArray.length === 0) {
       return type === 'min' ? 'ضعيف' : 'ممتاز'

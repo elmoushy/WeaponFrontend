@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <div :class="$style.modalOverlay" @click="$emit('close')">
+    <div :class="$style.modalOverlay">
       <div 
         :class="$style.modalContainer" 
         :data-theme="currentTheme" 
@@ -81,6 +81,13 @@
                   >
                     <i class="fas fa-check"></i>
                     <span>{{ isRTL ? 'استخدم هذا القالب' : 'Use Template' }}</span>
+                  </button>
+                  <button 
+                    :class="$style.deleteButton"
+                    @click.stop="deletePredefinedTemplate(template.id)"
+                    :title="isRTL ? 'حذف القالب' : 'Delete Template'"
+                  >
+                    <i class="fas fa-trash"></i>
                   </button>
                 </div>
               </div>
@@ -341,6 +348,53 @@ const deleteUserTemplate = async (templateId: string) => {
   }
 }
 
+const deletePredefinedTemplate = async (templateId: string) => {
+  const result = await Swal.fire({
+    icon: 'warning',
+    title: isRTL.value ? 'تأكيد الحذف' : 'Confirm Deletion',
+    html: isRTL.value 
+      ? '<p>هل أنت متأكد من حذف هذا القالب المحدد مسبقاً؟</p><p><strong>تحذير:</strong> هذا الإجراء لا يمكن التراجع عنه وسيؤثر على جميع المستخدمين.</p>' 
+      : '<p>Are you sure you want to delete this predefined template?</p><p><strong>Warning:</strong> This action cannot be undone and will affect all users.</p>',
+    showCancelButton: true,
+    confirmButtonText: isRTL.value ? 'نعم، احذف' : 'Yes, Delete',
+    cancelButtonText: isRTL.value ? 'إلغاء' : 'Cancel',
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6'
+  })
+
+  if (result.isConfirmed) {
+    try {
+      // Show loading
+      Swal.fire({
+        title: isRTL.value ? 'جاري الحذف...' : 'Deleting...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        }
+      })
+
+      await templateService.deletePredefinedTemplate(templateId)
+      
+      // Remove from local state
+      predefinedTemplates.value = predefinedTemplates.value.filter(t => t.id !== templateId)
+      
+      Swal.fire({
+        icon: 'success',
+        title: isRTL.value ? 'تم الحذف' : 'Deleted',
+        text: isRTL.value ? 'تم حذف القالب المحدد مسبقاً بنجاح' : 'Predefined template deleted successfully',
+        confirmButtonText: isRTL.value ? 'موافق' : 'OK'
+      })
+    } catch (error: any) {
+      Swal.fire({
+        icon: 'error',
+        title: isRTL.value ? 'خطأ' : 'Error',
+        text: error.message || (isRTL.value ? 'فشل في حذف القالب. ربما ليس لديك الصلاحيات الكافية.' : 'Failed to delete template. You may not have sufficient permissions.'),
+        confirmButtonText: isRTL.value ? 'موافق' : 'OK'
+      })
+    }
+  }
+}
+
 const getCategoryLabel = (category: string) => {
   const labels: Record<string, { en: string; ar: string }> = {
     contact: { en: 'Contact', ar: 'معلومات الاتصال' },
@@ -365,6 +419,7 @@ const getStatusLabel = (status: string) => {
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
   return date.toLocaleDateString(isRTL.value ? 'ar-SA' : 'en-US', {
+    calendar: 'gregory',
     year: 'numeric',
     month: 'short',
     day: 'numeric'

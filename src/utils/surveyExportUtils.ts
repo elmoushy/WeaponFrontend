@@ -299,15 +299,16 @@ function formatAnswerForCSV(answer: SurveyAnswer): string {
 }
 
 /**
- * Format date for CSV export in Arabic locale
+ * Format date for CSV export in Arabic locale with Gregorian calendar
  */
 function formatDateForCSV(dateString: string): string {
   if (!dateString) return ''
 
   const date = new Date(dateString)
 
-  // Format in Arabic locale
+  // Format in Arabic locale with Gregorian calendar
   return date.toLocaleString('ar-SA', {
+    calendar: 'gregory',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',

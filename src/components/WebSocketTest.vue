@@ -134,7 +134,7 @@ const formatTime = (createdAt: string): string => {
     if (days < 7) {
       return `${days} day${days > 1 ? 's' : ''} ago`
     } else {
-      return notificationDate.toLocaleDateString()
+      return notificationDate.toLocaleDateString('en-US', { calendar: 'gregory' })
     }
   }
 }

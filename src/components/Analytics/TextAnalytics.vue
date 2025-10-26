@@ -48,7 +48,7 @@
 
           <div :class="$style.summaryCard">
             <div :class="$style.summaryIcon">
-              <i class="fas fa-file-alt" style="color: '#9C27B0';"></i>
+              <i class="fas fa-file-alt" style="color: #9C27B0;"></i>
             </div>
             <div :class="$style.summaryContent">
               <div :class="$style.summaryNumber">{{ formatNumber(filledResponses) }}</div>
@@ -532,7 +532,9 @@ const formatPercentage = (value: number) => {
 }
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString()
+  const date = new Date(dateString)
+  const locale = isRTL.value ? 'ar-SA' : 'en-US'
+  return date.toLocaleDateString(locale, { calendar: 'gregory' })
 }
 
 const getResponseWordCount = (text: string) => {

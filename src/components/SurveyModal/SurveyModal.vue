@@ -462,7 +462,7 @@ const schedulingPreview = computed(() => {
       status: isScheduled ? 'scheduled' : 'active',
       icon: isScheduled ? 'fas fa-clock' : 'fas fa-play-circle',
       title: isArabic 
-        ? (isScheduled ? `مجدول للبدء في ${startDate.toLocaleDateString('ar')}` : 'يبدأ فورًا ويستمر إلى أجل غير مسمى')
+        ? (isScheduled ? `مجدول للبدء في ${startDate.toLocaleDateString('ar', { calendar: 'gregory' })}` : 'يبدأ فورًا ويستمر إلى أجل غير مسمى')
         : (isScheduled ? `Scheduled to start ${startDate.toLocaleDateString()}` : 'Starts immediately, runs indefinitely'),
       description: isArabic 
         ? 'الاستطلاع سيبدأ في التاريخ المحدد ويستمر إلى أجل غير مسمى'
@@ -477,7 +477,7 @@ const schedulingPreview = computed(() => {
       status: isExpired ? 'expired' : 'active',
       icon: isExpired ? 'fas fa-stop-circle' : 'fas fa-play-circle',
       title: isArabic 
-        ? (isExpired ? 'منتهي الصلاحية' : `يبدأ فورًا وينتهي في ${endDate.toLocaleDateString('ar')}`)
+        ? (isExpired ? 'منتهي الصلاحية' : `يبدأ فورًا وينتهي في ${endDate.toLocaleDateString('ar', { calendar: 'gregory' })}`)
         : (isExpired ? 'Expired' : `Starts now, expires ${endDate.toLocaleDateString()}`),
       description: isArabic 
         ? 'الاستطلاع سيبدأ فور الإنشاء وتاريخ البداية سيتم تعيينه تلقائياً'
@@ -502,14 +502,14 @@ const schedulingPreview = computed(() => {
       status = 'scheduled'
       icon = 'fas fa-clock'
       title = isArabic 
-        ? `مجدول من ${startDate.toLocaleDateString('ar')} إلى ${endDate.toLocaleDateString('ar')}`
+        ? `مجدول من ${startDate.toLocaleDateString('ar', { calendar: 'gregory' })} إلى ${endDate.toLocaleDateString('ar', { calendar: 'gregory' })}`
         : `Scheduled from ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`
       description = isArabic ? 'الاستطلاع سيعمل خلال النافذة الزمنية المحددة' : 'Survey will run within the specified time window'
     } else if (isActive) {
       status = 'active'
       icon = 'fas fa-play-circle'
       title = isArabic 
-        ? `نشط حتى ${endDate.toLocaleDateString('ar')}`
+        ? `نشط حتى ${endDate.toLocaleDateString('ar', { calendar: 'gregory' })}`
         : `Active until ${endDate.toLocaleDateString()}`
       description = isArabic ? 'الاستطلاع نشط حالياً وسينتهي في التاريخ المحدد' : 'Survey is currently active and will expire on the specified date'
     } else {

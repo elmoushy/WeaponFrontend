@@ -49,73 +49,32 @@
       </div>
     </div> -->
 
-    <!-- KPIs Section -->
-    <div :class="$style.kpisSection">
-      <div :class="$style.kpisGrid">
-        <ModernKPICard
-          :value="kpis.total_responses || 0"
-          label="إجمالي الردود"
-          icon="fas fa-users"
-          color="#4CAF50"
-          :percentage="(kpis.completion_rate || 0) * 100"
-          :show-progress="true"
-          :subtitle="`معدل الإكمال: ${formatPercentage(kpis.completion_rate || 0)}`"
-        />
-
-        <ModernKPICard
-          :value="kpis.unique_respondents || 0"
-          label="المشاركون الفريدون"
-          icon="fas fa-user-check"
-          color="#2196F3"
-          :subtitle="`متوسط وقت الرد: ${formatResponseTime(kpis.avg_response_time || 0)}`"
-        />
-
-        <ModernKPICard
-          :value="kpis.authenticated_count || 0"
-          label="ردود موثقة"
-          icon="fas fa-shield-alt"
-          color="#795548"
-          :percentage="kpis.total_responses > 0 ? ((kpis.authenticated_count || 0) / kpis.total_responses) * 100 : 0"
-          :show-progress="true"
-        />
-
-        <ModernKPICard
-          :value="kpis.anonymous_count || 0"
-          label="ردود مجهولة"
-          icon="fas fa-user-secret"
-          color="#607D8B"
-          :percentage="kpis.total_responses > 0 ? ((kpis.anonymous_count || 0) / kpis.total_responses) * 100 : 0"
-          :show-progress="true"
-        />
-
-        <ModernKPICard
-          :value="(kpis.response_velocity || 0).toFixed(1)"
-          label="سرعة الاستجابة"
-          icon="fas fa-tachometer-alt"
-          color="#9C27B0"
-          suffix="ردود/يوم"
-          :format-as-number="false"
-          :subtitle="`المتوقع خلال 7 أيام: ${formatNumber(Math.round((kpis.response_velocity || 0) * 7))}`"
-        />
-
-        <ModernKPICard
-          :value="formatPercentage(kpis.completion_rate || 0)"
-          label="معدل الإكمال"
-          icon="fas fa-check-circle"
-          color="#00BCD4"
-          :format-as-number="false"
-          :percentage="(kpis.completion_rate || 0) * 100"
-          :show-progress="true"
-        />
-      </div>
-    </div>
-
+    <!-- KPIs Section - REMOVED in v2 -->
+    
     <!-- Charts Section -->
     <div :class="$style.chartsSection">
+      <!-- Heatmap Row (NEW in v2) -->
+      <div :class="$style.heatmapRow">
+        <div :class="[$style.chartCard, $style.fullWidthCard]">
+          <div :class="$style.chartHeader">
+            <div>
+              <h3 :class="$style.chartTitle">{{ isRTL ? 'خريطة الحرارة للردود' : 'Response Heatmap' }}</h3>
+              <p :class="$style.chartSubtitle">{{ isRTL ? 'توزيع الردود حسب اليوم والساعة' : 'Response distribution by day and hour' }}</p>
+            </div>
+          </div>
+          <div :class="$style.chartContainer">
+            <ResponseHeatmap
+              :heatmap-data="heatmapData"
+              :loading="loading"
+            />
+          </div>
+        </div>
+      </div>
+
       <!-- NPS & CSAT Row -->
-      <div :class="$style.chartsRow">
+      <div :class="$style.chartsRow" v-if="hasNPSData || hasCSATData">
         <!-- NPS Tracking -->
-        <div :class="$style.chartCard">
+        <div v-if="hasNPSData" :class="[$style.chartCard, { [$style.fullWidth]: !hasCSATData }]">
           <div :class="$style.chartHeader">
             <div>
               <h3 :class="$style.chartTitle">مؤشر صافي الترويج (NPS)</h3>
@@ -124,14 +83,15 @@
           </div>
           <div :class="$style.chartContainer">
             <NPSGauge
-              :nps-data="kpis.nps"
+              :nps-data="npsData"
               :loading="loading"
+              :compact="true"
             />
           </div>
         </div>
 
-        <!-- CSAT Tracking -->
-        <div :class="$style.chartCard">
+        <!-- CSAT Tracking (UPDATED in v2) -->
+        <div v-if="hasCSATData" :class="[$style.chartCard, { [$style.fullWidth]: !hasNPSData }]">
           <div :class="$style.chartHeader">
             <div>
               <h3 :class="$style.chartTitle">رضا العملاء (CSAT)</h3>
@@ -139,46 +99,16 @@
             </div>
           </div>
           <div :class="$style.chartContainer">
-            <CSATBar
-              :csat-data="kpis.csat"
+            <CSATTracking
+              :csat-data="csatTrackingData"
               :loading="loading"
+              :compact="true"
             />
           </div>
         </div>
       </div>
 
-      <!-- Segments Charts Row -->
-      <div :class="$style.chartsRow">
-        <!-- Authentication Segmentation -->
-        <div :class="$style.chartCard">
-          <div :class="$style.chartHeader">
-            <h3 :class="$style.chartTitle">الردود حسب التوثيق</h3>
-          </div>
-          <div :class="$style.chartContainer">
-            <DonutChart
-              :data="authenticationSegments"
-              :colors="['#4CAF50', '#FF5722']"
-              :labels="['موثق', 'مجهول']"
-              :loading="loading"
-            />
-          </div>
-        </div>
-
-        <!-- Completion Segmentation -->
-        <div :class="$style.chartCard">
-          <div :class="$style.chartHeader">
-            <h3 :class="$style.chartTitle">الردود حسب الإكمال</h3>
-          </div>
-          <div :class="$style.chartContainer">
-            <DonutChart
-              :data="completionSegments"
-              :colors="['#4CAF50', '#FFC107']"
-              :labels="['مكتمل', 'غير مكتمل']"
-              :loading="loading"
-            />
-          </div>
-        </div>
-      </div>
+      <!-- Segments Charts Row - REMOVED in v2 -->
     </div>
 
     <!-- Questions Summary Section -->
@@ -244,62 +174,7 @@
       </div>
     </div>
 
-    <!-- Insights Section -->
-    <div :class="$style.insightsSection">
-      <div :class="$style.sectionHeader">
-        <h3 :class="$style.sectionTitle">استبصارات</h3>
-      </div>
-      
-      <div :class="$style.insightsGrid">
-        <div :class="$style.insightCard" v-if="kpis.response_rate_trend">
-          <div :class="$style.insightIcon">
-            <i :class="getTrendIcon(kpis.response_rate_trend)" :style="`color: ${getTrendColor(kpis.response_rate_trend)}`"></i>
-          </div>
-          <div :class="$style.insightContent">
-            <h4 :class="$style.insightTitle">اتجاه الاستجابة</h4>
-            <p :class="$style.insightText">
-              {{ getResponseTrendText(kpis.response_rate_trend) }}
-            </p>
-          </div>
-        </div>
-
-        <div :class="$style.insightCard">
-          <div :class="$style.insightIcon">
-            <i class="fas fa-calendar-alt" style="color: #2196F3;"></i>
-          </div>
-          <div :class="$style.insightContent">
-            <h4 :class="$style.insightTitle">آخر رد</h4>
-            <p :class="$style.insightText">
-              {{ formatDateTime(kpis.last_response_at) }}
-            </p>
-          </div>
-        </div>
-
-        <div :class="$style.insightCard">
-          <div :class="$style.insightIcon">
-            <i class="fas fa-calendar-check" style="color: #4CAF50;"></i>
-          </div>
-          <div :class="$style.insightContent">
-            <h4 :class="$style.insightTitle">أول رد</h4>
-            <p :class="$style.insightText">
-              {{ formatDateTime(kpis.first_response_at) }}
-            </p>
-          </div>
-        </div>
-<!-- 
-        <div :class="$style.insightCard">
-          <div :class="$style.insightIcon">
-            <i class="fas fa-globe" style="color: #FF9800;"></i>
-          </div>
-          <div :class="$style.insightContent">
-            <h4 :class="$style.insightTitle">عناوين IP فريدة</h4>
-            <p :class="$style.insightText">
-              {{ formatNumber(kpis.unique_ips) }} عنوان IP
-            </p>
-          </div>
-        </div> -->
-      </div>
-    </div>
+    <!-- Insights Section - REMOVED in v2 -->
 
     <!-- Question Details Modal -->
     <QuestionDetailsModal
@@ -314,15 +189,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useAppStore } from '../../stores/useAppStore'
 import { surveyService } from '../../services/surveyService'
-// import TimeSeriesChart from './TimeSeriesChart.vue'
-import DonutChart from './DonutChart.vue'
+import ResponseHeatmap from './ResponseHeatmap.vue'
 import NPSGauge from './NPSGauge.vue'
-import CSATBar from './CSATBar.vue'
-import ModernKPICard from './ModernKPICard.vue'
+import CSATTracking from './CSATTracking.vue'
 import QuestionDetailsModal from './QuestionDetailsModal'
+import type { HeatmapData, NPSData, CSATTrackingPoint } from '../../types/survey.types'
 
 // Props
 interface Props { analytics?: any; loading?: boolean }
@@ -342,8 +216,6 @@ const currentTheme = computed(() => store.currentTheme)
 const isRTL = computed(() => store.currentLanguage === 'ar')
 
 // State
-// const filters = ref({ start: '', end: '', group_by: 'day' })
-const isMounted = ref(false)
 const surveyDetails = ref<any>(null)
 
 // Question details modal state
@@ -366,50 +238,23 @@ watch(() => props.analytics?.data?.survey?.id, async (surveyId) => {
   }
 }, { immediate: true })
 
-// Computed analytics data
-const kpis = computed(() => props.analytics?.data?.kpis || {
-  total_responses: 0,
-  unique_respondents: 0,
-  completion_rate: 0,
-  average_completion_time: 0,
-  authenticated_count: 0,
-  anonymous_count: 0,
-  unique_ips: 0,
-  response_rate_trend: 0,
-  last_response_date: null,
-  first_response_at: null,
-  last_response_at: null
+// Computed analytics data (v2 API structure)
+const heatmapData = computed<HeatmapData>(() => props.analytics?.data?.heatmap || {
+  matrix: Array.from({ length: 7 }, () => Array.from({ length: 24 }, () => 0)),
+  totals_by_day: Array.from({ length: 7 }, () => 0),
+  totals_by_hour: Array.from({ length: 24 }, () => 0)
 })
 
-// const timeSeriesData = computed(() => {
-//   const timeSeries = props.analytics?.data?.time_series || []
-//   return timeSeries.map((item: any) => ({
-//     period: item.period,
-//     label: item.period_label,
-//     responses: item.response_count,
-//     uniqueRespondents: item.unique_respondents,
-//     completionRate: item.completion_rate
-//   }))
-// })
+const npsData = computed<NPSData | null>(() => props.analytics?.data?.nps || null)
 
-const authenticationSegments = computed(() => {
-  const segments = props.analytics?.data?.segments?.by_auth || []
-  const total = segments.reduce((sum: number, segment: any) => sum + segment.count, 0)
-  
-  return segments.map((segment: any) => ({
-    value: segment.count,
-    percentage: total > 0 ? segment.count / total : 0
-  }))
+const csatTrackingData = computed<CSATTrackingPoint[]>(() => props.analytics?.data?.csat_tracking || [])
+
+const hasNPSData = computed(() => {
+  return npsData.value && npsData.value.total_responses > 0
 })
 
-const completionSegments = computed(() => {
-  const segments = props.analytics?.data?.segments?.by_completion || []
-  const total = segments.reduce((sum: number, segment: any) => sum + segment.count, 0)
-  
-  return segments.map((segment: any) => ({
-    value: segment.count,
-    percentage: total > 0 ? segment.count / total : 0
-  }))
+const hasCSATData = computed(() => {
+  return csatTrackingData.value && csatTrackingData.value.length > 0
 })
 
 const questionsSummary = computed(() => {
@@ -492,8 +337,6 @@ const getTopResponse = (question: any) => {
 }
 
 // Helpers
-const NEVER_TEXT = 'لم يحدث بعد'
-
 const formatNumber = (value: number) => {
   if (!value && value !== 0) return '0'
   return new Intl.NumberFormat().format(value)
@@ -502,37 +345,6 @@ const formatNumber = (value: number) => {
 const formatPercentage = (value: number) => {
   if (!value && value !== 0) return '0%'
   return `${(value * 100).toFixed(1)}%`
-}
-
-const formatResponseTime = (hours: number) => {
-  if (!hours && hours !== 0) return '0س'
-  if (hours < 1) return `${Math.round(hours * 60)}د`
-  if (hours < 24) return `${hours.toFixed(1)}س`
-  const days = Math.floor(hours / 24)
-  const remainingHours = Math.round(hours % 24)
-  if (remainingHours > 0) return `${days}ي ${remainingHours}س`
-  return `${days}ي`
-}
-
-// const formatDuration = (seconds: number) => {
-//   if (!seconds && seconds !== 0) return '0s'
-//   const minutes = Math.floor(seconds / 60)
-//   const remainingSeconds = Math.floor(seconds % 60)
-//   if (minutes > 0) return `${minutes}m ${remainingSeconds}s`
-//   return `${remainingSeconds}s`
-// }
-
-const formatDateTime = (dateString: string) => {
-  if (!dateString) return NEVER_TEXT
-  const date = new Date(dateString)
-  const locale = isRTL.value ? 'ar-SA' : 'en-US'
-  return date.toLocaleString(locale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
 }
 
 const getQuestionTypeIcon = (type: string) => {
@@ -547,28 +359,10 @@ const getQuestionTypeIcon = (type: string) => {
   return icons[type] || 'fas fa-question'
 }
 
-const getTrendIcon = (trend: number) => {
-  if (trend > 0.05) return 'fas fa-trending-up'
-  if (trend < -0.05) return 'fas fa-trending-down'
-  return 'fas fa-minus'
-}
-
-const getTrendColor = (trend: number) => {
-  if (trend > 0.05) return '#4CAF50'
-  if (trend < -0.05) return '#F44336'
-  return '#FF9800'
-}
-
-const getResponseTrendText = (trend: number) => {
-  const percentage = Math.abs(trend * 100).toFixed(1)
-  if (trend > 0.05) return `زادت بنسبة ${percentage}%`
-  if (trend < -0.05) return `انخفضت بنسبة ${percentage}%`
-  return 'مستقرة'
-}
-
 const refreshAnalytics = () => emit('refresh')
 
 const onQuestionDetailsClick = async (question: any) => {
+  console.log('🔵 Question Details Click:', question)
   try {
     selectedQuestion.value = question
     showQuestionDetails.value = true
@@ -578,13 +372,17 @@ const onQuestionDetailsClick = async (question: any) => {
     const surveyId = props.analytics?.data?.survey?.id
     const questionId = question.id
     
+    console.log('🔵 Survey ID:', surveyId, 'Question ID:', questionId)
+    
     if (!surveyId || !questionId) {
-      console.error('Missing survey ID or question ID')
+      console.error('❌ Missing survey ID or question ID', { surveyId, questionId })
       questionDetailsLoading.value = false
       return
     }
     
+    console.log('🔵 Calling API: getQuestionAnalytics')
     const response = await surveyService.getQuestionAnalytics(surveyId, questionId)
+    console.log('✅ API Response:', response)
     
     if (response.status === 'success') {
       questionDetails.value = response.data
@@ -592,23 +390,31 @@ const onQuestionDetailsClick = async (question: any) => {
         question: question,
         details: response.data
       })
+    } else {
+      console.error('❌ API returned non-success status:', response)
     }
   } catch (error) {
-    console.error('Error fetching question details:', error)
+    console.error('❌ Error fetching question details:', error)
+    // Keep the modal open to show error state
   } finally {
     questionDetailsLoading.value = false
   }
 }
 
 const closeQuestionDetails = () => {
+  console.log('🔵 Closing question details modal')
   showQuestionDetails.value = false
   selectedQuestion.value = null
   questionDetails.value = null
 }
 
 const retryQuestionDetails = () => {
+  console.log('🔵 Retry question details clicked')
   if (selectedQuestion.value) {
+    console.log('🔵 Retrying with question:', selectedQuestion.value)
     onQuestionDetailsClick(selectedQuestion.value)
+  } else {
+    console.error('❌ No selected question to retry')
   }
 }
 
@@ -618,7 +424,20 @@ const retryQuestionDetails = () => {
 //   if (isMounted.value && props.analytics?.data) emit('filtersChange', filters.value)
 // }
 
-onMounted(() => { isMounted.value = true })
+// Debug watchers
+watch(() => questionsSummary.value, (newVal) => {
+  console.log('🔵 questionsSummary updated:', newVal)
+  if (newVal && newVal.length > 0) {
+    console.log('🔵 First question:', newVal[0])
+  }
+}, { immediate: true })
+
+watch(() => props.analytics, (newVal) => {
+  console.log('🔵 Analytics prop updated:', newVal)
+  if (newVal?.data?.survey?.id) {
+    console.log('🔵 Survey ID from analytics:', newVal.data.survey.id)
+  }
+}, { immediate: true })
 </script>
 
 
@@ -821,10 +640,22 @@ onMounted(() => { isMounted.value = true })
   font-size: 10px;
 }
 
+.heatmapRow {
+  margin-bottom: 24px;
+}
+
+.fullWidthCard {
+  width: 100%;
+}
+
 .chartsRow {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
+}
+
+.chartCard.fullWidth {
+  grid-column: 1 / -1;
 }
 
 /* Questions Section */
@@ -1043,6 +874,10 @@ onMounted(() => { isMounted.value = true })
 
   .chartsRow {
     grid-template-columns: 1fr;
+  }
+
+  .chartCard {
+    grid-column: 1 / -1;
   }
 
   .questionsGrid {

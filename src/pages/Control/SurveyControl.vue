@@ -4,9 +4,11 @@
     <SurveyEditor
       v-if="showEditorView"
       :template="selectedTemplateForEditor"
+      :isCreatingPredefinedTemplate="isCreatingPredefinedTemplate"
       @back="closeEditorView"
       @publish="handleEditorPublish"
       @saveDraft="handleEditorSaveDraft"
+      @saveTemplate="handleEditorSaveTemplate"
     />
     
     <!-- Main Survey Control View (When Editor is Not Active) -->
@@ -246,7 +248,7 @@
           
           <div :class="$style.cardActions">
             <!-- Edit button - only for draft surveys -->
-            <button 
+            <!-- <button 
               v-if="survey.status === 'draft'" 
               :class="$style.actionButton" 
               @click.stop="editSurvey(survey)" 
@@ -255,7 +257,7 @@
               <i class="fas fa-edit"></i>
               <span :class="$style.actionButtonText">{{ t('survey.card.edit') }}</span>
             </button>
-            
+             -->
             <!-- Edit with Survey Editor button - only for draft surveys -->
             <button 
               v-if="survey.status === 'draft'" 
@@ -590,6 +592,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../../stores/useAppStore'
 import { surveyService } from '../../services/surveyService'
+import { templateService } from '../../services/templateService'
 import type { Survey, SurveyAnalytics, SurveyVisibility, QuestionType, PublicContactMethod, PredefinedTemplate, SurveyTemplate, RecentSurvey } from '../../types/survey.types'
 import SurveyModal from '../../components/SurveyModal/SurveyModal.vue'
 import AnalyticsModal from '../../components/AnalyticsModal/AnalyticsModal.vue'
@@ -628,7 +631,8 @@ const dropdownPosition = computed(() => {
       position: 'fixed' as const,
       top: '0px',
       left: '0px',
-      zIndex: '9999'
+      zIndex: '9999',
+      width: 'auto'
     }
   }
   
@@ -636,7 +640,8 @@ const dropdownPosition = computed(() => {
   const style: any = {
     position: 'fixed' as const,
     top: `${rect.bottom + 8}px`,
-    zIndex: '9999'
+    zIndex: '9999',
+    width: `${rect.width}px`
   }
   
   // Handle RTL positioning
@@ -663,6 +668,7 @@ const selectedSurveyForLinkSharing = ref<Survey | null>(null)
 const selectedTemplateForEditor = ref<PredefinedTemplate | SurveyTemplate | RecentSurvey | Survey | null>(null)
 const publicLinkForSharing = ref<any | null>(null)
 const isSubmissionFlow = ref(false)
+const isCreatingPredefinedTemplate = ref(false)
 
 // Enhanced Pagination and API state
 const currentPage = ref(1)
@@ -1409,7 +1415,8 @@ const formatDate = (dateString: string | null | undefined, fallbackDate?: string
     return isRTL.value ? 'تاريخ غير صحيح' : 'Invalid date'
   }
   
-  return date.toLocaleDateString()
+  const locale = isRTL.value ? 'ar-SA' : 'en-US'
+  return date.toLocaleDateString(locale, { calendar: 'gregory' })
 }
 
 // Template Gallery Methods
@@ -1465,9 +1472,14 @@ const handleRecentSurveySelected = async (survey: RecentSurvey) => {
     const response = await surveyService.getSurvey(survey.id)
     const fullSurvey = response.data
     
-    // Close template gallery and open editor with full survey data
+    // When using a survey as a template (from template gallery), 
+    // remove the ID so it's treated as creating a new survey, not editing
+    // Destructure to exclude 'id' property
+    const { id: _id, ...surveyAsTemplate } = fullSurvey
+    
+    // Close template gallery and open editor with survey as template
     closeTemplateGallery()
-    selectedTemplateForEditor.value = fullSurvey
+    selectedTemplateForEditor.value = surveyAsTemplate as any
     showEditorView.value = true
   } catch (error: any) {
     const isArabic = store.currentLanguage === 'ar'
@@ -1486,18 +1498,19 @@ const handleCreateNewTemplate = () => {
   // Show info message
   Swal.fire({
     icon: 'info',
-    title: isArabic ? 'إنشاء قالب جديد' : 'Create New Template',
+    title: isArabic ? 'إنشاء قالب محدد مسبقاً' : 'Create Predefined Template',
     html: isArabic 
-      ? 'سيتم فتح محرر الاستطلاع حيث يمكنك إنشاء استطلاع جديد.<br><br>بعد إنشاء الاستطلاع ونشره، يمكنك حفظه كقالب من قائمة الاستطلاعات.' 
-      : 'The survey editor will open where you can create a new survey.<br><br>After creating and publishing the survey, you can save it as a template from the surveys list.',
+      ? 'سيتم فتح محرر الاستطلاع حيث يمكنك إنشاء قالب جديد.<br><br>بعد إنشاء القالب، سيتم حفظه كقالب محدد مسبقاً متاح لجميع المستخدمين.' 
+      : 'The survey editor will open where you can create a new template.<br><br>After creating the template, it will be saved as a predefined template available to all users.',
     confirmButtonText: isArabic ? 'متابعة' : 'Continue',
     showCancelButton: true,
     cancelButtonText: isArabic ? 'إلغاء' : 'Cancel'
   }).then((result) => {
     if (result.isConfirmed) {
-      // Close the template gallery and open the editor to create a new survey
+      // Close the template gallery and open the editor in predefined template mode
       closeTemplateGallery()
-      selectedTemplateForEditor.value = null // Start with blank survey
+      selectedTemplateForEditor.value = null // Start with blank template
+      isCreatingPredefinedTemplate.value = true // Enable predefined template mode
       showEditorView.value = true
     }
   })
@@ -1514,14 +1527,24 @@ const getCreatorDisplayName = (creatorEmail: string | null) => {
 const closeEditorView = () => {
   showEditorView.value = false
   selectedTemplateForEditor.value = null
+  isCreatingPredefinedTemplate.value = false
 }
 
 const handleEditorSaveDraft = async (surveyData: any) => {
   try {
     const isArabic = store.currentLanguage === 'ar'
     
-    // Check if we're editing an existing draft
-    const isEditingExisting = selectedTemplateForEditor.value && 'id' in selectedTemplateForEditor.value
+    // Check if we're editing an existing survey (not a template)
+    // Templates have 'name' or 'name_ar' property, while Surveys have 'title'
+    // Only consider it as editing if it has an ID AND it's a Survey (has 'title' property)
+    // AND it doesn't have template-specific properties like 'name_ar' or 'category'
+    const isTemplate = selectedTemplateForEditor.value && 
+      ('name' in selectedTemplateForEditor.value || 'name_ar' in selectedTemplateForEditor.value || 'category' in selectedTemplateForEditor.value)
+    
+    const isEditingExisting = selectedTemplateForEditor.value && 
+      'id' in selectedTemplateForEditor.value && 
+      'title' in selectedTemplateForEditor.value &&
+      !isTemplate
     
     // Show loading
     Swal.fire({
@@ -1533,11 +1556,11 @@ const handleEditorSaveDraft = async (surveyData: any) => {
     })
     
     if (isEditingExisting) {
-      // Update existing draft
+      // Update existing survey/draft
       const surveyId = (selectedTemplateForEditor.value as Survey).id
       await surveyService.updateSurvey(surveyId, surveyData)
     } else {
-      // Create new draft
+      // Create new draft (from template or from scratch)
       await surveyService.createDraft(surveyData)
     }
     
@@ -1575,8 +1598,17 @@ const handleEditorPublish = async (surveyData: any) => {
   try {
     const isArabic = store.currentLanguage === 'ar'
     
-    // Check if we're editing an existing draft
-    const isEditingExisting = selectedTemplateForEditor.value && 'id' in selectedTemplateForEditor.value
+    // Check if we're editing an existing survey (not a template)
+    // Templates have 'name' or 'name_ar' property, while Surveys have 'title'
+    // Only consider it as editing if it has an ID AND it's a Survey (has 'title' property)
+    // AND it doesn't have template-specific properties like 'name_ar' or 'category'
+    const isTemplate = selectedTemplateForEditor.value && 
+      ('name' in selectedTemplateForEditor.value || 'name_ar' in selectedTemplateForEditor.value || 'category' in selectedTemplateForEditor.value)
+    
+    const isEditingExisting = selectedTemplateForEditor.value && 
+      'id' in selectedTemplateForEditor.value && 
+      'title' in selectedTemplateForEditor.value &&
+      !isTemplate
     
     // Show loading
     Swal.fire({
@@ -1590,12 +1622,12 @@ const handleEditorPublish = async (surveyData: any) => {
     let createdSurvey: Survey
     
     if (isEditingExisting) {
-      // Update existing draft
+      // Update existing survey
       const surveyId = (selectedTemplateForEditor.value as Survey).id
       const updateResponse = await surveyService.updateSurvey(surveyId, surveyData)
       createdSurvey = updateResponse.data
     } else {
-      // Create new draft
+      // Create new survey (from template or from scratch)
       const draftResponse = await surveyService.createDraft(surveyData)
       createdSurvey = draftResponse.data
     }
@@ -1620,6 +1652,52 @@ const handleEditorPublish = async (surveyData: any) => {
       icon: 'error',
       title: isArabic ? 'خطأ' : 'Error',
       text: error.message || (isArabic ? 'فشل في إنشاء الاستطلاع' : 'Failed to create survey'),
+      confirmButtonText: isArabic ? 'موافق' : 'OK'
+    })
+  }
+}
+
+const handleEditorSaveTemplate = async (templateData: any) => {
+  try {
+    const isArabic = store.currentLanguage === 'ar'
+    
+    // Show loading
+    Swal.fire({
+      title: isArabic ? 'جاري حفظ القالب...' : 'Saving Template...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      }
+    })
+    
+    // Call the API to create a predefined template
+    await templateService.createPredefinedTemplate(templateData)
+    
+    // Close loading
+    Swal.close()
+    
+    // Close editor
+    closeEditorView()
+    
+    // Show success message
+    Swal.fire({
+      icon: 'success',
+      title: isArabic ? 'تم الحفظ بنجاح' : 'Saved Successfully',
+      text: isArabic 
+        ? 'تم حفظ القالب المحدد مسبقاً بنجاح وهو الآن متاح لجميع المستخدمين' 
+        : 'Predefined template has been saved successfully and is now available to all users',
+      confirmButtonText: isArabic ? 'موافق' : 'OK'
+    }).then(() => {
+      // Refresh the data
+      refreshData()
+    })
+    
+  } catch (error: any) {
+    const isArabic = store.currentLanguage === 'ar'
+    Swal.fire({
+      icon: 'error',
+      title: isArabic ? 'خطأ' : 'Error',
+      text: error.message || (isArabic ? 'فشل في حفظ القالب' : 'Failed to save template'),
       confirmButtonText: isArabic ? 'موافق' : 'OK'
     })
   }

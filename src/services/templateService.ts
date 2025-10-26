@@ -142,6 +142,26 @@ export const templateService = {
   },
 
   /**
+   * Create a predefined template (Admin/Super Admin only)
+   * POST /surveys/templates/predefined/create/
+   */
+  async createPredefinedTemplate(data: any): Promise<any> {
+    try {
+      const response = await apiClient.post('/surveys/templates/predefined/create/', data)
+      
+      // Handle the nested response structure from Django API
+      if (response.data?.data) {
+        return response.data.data
+      }
+      
+      return response.data
+    } catch (error: any) {
+      console.error('Failed to create predefined template:', error)
+      throw new Error(error.response?.data?.message || error.message || 'Failed to create predefined template')
+    }
+  },
+
+  /**
    * Create a new survey from a template (predefined or user template)
    * POST /surveys/from-template/
    */
@@ -198,6 +218,26 @@ export const templateService = {
     } catch (error: any) {
       console.error('Failed to delete template:', error)
       throw new Error(error.response?.data?.message || error.message || 'Failed to delete template')
+    }
+  },
+
+  /**
+   * Delete a predefined template (Admin/Super Admin only)
+   * DELETE /surveys/templates/predefined/{template_id}/
+   */
+  async deletePredefinedTemplate(templateId: string): Promise<{ message: string }> {
+    try {
+      const response = await apiClient.delete(`/surveys/templates/predefined/${templateId}/`)
+      
+      // Handle the nested response structure from Django API
+      if (response.data?.data) {
+        return response.data.data
+      }
+      
+      return response.data
+    } catch (error: any) {
+      console.error('Failed to delete predefined template:', error)
+      throw new Error(error.response?.data?.message || error.message || 'Failed to delete predefined template')
     }
   },
 

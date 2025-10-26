@@ -306,8 +306,6 @@ Beige/Tan Variants:
   border-radius: 12px;
   box-shadow: var(--shadow-lg);
   z-index: 9999;
-  min-width: 320px;
-  max-width: 400px;
   overflow: hidden;
   animation: dropdownSlideIn 0.2s ease-out;
 }

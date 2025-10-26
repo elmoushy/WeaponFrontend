@@ -279,7 +279,7 @@
             <i class="fas fa-exclamation-triangle"></i>
           </div>
           <p>حدث خطأ في تحميل تفاصيل السؤال</p>
-          <button :class="styles.retryButton" @click="$emit('retry')">
+          <button :class="styles.retryButton" @click="handleRetry">
             إعادة المحاولة
           </button>
         </div>
@@ -318,7 +318,15 @@ const currentTheme = computed(() => store.currentTheme)
 const isRTL = computed(() => store.currentLanguage === 'ar')
 
 // Methods
-const closeModal = () => emit('close')
+const closeModal = () => {
+  console.log('🔵 QuestionDetailsModal: Close button clicked')
+  emit('close')
+}
+
+const handleRetry = () => {
+  console.log('🔵 QuestionDetailsModal: Retry button clicked')
+  emit('retry')
+}
 
 const formatNumber = (value: number, decimals = 0) => {
   if (!value && value !== 0) return '0'
@@ -340,6 +348,7 @@ const formatDateTime = (dateString: string) => {
   if (!dateString) return 'غير محدد'
   const date = new Date(dateString)
   return date.toLocaleString('ar-SA', {
+    calendar: 'gregory',
     year: 'numeric',
     month: 'short',
     day: 'numeric',

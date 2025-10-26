@@ -277,7 +277,9 @@ const handleLogout = async () => {
 
 const formatDate = (dateString: string): string => {
   try {
-    return new Date(dateString).toLocaleString()
+    const date = new Date(dateString)
+    const locale = store.currentLanguage === 'ar' ? 'ar-SA' : 'en-US'
+    return date.toLocaleString(locale, { calendar: 'gregory' })
   } catch {
     return dateString
   }

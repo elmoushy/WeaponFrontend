@@ -679,6 +679,7 @@ const downloadFile = (content: string, filename: string, mimeType: string) => {
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
   return date.toLocaleDateString('ar-EG', {
+    calendar: 'gregory',
     year: 'numeric',
     month: 'long',
     day: 'numeric',

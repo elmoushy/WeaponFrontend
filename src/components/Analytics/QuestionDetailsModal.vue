@@ -336,6 +336,7 @@ const formatDateTime = (dateString: string) => {
   if (!dateString) return 'غير محدد'
   const date = new Date(dateString)
   return date.toLocaleString('ar-SA', {
+    calendar: 'gregory',
     year: 'numeric',
     month: 'short',
     day: 'numeric',

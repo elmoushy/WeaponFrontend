@@ -667,6 +667,7 @@ const formatDate = (dateString: string) => {
   const date = new Date(dateString)
   const locale = isRTL.value ? 'ar-SA' : 'en-US'
   return date.toLocaleDateString(locale, {
+    calendar: 'gregory',
     year: 'numeric',
     month: 'short',
     day: 'numeric',
