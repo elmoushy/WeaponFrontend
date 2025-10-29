@@ -125,6 +125,56 @@
               </div>
             </div>
 
+            <!-- Validation Type Section (for text questions only) -->
+            <div v-if="question.question_type === 'text'" :class="$style.validationSection">
+              <div :class="$style.validationHeader">
+                <i class="fas fa-shield-alt"></i>
+                <span>{{ isRTL ? 'التحقق من صحة الإدخال' : 'Input Validation' }}</span>
+              </div>
+              <div :class="$style.validationControl">
+                <label :class="$style.validationLabel">
+                  <i class="fas fa-check-circle"></i>
+                  <span>{{ isRTL ? 'نوع التحقق' : 'Validation Type' }}</span>
+                </label>
+                <div :class="$style.validationTypeDropdown">
+                  <select 
+                    v-model="question.validation_type" 
+                    :class="$style.validationSelect"
+                  >
+                    <option value="none">{{ isRTL ? 'بدون تحقق' : 'No Validation' }}</option>
+                    <option value="email">{{ isRTL ? 'بريد إلكتروني' : 'Email Address' }}</option>
+                    <option value="phone">{{ isRTL ? 'رقم هاتف' : 'Phone Number' }}</option>
+                    <option value="number">{{ isRTL ? 'رقم' : 'Number' }}</option>
+                    <option value="url">{{ isRTL ? 'رابط موقع' : 'Website URL' }}</option>
+                  </select>
+                  <i class="fas fa-chevron-down" :class="$style.validationDropdownIcon"></i>
+                </div>
+              </div>
+              
+              <!-- Validation Info Box -->
+              <div v-if="question.validation_type !== 'none'" :class="$style.validationInfoBox">
+                <i class="fas fa-info-circle"></i>
+                <div :class="$style.validationInfoContent">
+                  <template v-if="question.validation_type === 'email'">
+                    <strong>{{ isRTL ? 'مثال:' : 'Example:' }}</strong>
+                    <span>example@domain.com</span>
+                  </template>
+                  <template v-else-if="question.validation_type === 'phone'">
+                    <strong>{{ isRTL ? 'مثال:' : 'Example:' }}</strong>
+                    <span>+971501234567</span>
+                  </template>
+                  <template v-else-if="question.validation_type === 'number'">
+                    <strong>{{ isRTL ? 'مثال:' : 'Example:' }}</strong>
+                    <span>123 {{ isRTL ? 'أو' : 'or' }} 123.45</span>
+                  </template>
+                  <template v-else-if="question.validation_type === 'url'">
+                    <strong>{{ isRTL ? 'مثال:' : 'Example:' }}</strong>
+                    <span>https://example.com</span>
+                  </template>
+                </div>
+              </div>
+            </div>
+
             <!-- Options Section (for choice-based questions) -->
             <div v-if="needsOptions(question.question_type)" :class="$style.optionsSection">
               <div
@@ -521,13 +571,13 @@
                   {{ isRTL ? 'تفعيل أو تعطيل الاستطلاع' : 'Activate or deactivate the survey' }}
                 </p>
               </div>
-              <button
-                type="button"
-                :class="[$style.toggle, { [$style.active]: surveySettings.is_active }]"
-                @click="surveySettings.is_active = !surveySettings.is_active"
-              >
+              <label :class="$style.modernToggle">
+                <input 
+                  type="checkbox" 
+                  v-model="surveySettings.is_active"
+                />
                 <span :class="$style.toggleSlider"></span>
-              </button>
+              </label>
             </div>
           </div>
           <div :class="$style.modalFooter">
@@ -604,6 +654,8 @@ const surveyData = ref<{
     max_scale?: number | null
     semantic_tag?: 'none' | 'nps' | 'csat'
     options_satisfaction_values?: (0 | 1 | 2 | null)[]
+    // Validation field
+    validation_type?: 'none' | 'email' | 'phone' | 'number' | 'url'
   }>
 }>({
   title: '',
@@ -791,7 +843,9 @@ const initializeSurvey = () => {
             ? (typeof q.options_satisfaction_values === 'string' 
               ? JSON.parse(q.options_satisfaction_values) 
               : q.options_satisfaction_values)
-            : []
+            : [],
+          // Validation field
+          validation_type: q.validation_type || 'none'
         }))
       }
     }
@@ -941,7 +995,9 @@ const addQuestion = () => {
     min_scale: 0,
     max_scale: 5,
     semantic_tag: 'none' as 'none' | 'nps' | 'csat',
-    options_satisfaction_values: []
+    options_satisfaction_values: [],
+    // Validation field
+    validation_type: 'none' as 'none' | 'email' | 'phone' | 'number' | 'url'
   }
   surveyData.value.questions.push(newQuestion)
   
@@ -1124,7 +1180,9 @@ const prepareSurveyData = () => {
       max_scale: q.max_scale !== undefined ? q.max_scale : 5,
       options_satisfaction_values: q.options_satisfaction_values && q.options_satisfaction_values.length > 0 
         ? JSON.stringify(q.options_satisfaction_values) 
-        : undefined
+        : undefined,
+      // Validation field
+      validation_type: q.validation_type || 'none'
     }))
   }
 }

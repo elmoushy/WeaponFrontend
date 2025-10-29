@@ -467,6 +467,182 @@
   left: 1rem;
 }
 
+/* Validation Section */
+.validationSection {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 0.5rem;
+  border: 1px solid #e9ecef;
+  margin-top: 1rem;
+}
+
+.editorContainer[data-theme="night"] .validationSection {
+  background: #343a40;
+  border-color: #495057;
+}
+
+.validationHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.75rem;
+}
+
+.editorContainer[data-theme="night"] .validationHeader {
+  color: #adb5bd;
+}
+
+.validationHeader i {
+  color: #B78A41;
+  font-size: 1rem;
+}
+
+.validationControl {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.validationLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.813rem;
+  font-weight: 500;
+  color: #5f6368;
+}
+
+.editorContainer[data-theme="night"] .validationLabel {
+  color: #adb5bd;
+}
+
+.validationLabel i {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.editorContainer[data-theme="night"] .validationLabel i {
+  color: #adb5bd;
+}
+
+.validationTypeDropdown {
+  position: relative;
+  width: 100%;
+}
+
+.validationSelect {
+  width: 100%;
+  padding: 0.625rem 2.5rem 0.625rem 1rem;
+  border: 1px solid #dadce0;
+  border-radius: 0.25rem;
+  background: white;
+  color: #5f6368;
+  font-size: 0.875rem;
+  cursor: pointer;
+  appearance: none;
+  transition: all 0.2s;
+}
+
+.editorContainer[data-theme="night"] .validationSelect {
+  background: #2d2d2d;
+  border-color: #495057;
+  color: #adb5bd;
+}
+
+.validationSelect:hover {
+  border-color: #B78A41;
+  background: #fafafa;
+}
+
+.editorContainer[data-theme="night"] .validationSelect:hover {
+  background: #495057;
+}
+
+.validationSelect:focus {
+  outline: none;
+  border-color: #B78A41;
+  box-shadow: 0 0 0 2px rgba(183, 138, 65, 0.1);
+}
+
+.validationDropdownIcon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #80868b;
+  pointer-events: none;
+  font-size: 0.75rem;
+}
+
+.editorContainer[dir="rtl"] .validationDropdownIcon {
+  right: auto;
+  left: 1rem;
+}
+
+.validationInfoBox {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #e3f2fd;
+  border-left: 3px solid #2196f3;
+  border-radius: 0.25rem;
+  margin-top: 0.75rem;
+}
+
+.editorContainer[data-theme="night"] .validationInfoBox {
+  background: #1e3a5f;
+  border-left-color: #4a9eff;
+}
+
+.editorContainer[dir="rtl"] .validationInfoBox {
+  border-left: none;
+  border-right: 3px solid #2196f3;
+}
+
+.editorContainer[data-theme="night"][dir="rtl"] .validationInfoBox {
+  border-right-color: #4a9eff;
+}
+
+.validationInfoBox > i {
+  font-size: 1.25rem;
+  color: #2196f3;
+  flex-shrink: 0;
+}
+
+.editorContainer[data-theme="night"] .validationInfoBox > i {
+  color: #4a9eff;
+}
+
+.validationInfoContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.813rem;
+}
+
+.validationInfoContent strong {
+  color: #1565c0;
+  font-weight: 600;
+}
+
+.editorContainer[data-theme="night"] .validationInfoContent strong {
+  color: #64b5f6;
+}
+
+.validationInfoContent span {
+  color: #1976d2;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+}
+
+.editorContainer[data-theme="night"] .validationInfoContent span {
+  color: #90caf9;
+}
+
 /* Options Section */
 .optionsSection {
   display: flex;

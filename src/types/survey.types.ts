@@ -65,6 +65,7 @@ export interface SurveyQuestion {
   min_scale?: number | null
   max_scale?: number | null
   semantic_tag?: SemanticTag
+  validation_type?: 'none' | 'email' | 'phone' | 'number' | 'url' // Input validation for text questions
 }
 
 // Question Option interface (for single_choice questions with CSAT)

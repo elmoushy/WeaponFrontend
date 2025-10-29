@@ -170,11 +170,18 @@
           <div v-if="question.question_type === 'text'" :class="$style.inputContainer">
             <div :class="$style.inputWrapper">
               <input
-                type="text"
-                :class="$style.textInput"
+                :type="getInputConfig(question.validation_type || 'none').type"
+                :pattern="getInputConfig(question.validation_type || 'none').pattern"
+                :class="[$style.textInput, { [$style.inputError]: getValidationError(question.id) }]"
                 v-model="answers[question.id]"
-                placeholder="اكتب إجابتك هنا..."
+                @blur="handleInputBlur(question)"
+                @input="clearValidationError(question.id)"
+                :placeholder="getInputConfig(question.validation_type || 'none').placeholder || 'اكتب إجابتك هنا...'"
               />
+            </div>
+            <div v-if="getValidationError(question.id)" :class="$style.errorMessage">
+              <i class="fas fa-exclamation-circle"></i>
+              <span>{{ getValidationError(question.id) }}</span>
             </div>
           </div>
 
@@ -232,21 +239,35 @@
           </div>
 
           <!-- Yes/No -->
-          <div v-else-if="question.question_type === 'yes_no'" :class="$style.yesNoContainer">
-            <button
-              :class="[$style.yesNoButton, $style.yesButton, { [$style.selected]: answers[question.id] === 'yes' }]"
-              @click="answers[question.id] = 'yes'"
-            >
-              <i class="fas fa-check-circle"></i>
-              <span>نعم</span>
-            </button>
-            <button
-              :class="[$style.yesNoButton, $style.noButton, { [$style.selected]: answers[question.id] === 'no' }]"
-              @click="answers[question.id] = 'no'"
-            >
-              <i class="fas fa-times-circle"></i>
-              <span>لا</span>
-            </button>
+          <div v-else-if="question.question_type === 'yes_no'" :class="$style.yesNoWrapper">
+            <div :class="$style.yesNoContainer">
+              <div :class="$style.yesNoButtons">
+                <button
+                  :class="[$style.yesNoButton, $style.yes, { [$style.selected]: answers[question.id] === 'yes' }]"
+                  @click="answers[question.id] = 'yes'"
+                  type="button"
+                  :aria-pressed="answers[question.id] === 'yes'"
+                >
+                  <i class="fas fa-check" :class="$style.yesNoButtonIcon"></i>
+                  <span :class="$style.yesNoButtonText">نعم</span>
+                  <div :class="$style.yesNoButtonBadge">
+                    <i class="fas fa-check"></i>
+                  </div>
+                </button>
+                <button
+                  :class="[$style.yesNoButton, $style.no, { [$style.selected]: answers[question.id] === 'no' }]"
+                  @click="answers[question.id] = 'no'"
+                  type="button"
+                  :aria-pressed="answers[question.id] === 'no'"
+                >
+                  <i class="fas fa-times" :class="$style.yesNoButtonIcon"></i>
+                  <span :class="$style.yesNoButtonText">لا</span>
+                  <div :class="$style.yesNoButtonBadge">
+                    <i class="fas fa-times"></i>
+                  </div>
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- Rating Scale -->
@@ -257,7 +278,7 @@
             </div>
             <div :class="$style.ratingScale">
               <button
-                v-for="rating in getRatingRange(question.options)"
+                v-for="rating in getRatingOptions(question.options)"
                 :key="rating"
                 :class="[$style.ratingButton, { [$style.selected]: answers[question.id] === rating }]"
                 @click="answers[question.id] = rating"
@@ -305,11 +326,18 @@
           <div v-if="currentQuestion.question_type === 'text'" :class="$style.inputContainer">
             <div :class="$style.inputWrapper">
               <input
-                type="text"
-                :class="$style.textInput"
+                :type="getInputConfig(currentQuestion.validation_type || 'none').type"
+                :pattern="getInputConfig(currentQuestion.validation_type || 'none').pattern"
+                :class="[$style.textInput, { [$style.inputError]: getValidationError(currentQuestion.id) }]"
                 v-model="answers[currentQuestion.id]"
-                placeholder="اكتب إجابتك هنا..."
+                @blur="handleInputBlur(currentQuestion)"
+                @input="clearValidationError(currentQuestion.id)"
+                :placeholder="getInputConfig(currentQuestion.validation_type || 'none').placeholder || 'اكتب إجابتك هنا...'"
               />
+            </div>
+            <div v-if="getValidationError(currentQuestion.id)" :class="$style.errorMessage">
+              <i class="fas fa-exclamation-circle"></i>
+              <span>{{ getValidationError(currentQuestion.id) }}</span>
             </div>
           </div>
 
@@ -488,6 +516,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from '@/hooks/useI18n'
 import { surveyService } from '@/services/surveyService'
 import { ThankYouModal } from '@/components/ThankYouModal'
+import { useInputValidation } from '@/composables/useInputValidation'
 import Swal from 'sweetalert2'
 import type { 
   AuthSurvey, 
@@ -498,6 +527,14 @@ import type {
 const route = useRoute()
 const router = useRouter()
 const { t, currentTheme, isRTL } = useI18n()
+const {
+  getInputConfig,
+  validateAnswer,
+  getValidationError,
+  setValidationError,
+  clearValidationError,
+  handleBackendValidationErrors
+} = useInputValidation()
 
 // State
 const survey = ref<AuthSurvey | null>(null)
@@ -692,6 +729,21 @@ const previousQuestion = () => {
   }
 }
 
+const handleInputBlur = (question: any) => {
+  const answer = answers.value[question.id]
+  const validationType = question.validation_type || 'none'
+  
+  if (validationType === 'none') {
+    return
+  }
+  
+  const result = validateAnswer(validationType, answer || '', question.is_required)
+  
+  if (!result.valid && result.error) {
+    setValidationError(question.id, result.error)
+  }
+}
+
 const submitSurvey = async () => {
   if (!canSubmit.value || isSubmitting.value) return
   
@@ -745,6 +797,19 @@ const submitSurvey = async () => {
     showThankYouModal.value = true
     
   } catch (err: any) {
+    // Handle backend validation errors
+    if (err.response?.data?.data?.validation_errors) {
+      handleBackendValidationErrors(err.response.data.data.validation_errors)
+      await Swal.fire({
+        title: 'خطأ في التحقق من صحة البيانات',
+        text: 'يرجى تصحيح الأخطاء في الاستطلاع والمحاولة مرة أخرى',
+        icon: 'error',
+        confirmButtonText: 'موافق',
+        confirmButtonColor: '#dc3545'
+      })
+      return
+    }
+    
     // Logging removed for production
     
     // Extract error message from response if available

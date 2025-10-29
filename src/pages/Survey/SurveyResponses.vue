@@ -1478,7 +1478,27 @@
       // Handle different question types
       switch (answer.question_type) {
         case 'rating':
-          const maxRating = answer.question_options ? answer.question_options.length : 5
+          // Determine max rating from question_options or default to 5
+          let maxRating = 5 // Default value
+          
+          if (answer.question_options && Array.isArray(answer.question_options) && answer.question_options.length > 0) {
+            // If we have options, get the maximum value
+            const numericOptions = answer.question_options
+              .map((opt: any) => Number(opt))
+              .filter((num: number) => !isNaN(num))
+            
+            if (numericOptions.length > 0) {
+              maxRating = Math.max(...numericOptions)
+            }
+          } else if (answer.answer_text) {
+            // If no options, try to infer from the answer value
+            const answerValue = Number(answer.answer_text)
+            if (!isNaN(answerValue) && answerValue > 0) {
+              // Assume standard scales: if answer is 1-5, max is 5; if 1-10, max is 10
+              maxRating = answerValue <= 5 ? 5 : 10
+            }
+          }
+          
           formattedAnswer = `${answer.answer_text}/${maxRating}`
           break
           
@@ -1562,8 +1582,27 @@
       if (!answer.answer_text) return t.value('survey.responses.noAnswer')
       
       if (answer.question_type === 'rating') {
-        // Use the question_options length to determine the scale, or default to 5
-        const maxRating = answer.question_options ? answer.question_options.length : 5
+        // Determine max rating from question_options or default to 5
+        let maxRating = 5 // Default value
+        
+        if (answer.question_options && Array.isArray(answer.question_options) && answer.question_options.length > 0) {
+          // If we have options, get the maximum value
+          const numericOptions = answer.question_options
+            .map((opt: any) => Number(opt))
+            .filter((num: number) => !isNaN(num))
+          
+          if (numericOptions.length > 0) {
+            maxRating = Math.max(...numericOptions)
+          }
+        } else if (answer.answer_text) {
+          // If no options, try to infer from the answer value
+          const answerValue = Number(answer.answer_text)
+          if (!isNaN(answerValue) && answerValue > 0) {
+            // Assume standard scales: if answer is 1-5, max is 5; if 1-10, max is 10
+            maxRating = answerValue <= 5 ? 5 : 10
+          }
+        }
+        
         return `${answer.answer_text}/${maxRating}`
       }
       

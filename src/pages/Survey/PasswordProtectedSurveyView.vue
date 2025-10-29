@@ -249,11 +249,18 @@
           <div v-if="question.question_type === 'text'" :class="$style.inputContainer">
             <div :class="$style.inputWrapper">
               <input
-                type="text"
-                :class="$style.textInput"
+                :type="getInputConfig(question.validation_type || 'none').type"
+                :pattern="getInputConfig(question.validation_type || 'none').pattern"
+                :class="[$style.textInput, { [$style.inputError]: getValidationError(question.id) }]"
                 v-model="answers[question.id]"
-                placeholder="اكتب إجابتك هنا..."
+                @blur="handleInputBlur(question)"
+                @input="clearValidationError(question.id)"
+                :placeholder="getInputConfig(question.validation_type || 'none').placeholder || 'اكتب إجابتك هنا...'"
               />
+            </div>
+            <div v-if="getValidationError(question.id)" :class="$style.errorMessage">
+              <i class="fas fa-exclamation-circle"></i>
+              <span>{{ getValidationError(question.id) }}</span>
             </div>
           </div>
 
@@ -462,12 +469,19 @@
             <div v-if="currentQuestion.question_type === 'text'" :class="$style.inputContainer">
               <div :class="$style.inputWrapper">
                 <input
-                  type="text"
+                  :type="getInputConfig(currentQuestion.validation_type || 'none').type"
+                  :pattern="getInputConfig(currentQuestion.validation_type || 'none').pattern"
+                  :class="[$style.textInput, { [$style.inputError]: getValidationError(currentQuestion.id) }]"
                   v-model="answers[currentQuestion.id]"
-                  :class="$style.textInput"
-                  placeholder="اكتب إجابتك هنا..."
+                  @blur="handleInputBlur(currentQuestion)"
+                  @input="clearValidationError(currentQuestion.id)"
+                  :placeholder="getInputConfig(currentQuestion.validation_type || 'none').placeholder || 'اكتب إجابتك هنا...'"
                 />
                 <i class="fas fa-pen" :class="$style.inputIcon"></i>
+              </div>
+              <div v-if="getValidationError(currentQuestion.id)" :class="$style.errorMessage">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>{{ getValidationError(currentQuestion.id) }}</span>
               </div>
             </div>
 
@@ -770,6 +784,7 @@ import { useRoute } from 'vue-router'
 import { useAppStore } from '../../stores/useAppStore'
 import { surveyService } from '../../services/surveyService'
 import { ThankYouModal } from '../../components/ThankYouModal'
+import { useInputValidation } from '../../composables/useInputValidation'
 import type { Survey, PasswordProtectedResponseSubmission } from '../../types/survey.types'
 import type { CountryCode } from '../../types/country.types'
 import countryCodesData from '../../data/countryCodes.json'
@@ -780,6 +795,16 @@ const route = useRoute()
 
 // Store
 const store = useAppStore()
+
+// Composables
+const {
+  getInputConfig,
+  validateAnswer,
+  getValidationError,
+  setValidationError,
+  clearValidationError,
+  handleBackendValidationErrors
+} = useInputValidation()
 
 // Computed
 const currentTheme = computed(() => store.currentTheme)
@@ -1170,6 +1195,21 @@ const validateCurrentQuestion = (): boolean => {
   return true
 }
 
+const handleInputBlur = (question: any) => {
+  const answer = answers.value[question.id]
+  const validationType = question.validation_type || 'none'
+  
+  if (validationType === 'none') {
+    return
+  }
+  
+  const result = validateAnswer(validationType, answer || '', question.is_required)
+  
+  if (!result.valid && result.error) {
+    setValidationError(question.id, result.error)
+  }
+}
+
 const validateContact = (): boolean => {
   if (isContactRestricted.value) return true // Already validated
   
@@ -1256,6 +1296,18 @@ const submitSurvey = async () => {
     showThankYouModal.value = true
     
   } catch (error: any) {
+    // Handle backend validation errors
+    if (error.response?.data?.data?.validation_errors) {
+      handleBackendValidationErrors(error.response.data.data.validation_errors)
+      await Swal.fire({
+        title: 'خطأ في التحقق من صحة البيانات',
+        text: 'يرجى تصحيح الأخطاء في الاستطلاع والمحاولة مرة أخرى',
+        icon: 'error',
+        confirmButtonText: 'موافق'
+      })
+      return
+    }
+
     let errorMessage = 'فشل في إرسال الاستطلاع'
     
     // Check for 403 Forbidden status
