@@ -1,7 +1,7 @@
 <template>
   <div :class="$style.surveyAnalytics" :data-theme="currentTheme" :dir="isRTL ? 'rtl' : 'ltr'">
     <!-- Analytics Header -->
-    <div :class="$style.analyticsHeader">
+    <!-- <div :class="$style.analyticsHeader">
       <div :class="$style.headerIcon">
         <i class="fas fa-chart-line"></i>
       </div>
@@ -15,7 +15,7 @@
           تحديث
         </button>
       </div>
-    </div>
+    </div> -->
 
     <!-- Date Filter Section -->
     <!-- <div :class="$style.filterSection">
@@ -61,6 +61,24 @@
               <h3 :class="$style.chartTitle">{{ isRTL ? 'خريطة الحرارة للردود' : 'Response Heatmap' }}</h3>
               <p :class="$style.chartSubtitle">{{ isRTL ? 'توزيع الردود حسب اليوم والساعة' : 'Response distribution by day and hour' }}</p>
             </div>
+                <div :class="$style.legendContainer">
+        <div :class="$style.legendContent">
+          <div :class="$style.legendScale">
+                        <span :class="$style.legendLabel">{{ isRTL ? 'مرتفع' : 'High' }}</span>
+
+            <div :class="$style.legendGradient">
+              <div
+                v-for="i in 10"
+                :key="`grad-${i}`"
+                :class="$style.gradientStep"
+                :style="{ background: getColorForIntensity((i - 1) / 9) }"
+              ></div>
+            </div>
+                        <span :class="$style.legendLabel">{{ isRTL ? 'منخفض' : 'Low' }}</span>
+          </div>
+       
+        </div>
+      </div>
           </div>
           <div :class="$style.chartContainer">
             <ResponseHeatmap
@@ -438,15 +456,48 @@ watch(() => props.analytics, (newVal) => {
     console.log('🔵 Survey ID from analytics:', newVal.data.survey.id)
   }
 }, { immediate: true })
+const getColorForIntensity = (intensity: number): string => {
+  const isDark = currentTheme.value === 'night'
+  
+  if (isDark) {
+    // Dark theme: Gold/Brown palette (lighter = more intense)
+    const colors = [
+      '#59400D', // Darkest (low intensity)
+      '#6D5217', // Darker gold
+      '#8B6A1E', // Dark gold
+      '#A17D23', // Brand gold
+      '#CFA135', // Medium-dark gold
+      '#DFB04A', // Medium gold
+      '#E5B960', // Medium-light gold
+      '#EBC47A', // Medium gold
+      '#F3D6A7', // Light gold
+      '#F5F7FA'  // Very light (high intensity)
+    ]
+    const index = Math.min(Math.floor(intensity * 10), 9)
+    return colors[index]
+  } else {
+    // Light theme: Gold/Brown palette (lighter = more intense)
+    const colors = [
+      '#59400D', // Darkest (low intensity)
+      '#6D5217', // Darker gold
+      '#8B6A1E', // Dark gold
+      '#A17D23', // Brand gold
+      '#CFA135', // Medium-dark gold
+      '#DFB04A', // Medium gold
+      '#E5B960', // Medium-light gold
+      '#EBC47A', // Medium gold
+      '#F3D6A7', // Light gold
+      '#F5F7FA'  // Very light (high intensity)
+    ]
+    const index = Math.min(Math.floor(intensity * 10), 9)
+    return colors[index]
+  }
+}
 </script>
 
 
 <style module>
-.surveyAnalytics {
-  padding: 24px;
-  max-width: auto;
-  margin: 0 auto;
-}
+
 
 /* Header Styles */
 .analyticsHeader {
@@ -588,9 +639,9 @@ watch(() => props.analytics, (newVal) => {
 }
 
 .chartCard {
-  background: var(--surface);
+  background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
   margin-bottom: 24px;
 }
 
@@ -642,17 +693,82 @@ watch(() => props.analytics, (newVal) => {
 
 .heatmapRow {
   margin-bottom: 24px;
+    border-radius:15px ;
+
+  background-color: white;
+}
+
+/* Legend */
+.legendContainer {
+  padding: 1.5rem;
+  /* background: var(--surface-variant); */
+  border-radius: 12px;
+  /* border: 1px solid var(--border); */
+}
+
+.heatmapWrapper[data-theme="night"] .legendContainer {
+  background: #0f1419;
+  border-color: #1a2332;
+}
+
+
+.legendTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.legendScale {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.legendLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #717784;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.legendGradient {
+  display: flex;
+  
+  gap: 2px;
+  /* border-radius: 6px; */
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.gradientStep {
+  width: 10px;
+  height: 10px;
+  transition: all 0.2s ease;
+}
+
+.gradientStep:hover {
+  transform: scaleY(1.3);
+}
+
+.legendStats {
+  display: flex;
+  gap: 2rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.legendStat {
+  font-weight: 600;
 }
 
 .fullWidthCard {
   width: 100%;
 }
 
-.chartsRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-}
+
 
 .chartCard.fullWidth {
   grid-column: 1 / -1;
@@ -890,7 +1006,7 @@ watch(() => props.analytics, (newVal) => {
 }
 
 /* Dark Theme */
-.surveyAnalytics[data-theme="dark"] {
+.surveyAnalytics[data-theme="night"] {
   --surface: #2d3748;
   --surface-variant: #4a5568;
   --ink: #f7fafc;
@@ -905,9 +1021,7 @@ watch(() => props.analytics, (newVal) => {
   flex-direction: row-reverse;
 }
 
-.surveyAnalytics[dir="rtl"] .chartHeader {
-  flex-direction: row-reverse;
-}
+
 
 .surveyAnalytics[dir="rtl"] .questionSummaryHeader {
   flex-direction: row-reverse;
