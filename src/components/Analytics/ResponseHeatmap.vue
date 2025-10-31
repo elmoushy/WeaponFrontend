@@ -18,7 +18,7 @@
     <!-- Heatmap Content -->
     <div v-else :class="$style.heatmapContainer">
       <!-- Stats Summary Bar -->
-      <div :class="$style.statsBar">
+      <!-- <div :class="$style.statsBar">
         <div :class="$style.statCard">
           <i class="fas fa-comments"></i>
           <div :class="$style.statContent">
@@ -40,7 +40,7 @@
             <span :class="$style.statLabel">{{ isRTL ? 'أنشط يوم' : 'Busiest Day' }}</span>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- Main Heatmap Grid -->
       <div :class="$style.gridContainer">
@@ -52,7 +52,7 @@
             :key="`hour-${hour}`"
             :class="$style.timeLabel"
           >
-            {{ formatHour(hour - 1) }}
+            {{ formatHourLabel(hour - 1) }}
           </div>
         </div>
 
@@ -89,27 +89,7 @@
       </div>
 
       <!-- Legend -->
-      <div :class="$style.legendContainer">
-        <div :class="$style.legendContent">
-          <span :class="$style.legendTitle">{{ isRTL ? 'كثافة الردود:' : 'Response Intensity:' }}</span>
-          <div :class="$style.legendScale">
-            <span :class="$style.legendLabel">{{ isRTL ? 'منخفض' : 'Low' }}</span>
-            <div :class="$style.legendGradient">
-              <div
-                v-for="i in 10"
-                :key="`grad-${i}`"
-                :class="$style.gradientStep"
-                :style="{ background: getColorForIntensity((i - 1) / 9) }"
-              ></div>
-            </div>
-            <span :class="$style.legendLabel">{{ isRTL ? 'مرتفع' : 'High' }}</span>
-          </div>
-          <div :class="$style.legendStats">
-            <span :class="$style.legendStat">{{ isRTL ? 'الحد الأدنى:' : 'Min:' }} {{ minValue }}</span>
-            <span :class="$style.legendStat">{{ isRTL ? 'الحد الأقصى:' : 'Max:' }} {{ maxValue }}</span>
-          </div>
-        </div>
-      </div>
+  
 
       <!-- Tooltip -->
       <Transition name="tooltip">
@@ -216,39 +196,72 @@ const formatHour = (hour: number): string => {
   return `${hour - 12} PM`
 }
 
+// Format hour label (only show specific hours: 0, 3, 6, 9, 12, 15, 18, 21)
+const formatHourLabel = (hour: number): string => {
+  const displayHours = [0, 3, 6, 9, 12, 15, 18, 21]
+  
+  if (!displayHours.includes(hour)) {
+    return ''
+  }
+  
+  if (isRTL.value) {
+    // Arabic format
+    if (hour === 0) return '12ص'
+    if (hour === 3) return '3ص'
+    if (hour === 6) return '6ص'
+    if (hour === 9) return '9ص'
+    if (hour === 12) return '12م'
+    if (hour === 15) return '3م'
+    if (hour === 18) return '6م'
+    if (hour === 21) return '9م'
+  } else {
+    // English format
+    if (hour === 0) return '12 AM'
+    if (hour === 3) return '3 AM'
+    if (hour === 6) return '6 AM'
+    if (hour === 9) return '9 AM'
+    if (hour === 12) return '12 PM'
+    if (hour === 15) return '3 PM'
+    if (hour === 18) return '6 PM'
+    if (hour === 21) return '9 PM'
+  }
+  
+  return ''
+}
+
 // Get color based on intensity (0-1 scale)
 const getColorForIntensity = (intensity: number): string => {
   const isDark = currentTheme.value === 'night'
   
   if (isDark) {
-    // Dark theme: Deep blues to bright cyan
+    // Dark theme: Gold/Brown palette (darker = more intense)
     const colors = [
-      '#0a1628', // Very dark blue
-      '#1a2942', // Dark blue
-      '#2a3f5f', // Medium dark blue
-      '#3a5a7c', // Medium blue
-      '#4a7599', // Medium light blue
-      '#5a90b6', // Light blue
-      '#6aabd3', // Bright blue
-      '#7ac6f0', // Cyan blue
-      '#8ad1ff', // Light cyan
-      '#9adcff'  // Bright cyan
+      '#F5F7FA', // Very light (low intensity)
+      '#F3D6A7', // Light gold
+      '#EBC47A', // Medium gold
+      '#E5B960', // Medium-light gold
+      '#DFB04A', // Medium gold
+      '#CFA135', // Medium-dark gold
+      '#A17D23', // Brand gold
+      '#8B6A1E', // Dark gold
+      '#6D5217', // Darker gold
+      '#59400D'  // Darkest (high intensity)
     ]
     const index = Math.min(Math.floor(intensity * 10), 9)
     return colors[index]
   } else {
-    // Light theme: Greens (GitHub-style)
+    // Light theme: Gold/Brown palette (darker = more intense)
     const colors = [
-      '#ebedf0', // Very light gray
-      '#c6e48b', // Light green
-      '#9bd171', // Medium light green
-      '#7bc96f', // Medium green
-      '#68b35c', // Medium green 2
-      '#49af5d', // Medium dark green
-      '#3a9b4e', // Dark green
-      '#2e7d32', // Darker green
-      '#1b5e20', // Very dark green
-      '#0d4715'  // Almost black green
+      '#F5F7FA', // Very light (low intensity)
+      '#F3D6A7', // Light gold
+      '#EBC47A', // Medium gold
+      '#E5B960', // Medium-light gold
+      '#DFB04A', // Medium gold
+      '#CFA135', // Medium-dark gold
+      '#A17D23', // Brand gold
+      '#8B6A1E', // Dark gold
+      '#6D5217', // Darker gold
+      '#59400D'  // Darkest (high intensity)
     ]
     const index = Math.min(Math.floor(intensity * 10), 9)
     return colors[index]
@@ -469,9 +482,9 @@ const hideTooltip = () => {
   flex-direction: column;
   gap: 0.5rem;
   padding: 1.5rem;
-  background: var(--surface-variant);
+  /* background: var(--surface-variant); */
   border-radius: 12px;
-  border: 1px solid var(--border);
+  /* border: 1px solid var(--border); */
   overflow-x: auto;
 }
 
@@ -599,77 +612,6 @@ const hideTooltip = () => {
   color: white;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   line-height: 1;
-}
-
-/* Legend */
-.legendContainer {
-  padding: 1.5rem;
-  background: var(--surface-variant);
-  border-radius: 12px;
-  border: 1px solid var(--border);
-}
-
-.heatmapWrapper[data-theme="night"] .legendContainer {
-  background: #0f1419;
-  border-color: #1a2332;
-}
-
-.legendContent {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: center;
-}
-
-.legendTitle {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--ink);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.legendScale {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.legendLabel {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.legendGradient {
-  display: flex;
-  gap: 2px;
-  border-radius: 6px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.gradientStep {
-  width: 24px;
-  height: 24px;
-  transition: all 0.2s ease;
-}
-
-.gradientStep:hover {
-  transform: scaleY(1.3);
-}
-
-.legendStats {
-  display: flex;
-  gap: 2rem;
-  font-size: 0.75rem;
-  color: var(--muted);
-}
-
-.legendStat {
-  font-weight: 600;
 }
 
 /* Tooltip */

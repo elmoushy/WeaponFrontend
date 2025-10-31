@@ -40,7 +40,7 @@
   --shadow-color: rgba(38, 38, 38, 0.1);
 }
 
-[data-theme="dark"] {
+[data-theme="night"] {
   --bg-primary: #231F20;
   --bg-secondary: #42403B;
   --bg-glass: rgba(66, 64, 59, 0.25);

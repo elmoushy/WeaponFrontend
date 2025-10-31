@@ -730,13 +730,13 @@ Beige/Tan Variants:
 }
 
 /* Dark Theme Support */
-[data-theme="dark"] .notificationsPage {
+[data-theme="night"] .notificationsPage {
   background: linear-gradient(135deg, 
     rgba(17, 24, 39, 0.95) 0%,
     rgba(31, 41, 55, 0.9) 100%);
 }
 
-[data-theme="dark"] .headerContent {
+[data-theme="night"] .headerContent {
   background: linear-gradient(135deg, 
     rgba(255, 255, 255, 0.1) 0%,
     rgba(255, 255, 255, 0.05) 100%);
@@ -746,14 +746,14 @@ Beige/Tan Variants:
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="dark"] .headerContent::before {
+[data-theme="night"] .headerContent::before {
   background: linear-gradient(135deg, 
     rgba(161, 125, 35, 0.15) 0%,
     rgba(183, 138, 65, 0.1) 50%,
     rgba(161, 125, 35, 0.08) 100%);
 }
 
-[data-theme="dark"] .pageTitle {
+[data-theme="night"] .pageTitle {
   background: linear-gradient(135deg, 
     #ffffff 0%, 
     #B78A41 50%, 
@@ -763,40 +763,40 @@ Beige/Tan Variants:
   background-clip: text;
 }
 
-[data-theme="dark"] .pageSubtitle {
+[data-theme="night"] .pageSubtitle {
   color: rgba(255, 255, 255, 0.8);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-[data-theme="dark"] .filterRow,
-[data-theme="dark"] .notificationCard,
-[data-theme="dark"] .searchInput,
-[data-theme="dark"] .filterSelect,
-[data-theme="dark"] .pagination {
+[data-theme="night"] .filterRow,
+[data-theme="night"] .notificationCard,
+[data-theme="night"] .searchInput,
+[data-theme="night"] .filterSelect,
+[data-theme="night"] .pagination {
   background: rgba(17, 24, 39, 0.8);
   border-color: rgba(107, 114, 128, 0.3);
 }
 
-[data-theme="dark"] .notificationTitle {
+[data-theme="night"] .notificationTitle {
   color: #f9fafb;
 }
 
-[data-theme="dark"] .notificationBody,
-[data-theme="dark"] .notificationType,
-[data-theme="dark"] .notificationTime,
-[data-theme="dark"] .paginationInfo {
+[data-theme="night"] .notificationBody,
+[data-theme="night"] .notificationType,
+[data-theme="night"] .notificationTime,
+[data-theme="night"] .paginationInfo {
   color: #d1d5db;
 }
 
-[data-theme="dark"] .actionBtn,
-[data-theme="dark"] .paginationBtn {
+[data-theme="night"] .actionBtn,
+[data-theme="night"] .paginationBtn {
   background: rgba(17, 24, 39, 0.8);
   border-color: rgba(107, 114, 128, 0.3);
   color: #d1d5db;
 }
 
-[data-theme="dark"] .actionBtn:hover,
-[data-theme="dark"] .paginationBtn:hover:not(:disabled) {
+[data-theme="night"] .actionBtn:hover,
+[data-theme="night"] .paginationBtn:hover:not(:disabled) {
   background: rgba(107, 114, 128, 0.2);
   border-color: rgba(107, 114, 128, 0.5);
 }

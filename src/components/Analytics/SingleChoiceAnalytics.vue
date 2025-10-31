@@ -633,7 +633,7 @@ const onOptionClick = (option: any, index: number) => {
 }
 
 /* Dark Theme */
-.singleChoiceAnalytics[data-theme="dark"] {
+.singleChoiceAnalytics[data-theme="night"] {
   --surface: #2d3748;
   --surface-variant: #4a5568;
   --ink: #f7fafc;

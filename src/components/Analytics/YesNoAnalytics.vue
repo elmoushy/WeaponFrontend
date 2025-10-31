@@ -855,7 +855,7 @@ const onSegmentClick = (segment: any) => {
 }
 
 /* Dark Theme */
-.yesNoAnalytics[data-theme="dark"] {
+.yesNoAnalytics[data-theme="night"] {
   --surface: #2d3748;
   --surface-variant: #4a5568;
   --ink: #f7fafc;

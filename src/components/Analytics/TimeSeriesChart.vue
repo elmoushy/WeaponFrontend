@@ -592,7 +592,7 @@ const onPointLeave = () => {
 }
 
 /* Dark theme */
-.timeSeriesChart[data-theme="dark"] {
+.timeSeriesChart[data-theme="night"] {
   --surface: #2d3748;
   --ink: #f7fafc;
   --muted: #a0aec0;

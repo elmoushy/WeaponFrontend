@@ -45,7 +45,7 @@ body {
 }
 
 /* Dark theme styles */
-[data-theme="dark"] body {
+[data-theme="night"] body {
   /* text-dark-muted */
   color: #A5A5A5;
   /* bg-dark-primary */
@@ -62,7 +62,7 @@ body {
   outline-color: #00FFC2; /* accent-neon */
 }
 
-[data-theme="dark"] *:focus {
+[data-theme="night"] *:focus {
   outline-color: #18F2A3; /* accent-emerald */
 }
 
@@ -71,33 +71,8 @@ body {
   outline: none;
 }
 
-/* Typography */
-h1, h2, h3, h4, h5, h6 {
-  /* text-night-high */
-  color: #E8EDF2;
-  font-weight: 600;
-  line-height: 1.2;
-}
 
-[data-theme="light"] h1, 
-[data-theme="light"] h2, 
-[data-theme="light"] h3, 
-[data-theme="light"] h4, 
-[data-theme="light"] h5, 
-[data-theme="light"] h6 {
-  /* text-light-high */
-  color: #0B0F10;
-}
 
-[data-theme="dark"] h1, 
-[data-theme="dark"] h2, 
-[data-theme="dark"] h3, 
-[data-theme="dark"] h4, 
-[data-theme="dark"] h5, 
-[data-theme="dark"] h6 {
-  /* text-dark-high */
-  color: #F4F4F4;
-}
 
 h1 {
   font-size: clamp(2rem, 5vw, 3rem);

@@ -150,7 +150,7 @@ const progressText = computed(() => {
 }
 
 /* Dark theme adjustments */
-[data-theme="dark"] .progressBar {
+[data-theme="night"] .progressBar {
   background: var(--color-surface-variant);
 }
 

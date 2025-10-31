@@ -1159,50 +1159,50 @@ Warm Beige: #D6CDBD (214, 205, 189)
 }
 
 /* Dark Theme */
-.modalContainer[data-theme="dark"] {
+.modalContainer[data-theme="night"] {
   background: rgba(30, 35, 48, 0.95);
   border-color: rgba(74, 144, 226, 0.2);
 }
 
-.modalContainer[data-theme="dark"] .modalHeader {
+.modalContainer[data-theme="night"] .modalHeader {
   background: linear-gradient(135deg, 
     rgba(74, 144, 226, 0.1) 0%,
     rgba(80, 200, 120, 0.05) 100%);
   border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
-.modalContainer[data-theme="dark"] .surveyInfo {
+.modalContainer[data-theme="night"] .surveyInfo {
   background: rgba(74, 144, 226, 0.1);
   border-color: rgba(74, 144, 226, 0.2);
 }
 
-.modalContainer[data-theme="dark"] .accessOption {
+.modalContainer[data-theme="night"] .accessOption {
   background: rgba(30, 35, 48, 0.5);
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-.modalContainer[data-theme="dark"] .accessOption:hover {
+.modalContainer[data-theme="night"] .accessOption:hover {
   background: rgba(74, 144, 226, 0.05);
 }
 
-.modalContainer[data-theme="dark"] .accessOption.selected {
+.modalContainer[data-theme="night"] .accessOption.selected {
   background: rgba(74, 144, 226, 0.1);
 }
 
-.modalContainer[data-theme="dark"] .linkInput,
-.modalContainer[data-theme="dark"] .searchInput,
-.modalContainer[data-theme="dark"] .emailInput {
+.modalContainer[data-theme="night"] .linkInput,
+.modalContainer[data-theme="night"] .searchInput,
+.modalContainer[data-theme="night"] .emailInput {
   background: rgba(30, 35, 48, 0.8);
   border-color: rgba(74, 144, 226, 0.2);
   color: var(--text-color);
 }
 
-.modalContainer[data-theme="dark"] .searchResults {
+.modalContainer[data-theme="night"] .searchResults {
   background: rgba(30, 35, 48, 0.95);
   border-color: rgba(74, 144, 226, 0.2);
 }
 
-.modalContainer[data-theme="dark"] .modalFooter {
+.modalContainer[data-theme="night"] .modalFooter {
   background: rgba(20, 25, 38, 0.8);
   border-top-color: rgba(255, 255, 255, 0.1);
 }
@@ -2713,61 +2713,61 @@ Warm Beige: #D6CDBD (214, 205, 189)
 }
 
 /* Dark theme styles for phone input */
-.modalContainer[data-theme="dark"] .countryButton {
+.modalContainer[data-theme="night"] .countryButton {
   background: rgba(20, 25, 38, 0.8);
   border-color: rgba(74, 144, 226, 0.2);
   color: #F5F3EE;
 }
 
-.modalContainer[data-theme="dark"] .countryButton:hover {
+.modalContainer[data-theme="night"] .countryButton:hover {
   border-color: #4A90E2;
   background: rgba(20, 25, 38, 0.95);
 }
 
-.modalContainer[data-theme="dark"] .countryCode {
+.modalContainer[data-theme="night"] .countryCode {
   color: #4A90E2;
 }
 
-.modalContainer[data-theme="dark"] .dropdownIcon {
+.modalContainer[data-theme="night"] .dropdownIcon {
   color: #4A90E2;
 }
 
-.modalContainer[data-theme="dark"] .countryDropdown {
+.modalContainer[data-theme="night"] .countryDropdown {
   background: rgba(20, 25, 38, 0.95);
   border-color: rgba(74, 144, 226, 0.2);
 }
 
-.modalContainer[data-theme="dark"] .searchInput {
+.modalContainer[data-theme="night"] .searchInput {
   background: rgba(20, 25, 38, 0.5);
   border-color: rgba(74, 144, 226, 0.2);
   color: #F5F3EE;
 }
 
-.modalContainer[data-theme="dark"] .searchInput:focus {
+.modalContainer[data-theme="night"] .searchInput:focus {
   border-color: #4A90E2;
   background: rgba(20, 25, 38, 0.8);
 }
 
-.modalContainer[data-theme="dark"] .countryOption {
+.modalContainer[data-theme="night"] .countryOption {
   color: #F5F3EE;
 }
 
-.modalContainer[data-theme="dark"] .countryOption:hover {
+.modalContainer[data-theme="night"] .countryOption:hover {
   background: rgba(74, 144, 226, 0.1);
 }
 
-.modalContainer[data-theme="dark"] .countryOption.selected {
+.modalContainer[data-theme="night"] .countryOption.selected {
   background: rgba(74, 144, 226, 0.15);
   color: #4A90E2;
 }
 
-.modalContainer[data-theme="dark"] .phoneInput {
+.modalContainer[data-theme="night"] .phoneInput {
   background: rgba(20, 25, 38, 0.8);
   border-color: rgba(74, 144, 226, 0.2);
   color: #F5F3EE;
 }
 
-.modalContainer[data-theme="dark"] .phoneInput:focus {
+.modalContainer[data-theme="night"] .phoneInput:focus {
   border-color: #4A90E2;
   background: rgba(20, 25, 38, 0.95);
 }

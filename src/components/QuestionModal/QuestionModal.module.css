@@ -772,44 +772,44 @@ Warm Beige: #D6CDBD (214, 205, 189)
 }
 
 /* Dark Theme */
-.modalContainer[data-theme="dark"] {
+.modalContainer[data-theme="night"] {
   background: rgba(30, 35, 48, 0.95);
   border-color: rgba(74, 144, 226, 0.2);
 }
 
-.modalContainer[data-theme="dark"] .modalHeader {
+.modalContainer[data-theme="night"] .modalHeader {
   background: linear-gradient(135deg, 
     rgba(74, 144, 226, 0.08) 0%,
     rgba(80, 200, 120, 0.04) 100%);
   border-color: rgba(74, 144, 226, 0.15);
 }
 
-.modalContainer[data-theme="dark"] .modalFooter {
+.modalContainer[data-theme="night"] .modalFooter {
   background: rgba(20, 25, 38, 0.8);
   border-color: rgba(74, 144, 226, 0.15);
 }
 
-.modalContainer[data-theme="dark"] .formInput,
-.modalContainer[data-theme="dark"] .formSelect {
+.modalContainer[data-theme="night"] .formInput,
+.modalContainer[data-theme="night"] .formSelect {
   background: rgba(30, 35, 48, 0.8);
   border-color: rgba(74, 144, 226, 0.2);
   color: var(--text-color);
 }
 
-.modalContainer[data-theme="dark"] .optionsSection,
-.modalContainer[data-theme="dark"] .settingItem,
-.modalContainer[data-theme="dark"] .ratingSettings,
-.modalContainer[data-theme="dark"] .previewSection {
+.modalContainer[data-theme="night"] .optionsSection,
+.modalContainer[data-theme="night"] .settingItem,
+.modalContainer[data-theme="night"] .ratingSettings,
+.modalContainer[data-theme="night"] .previewSection {
   background: rgba(74, 144, 226, 0.08);
   border-color: rgba(74, 144, 226, 0.15);
 }
 
-.modalContainer[data-theme="dark"] .questionTypeOption {
+.modalContainer[data-theme="night"] .questionTypeOption {
   background: rgba(30, 35, 48, 0.5);
   border-color: rgba(74, 144, 226, 0.15);
 }
 
-.modalContainer[data-theme="dark"] .optionItem {
+.modalContainer[data-theme="night"] .optionItem {
   background: rgba(30, 35, 48, 0.6);
   border-color: rgba(74, 144, 226, 0.15);
 }

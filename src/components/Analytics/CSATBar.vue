@@ -336,7 +336,7 @@ const scoreColor = computed(() => {
 }
 
 /* Dark theme */
-.csatBar[data-theme="dark"] {
+.csatBar[data-theme="night"] {
   --surface: #2d3748;
   --surface-variant: #4a5568;
   --ink: #f7fafc;
@@ -344,11 +344,11 @@ const scoreColor = computed(() => {
   --border: #4a5568;
 }
 
-.csatBar[data-theme="dark"] .legendItem {
+.csatBar[data-theme="night"] .legendItem {
   background: #1a202c;
 }
 
-.csatBar[data-theme="dark"] .stackedBar {
+.csatBar[data-theme="night"] .stackedBar {
   background: #1a202c;
 }
 

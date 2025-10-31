@@ -796,7 +796,7 @@ const onRatingClick = (rating: any, index: number) => {
 }
 
 /* Dark Theme */
-.ratingAnalytics[data-theme="dark"] {
+.ratingAnalytics[data-theme="night"] {
   --surface: #2d3748;
   --surface-variant: #4a5568;
   --ink: #f7fafc;

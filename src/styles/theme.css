@@ -1,7 +1,7 @@
 /* Enhanced Theme Variables with Glassmorphism Support */
 :root {
   /* Light Theme */
-  --bg-light-primary: linear-gradient(135deg, #F5F3EE 0%, #FEFEFE 100%);
+  --bg-light-primary: #F5F7FA;
   --bg-light-surface: rgba(255, 255, 255, 0.9);
   --brand-green: #997A51;
   --brand-gold: #CFA365;
@@ -63,13 +63,15 @@
     border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    
 }
 
 /* Enhanced Body styling with theme support */
 body {
-  background: var(--bg-primary);
+  background-color: #F5F7FA !important;
+  /* background: var(--bg-primary); */
   color: var(--text-muted);
-  font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: 'Cairo', 'Noto Kufi Arabic', sans-serif;
   overflow-x: hidden;
   font-weight: 400;
   line-height: 1.6;
@@ -78,7 +80,7 @@ body {
 /* Enhanced Arabic font support */
 html[lang="ar"] body,
 body {
-  font-family: 'Tajawal', 'Cairo', 'Amiri', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: 'Cairo', 'Noto Kufi Arabic', sans-serif;
   direction: rtl;
   text-align: right;
 }

@@ -169,7 +169,7 @@
  * Dark Theme Overrides
  * ============================ */
 
-[data-theme="dark"] {
+[data-theme="night"] {
   --color-surface: #1a1a1a;
   --color-surface-variant: #2d2d2d;
   --color-surface-accent: #404040;

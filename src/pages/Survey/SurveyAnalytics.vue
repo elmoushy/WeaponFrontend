@@ -1,5 +1,4 @@
 <template>
-  <h1>safa</h1>
   <div :class="$style.analyticsContainer" :data-theme="currentTheme" :dir="isRTL ? 'rtl' : 'ltr'">
     <!-- Header Section with Survey Info -->
     <section :class="$style.headerSection">

@@ -36,11 +36,9 @@ type NavGroup = { id: string; items: NavItem[] }
 
 const navGroups = computed<NavGroup[]>(() => {
   const primary: NavItem[] = [
-    { name: 'manage-surveys', path: '/surveys', icon: 'fas fa-table-cells-large', label: 'إدارة الاستطلاعات' },
-    { name: 'manage-users', path: '/control', icon: 'fas fa-user-group', label: 'إدارة المستخدمين', requiresRole: 'admin' },
-    { name: 'surveys-overview', icon: 'fas fa-list-check', label: 'الاستطلاعات' },
-    { name: 'placeholder-a', icon: 'far fa-clock', label: 'نص تجريبي' },
-    { name: 'placeholder-b', icon: 'far fa-clock', label: 'نص تجريبي' },
+        { name: 'surveys-overview',path:"/surveys", icon: 'fas fa-list-check', label: 'الاستطلاعات' },
+    { name: 'manage-surveys', path: '/control/surveys', icon: 'fas fa-table-cells-large', label: 'إدارة الاستطلاعات' },
+    { name: 'manage-users', path: '/control/users', icon: 'fas fa-user-group', label: 'إدارة المستخدمين', requiresRole: 'admin' },
   ]
 
   const support: NavItem[] = [
@@ -80,11 +78,11 @@ const emitLogout = () => emit('logout')
 const toggleTheme = () => emit('toggleTheme')
 
 /** UI states for control buttons */
-const isNight = computed(() => props.theme === 'night')           // active style for "الوضع الليلي"
-const isCollapsed = computed(() => internalCollapsed.value)       // active style for "مصغّر"
+const isNight = computed(() => props.theme === 'night')
+const isCollapsed = computed(() => internalCollapsed.value)
 
 /** Dynamic logo: swap when collapsed */
-const logoSrc = computed(() => isCollapsed.value ? '/public/logo.png' : '/public/logo.png')
+const logoSrc = computed(() => isCollapsed.value ? '/logomobile.png' : '/public/logo.png')
 </script>
 
 <template>
@@ -97,12 +95,12 @@ const logoSrc = computed(() => isCollapsed.value ? '/public/logo.png' : '/public
       <div :class="$style.emblemWrap">
         <img :src="logoSrc" :class="$style.emblem" alt="شعار المجلس الأعلى للأمن الوطني" />
       </div>
-  
+    
     </div>
 
     <nav :class="$style.navArea">
       <template v-for="(group, index) in navGroups" :key="group.id">
-        <section :class="$style.groupCard">
+        <section :class="$style.menuCard">
           <button
             v-for="item in group.items"
             :key="item.name"
@@ -118,33 +116,36 @@ const logoSrc = computed(() => isCollapsed.value ? '/public/logo.png' : '/public
             <span v-if="item.badge !== undefined" :class="$style.badge">{{ item.badge }}</span>
           </button>
         </section>
-        <div v-if="index < navGroups.length - 1" :class="$style.sectionDivider"></div>
       </template>
     </nav>
 
-    <div :class="$style.controls">
-      <button
-        type="button"
-        :class="[$style.controlBtn, isCollapsed ? $style.controlActive : '']"
-        @click="internalCollapsed = !internalCollapsed"
-      >
-        <span :class="$style.controlIcon"><i class="far fa-square"></i></span>
-        <span :class="$style.controlText">{{ isCollapsed ? 'موسّع' : 'مصغّر' }}</span>
-      </button>
+    <div :class="$style.controlsArea">
+      <section :class="$style.controlsGroup">
+        <button
+          type="button"
+          :class="[$style.controlItem, isCollapsed ? $style.controlActive : '']"
+          @click="internalCollapsed = !internalCollapsed"
+        >
+          <span :class="$style.controlIcon"><i class="far fa-square"></i></span>
+          <span :class="$style.controlLabel">{{ isCollapsed ? 'موسّع' : 'مصغّر' }}</span>
+        </button>
 
-      <button
-        type="button"
-        :class="[$style.controlBtn, isNight ? $style.controlActive : '']"
-        @click="toggleTheme"
-      >
-        <span :class="$style.controlIcon"><i class="far fa-moon"></i></span>
-        <span :class="$style.controlText">الوضع الليلي</span>
-      </button>
+        <button
+          type="button"
+          :class="[$style.controlItem, isNight ? $style.controlActive : '']"
+          @click="toggleTheme"
+        >
+          <span :class="$style.controlIcon"><i class="far fa-moon"></i></span>
+          <span :class="$style.controlLabel">الوضع الليلي</span>
+        </button>
+      </section>
 
-      <button type="button" :class="$style.logoutBtn" @click="emitLogout">
-        <span :class="$style.logoutIcon"><i class="fas fa-arrow-left-long"></i></span>
-        <span :class="$style.logoutText">تسجيل الخروج</span>
-      </button>
+      <section :class="$style.logoutGroup">
+        <button type="button" :class="$style.logoutItem" @click="emitLogout">
+          <span :class="$style.logoutIcon"><i class="fas fa-arrow-left-long"></i></span>
+          <span :class="$style.logoutLabel">تسجيل الخروج</span>
+        </button>
+      </section>
     </div>
   </aside>
 </template>
@@ -152,12 +153,13 @@ const logoSrc = computed(() => isCollapsed.value ? '/public/logo.png' : '/public
 <style module>
 :root {
   --sb-width: 320px;
-  --sb-width-collapsed: 92px;
+  --sb-width-collapsed: 94px;
 }
 
 .sidebar{
   position: fixed;
-  /* inset: 0 auto 0 0; */
+  inset-block: 0;
+  inset-inline-start: 0;
   inline-size: var(--sb-width);
   block-size: 100vh;
   background:#ffffff;
@@ -165,62 +167,162 @@ const logoSrc = computed(() => isCollapsed.value ? '/public/logo.png' : '/public
   /* box-shadow:0 12px 34px rgba(15,23,42,.08); */
   display:flex;
   flex-direction:column;
-  gap:12px;
-  padding-block:18px;
+  gap:10px;
+  padding:10px 25px;
   transition:inline-size .25s ease, background .25s ease, border-color .25s ease;
-  z-index: 999;
   direction: rtl;
+  z-index: 999;
 }
 .night{
   background:#181a1f;
-  border-inline-end-color:rgba(255,255,255,.08);
-  box-shadow:0 18px 40px rgba(8,8,12,.45);
 }
 .collapsed{ inline-size: var(--sb-width-collapsed); }
 
+/* =========================================================
+   ACTIVE LINK — DAY THEME
+   ========================================================= */
 
+/* Active row */
+.item.active,
+.item[aria-current="page"],
+.item.router-link-active {
+  background: #B78A41;           /* gold fill */
+  color: #fff;                    /* text */
+}
+
+/* Icon inside an active row */
+.item.active .itemIcon,
+.item[aria-current="page"] .itemIcon,
+.item.router-link-active .itemIcon {
+  color: #fff;
+}
+
+/* Hover/focus on an active row (keep it “active”, just elevate) */
+.item.active:hover,
+.item.active:focus-visible,
+.item[aria-current="page"]:hover,
+.item[aria-current="page"]:focus-visible,
+.item.router-link-active:hover,
+.item.router-link-active:focus-visible {
+  background: linear-gradient(135deg, #B78A41, #A17D23);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(183,138,65,.28);
+}
+
+/* =========================================================
+   ACTIVE LINK — NIGHT THEME
+   ========================================================= */
+
+/* Subtle gold-tinted fill for dark */
+.night .item.active,
+.night .item[aria-current="page"],
+.night .item.router-link-active {
+  background: linear-gradient(135deg, rgba(161,125,35,.28), rgba(183,138,65,.20));
+  color: #F8FAFC;
+}
+
+/* Icon stays bright on dark */
+.night .item.active .itemIcon,
+.night .item[aria-current="page"] .itemIcon,
+.night .item.router-link-active .itemIcon {
+  color: #fff;
+}
+
+/* Hover/focus on an active row in night */
+.night .item.active:hover,
+.night .item.active:focus-visible,
+.night .item[aria-current="page"]:hover,
+.night .item[aria-current="page"]:focus-visible,
+.night .item.router-link-active:hover,
+.night .item.router-link-active:focus-visible {
+  background: linear-gradient(135deg, rgba(161,125,35,.34), rgba(183,138,65,.26));
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(183,138,65,.32);
+}
+
+/* =========================================================
+   COLLAPSED RAIL — keep the disc golden & lift on hover
+   ========================================================= */
+
+/* In collapsed mode we color only the disc (you already do this) */
+.collapsed .item.active { background: transparent; }
+
+/* Give the active disc a tiny lift on hover/focus */
+.collapsed .item.active:hover .itemIcon,
+.collapsed .item.active:focus-visible .itemIcon {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(161,125,35,.40);
+}
+
+/* Night + collapsed: slightly brighter lift */
+.night.collapsed .item.active:hover .itemIcon,
+.night.collapsed .item.active:focus-visible .itemIcon {
+  filter: brightness(1.05);
+  box-shadow: 0 14px 26px rgba(183,138,65,.45);
+}
+
+/* =========================================================
+   ACCESSIBILITY NUDGE
+   ========================================================= */
+.item:focus-visible {
+  outline: 2px solid rgba(183,138,65,.6);
+  outline-offset: 2px;
+  border-radius: 16px;
+}
 
 .emblem{
+    padding:0 5px;
   object-fit:contain;
   transition: transform .25s ease, inline-size .25s ease, block-size .25s ease;
 }
-
+.headerText{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  color:#0f172a;
+  font-weight:700;
+  font-size:14px;
+  line-height:1.35;
+}
+.headerTitle{ letter-spacing:-.015em; }
+.headerSubtitle{
+  font-size:11px;
+  letter-spacing:.24em;
+  font-weight:600;
+  color:#64748b;
+}
 .night .headerText{ color:#f8fafc; }
 .night .headerSubtitle{ color:rgba(248,250,252,.65); }
-.collapsed .headerText{ display:none; }
-.collapsed .emblemWrap{
-  inline-size:70px;
-  block-size:70px;
-  border-radius:22px;
-}
-.collapsed .emblem{
-  inline-size:48px;
-  block-size:48px;
-  transform:scale(.96);
-}
+
+
 
 .navArea{
+    padding-top: 20px;
   flex:1;
-  overflow:auto;
-  padding-inline:10px;
   display:flex;
   flex-direction:column;
-  gap:8px;
+  gap:20px;
+  overflow:visible;
 }
-.groupCard{
+.menuCard{
   background:#F5F7FA;
-  border-radius:26px;
-  padding:5px 5px;
+  border-radius:28px;
+  padding:5px 10px;
   display:flex;
   flex-direction:column;
-  gap:8px;
-  /* box-shadow: inset 0 0 0 1px rgba(148,163,184,.12); */
+  gap:5px;
 }
-.night .groupCard{
-  background:rgba(245,246,255,.05);
-  box-shadow: inset 0 0 0 1px rgba(248,250,252,.08);
+.night .menuCard{
+  background:rgba(248,250,252,.04);
+  /* box-shadow: inset 0 0 0 1px rgba(248,250,252,.08); */
 }
-
+.sectionDivider{
+  height:1px;
+  background:rgba(148,163,184,.32);
+  margin-inline:8px;
+}
 
 .item{
   border:none;
@@ -228,41 +330,44 @@ const logoSrc = computed(() => isCollapsed.value ? '/public/logo.png' : '/public
   display:flex;
   align-items:center;
   justify-content:flex-start;
-  gap:12px;
+  gap:10px;
   inline-size:100%;
-  padding:12px 14px;
-  border-radius:18px;
-  font-weight:700;
-  font-size:15px;
-  color:#111827;
+  padding:5px 12px;
+  border-radius:20px;
+  font-weight:600;
+  font-size:16px;
+  color:#0f172a;
   cursor:pointer;
   transition: background .2s ease, color .2s ease, transform .2s ease;
 }
 .item:hover{
-  background:rgba(255,255,255,.8);
+  background:rgba(255,255,255,.95);
   transform:translateY(-1px);
+  color: #B78A41;
+  /* box-shadow:0 6px 18px rgba(15,23,42,.12); */
 }
 .night .item{
   color:#e2e8f0;
 }
 .night .item:hover{
   background:rgba(255,255,255,.08);
+  box-shadow:none;
 }
 .itemIcon{
-  inline-size:36px;
-  block-size:36px;
+  /* inline-size:40px; */
+  block-size:40px;
   border-radius:14px;
-  background:#ffffff;
+  /* background:#ffffff; */
   display:grid;
   place-items:center;
   color:#b78a41;
-  box-shadow:0 10px 20px rgba(183,138,65,.25);
+  /* box-shadow:0/ 12px 24px rgba(183,138,65,.25); */
   flex-shrink:0;
 }
 .night .itemIcon{
-  background:rgba(24,26,31,.92);
-  color:#facc15;
+  color:#A17D23;
 }
+
 .itemText{
   flex:1;
   white-space:nowrap;
@@ -280,147 +385,442 @@ const logoSrc = computed(() => isCollapsed.value ? '/public/logo.png' : '/public
   box-shadow:0 6px 16px rgba(161,125,35,.35);
 }
 .active{
-  background:#faf0dc;
-  color:#b78a41;
-  box-shadow: inset 0 0 0 1px rgba(183,138,65,.28), 0 10px 24px rgba(183,138,65,.22);
+  background:#B78A41;
+  color:white;
 }
 .active .itemIcon{
-  background:linear-gradient(135deg,#B78A41,#A17D23);
-  color:#ffffff;
-  box-shadow:0 12px 24px rgba(183,138,65,.35);
+  color:white;
 }
 
-.controls{
-  padding:0 18px 24px;
+.controlsArea{
+  margin-top:auto;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.controlsGroup{
   display:flex;
   flex-direction:column;
   gap:12px;
 }
-.controlBtn{
+.controlItem{
   border:none;
   background:#f4f6fb;
   border-radius:999px;
-  padding:12px 20px;
+  padding:5px 20px;
   display:flex;
+    font-weight:600;
+
   align-items:center;
-  justify-content:flex-start;
-  gap:12px;
-  font-weight:700;
-  color:#111827;
+  justify-content:space-between;
+  gap:6px;
+    font-size:16px;
+  color:#0f172a;
   cursor:pointer;
-  transition: background .2s ease, box-shadow .2s ease, color .2s ease;
+  transition: background .2s ease, transform .2s ease,  color .2s ease;
 }
-.controlBtn:hover{
+.controlItem:hover{
   background:#ffffff;
-  box-shadow:0 14px 28px rgba(148,163,184,.22);
+  transform:translateY(-1px);
+  /* box-shadow:0 12px 24px rgba(15,23,42,.12); */
 }
-.night .controlBtn{
+.controlIcon{
+  /* inline-size:44px; */
+  block-size:40px;
+  border-radius:50%;
+  /* background:#ffffff; */
+  display:grid;
+  place-items:center;
+  color:#0f172a;
+  /* box-shadow:0 12px 24px rgba(148,163,184,.18); */
+  flex-shrink:0;
+}
+.controlLabel{
+  flex:1;
+  text-align:right;
+}
+.controlActive{
+  background:#ebeef6;
+  color:#b78a41;
+  /* box-shadow:0 16px 28px rgba(183,138,65,.22); */
+}
+.controlActive .controlIcon{
+  /* background:linear-gradient(135deg,#B78A41,#A17D23); */
+  color:#ffffff;
+  /* box-shadow:0 18px 32px rgba(183,138,65,.28); */
+}
+.night .controlItem{
   background:rgba(248,250,252,.08);
   color:#e2e8f0;
 }
-.controlIcon{
-  inline-size:34px;
-  block-size:34px;
-  border-radius:50%;
-  background:#ffffff;
-  display:grid;
-  place-items:center;
-  color:#111827;
-  box-shadow:0 10px 20px rgba(15,23,42,.15);
-  flex-shrink:0;
+.night .controlItem:hover{
+  background:rgba(248,250,252,.15);
+  /* box-shadow:0 18px 32px rgba(8,8,12,.45); */
 }
 .night .controlIcon{
-  background:rgba(24,26,31,.92);
-  color:#facc15;
+  /* background:rgba(24,26,31,.92); */
+  color:#A17D23;
+  /* box-shadow:0 20px 36px rgba(8,8,12,.55); */
 }
-.controlActive{
-  box-shadow: inset 0 0 0 2px rgba(183,138,65,.35), 0 12px 28px rgba(183,138,65,.18);
-  color:#b78a41;
+.night .controlActive{
+  background:rgba(183,138,65,.28);
+  color:#A17D23;
 }
-.controlActive .controlIcon{
-  background:linear-gradient(135deg,#B78A41,#A17D23);
+.night .controlActive .controlIcon{
+  /* background:linear-gradient(135deg,#B78A41,#A17D23); */
   color:#ffffff;
-  box-shadow:0 16px 28px rgba(183,138,65,.28);
-}
-.controlText{
-  flex:1;
-  text-align:right;
 }
 
-.logoutBtn{
+.logoutGroup{
+  display:flex;
+      font-size:16px;
+
+}
+.logoutItem{
+  width:100%;
+    font-weight:600;
+
   border:none;
   background:#efe5d8;
   border-radius:999px;
-  padding:12px 20px;
+  padding:5px 22px;
   display:flex;
   align-items:center;
-  justify-content:flex-start;
-  gap:12px;
-  font-weight:800;
-  color:#7a5a1e;
+  justify-content:space-between;
+  gap:6px;
+  color:#704d16;
   cursor:pointer;
-  transition: transform .2s ease, box-shadow .2s ease;
+  transition: transform .2s ease,
 }
-.logoutBtn:hover{
+.logoutItem:hover{
   transform:translateY(-1px);
-  box-shadow:0 18px 32px rgba(183,138,65,.25);
-}
-.night .logoutBtn{
-  background:rgba(183,138,65,.2);
-  color:#f8fafc;
+  /* box-shadow:0 18px 32px rgba(183,138,65,.24); */
 }
 .logoutIcon{
-  inline-size:36px;
-  block-size:36px;
+  /* inline-size:48px;  */
+  block-size:48px;
   border-radius:50%;
-  background:linear-gradient(135deg,#B78A41,#A17D23);
   display:grid;
   place-items:center;
-  color:#ffffff;
-  box-shadow:0 20px 30px rgba(183,138,65,.35);
+  color:#b78a41;
   flex-shrink:0;
 }
-.logoutText{
+.logoutLabel{
   flex:1;
   text-align:right;
 }
+.night .logoutItem{
+  background:rgba(183,138,65,.18);
+  color:#f8fafc;
+}
+.night .logoutIcon{
+  /* background:rgba(30,32,37,.94); */
+  /* border-color:rgba(46,38,30,.92); */
+  color:white;
+  /* box-shadow:0 22px 38px rgba(8,8,12,.55); */
+}
 
-.collapsed .navArea{
-  padding-inline:12px;
-}
-.collapsed .groupCard{
-  padding:14px 10px;
-  align-items:center;
-  gap:10px;
-}
-.collapsed .item{
-  flex-direction:column;
-  align-items:center;
-  gap:8px;
-  padding:12px;
-}
+
 .collapsed .itemText,
 .collapsed .badge,
-.collapsed .controlText,
-.collapsed .logoutText{
+.collapsed .controlLabel,
+.collapsed .logoutLabel{
   display:none;
 }
+
+
+
+.night .active{
+  /* subtle gold-tinted fill that works on dark bg */
+  background: linear-gradient(135deg, rgba(161,125,35,.28), rgba(183,138,65,.20));
+  color: #f8fafc;                    /* readable text on dark */
+  /* box-shadow: 0 12px 24px rgba(183,138,65,.22); */
+}
+
+/* Active icon inside the active item in night */
+.night .active .itemIcon{
+  color:#ffffff;                     /* make the icon pop */
+}
+
+/* Optional: nicer hover on an active item in night */
+.night .menuCard .active:hover{
+  background: linear-gradient(135deg, rgba(161,125,35,.32), rgba(183,138,65,.26));
+}
+
+/* If you use badges inside active rows in night */
+.night .active .badge{
+  background: linear-gradient(135deg,#B78A41,#A17D23);
+  color:#0b0e13;                     /* or #111 if you prefer darker text */
+}
+/* here cola */
+
+/* ================================
+   COLLAPSED RAIL — centered circles
+   ================================ */
+
+/* Narrower padding so the rail feels slim */
+
+/* The rail "pill" */
+.collapsed .menuCard{
+  background:#F5F7FA;                /* keep the soft card bg */
+  border-radius: 28px;
+  padding: 10px 10px;
+  align-items: center;
+  gap: 10px;
+}
+.night.collapsed .menuCard{
+  background: rgba(248,250,252,.06);
+}
+
+
+
+/* Items become stacked circles with only icon visible */
+.collapsed .item{
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 0;
+  gap: 2px;
+  background: transparent;
+}
+.collapsed .item:hover{ background: none; transform: none; }
+
+/* Icon = circle; default outline feel */
 .collapsed .itemIcon{
-  inline-size:46px;
-  block-size:46px;
-  border-radius:16px;
+  inline-size: 50px;
+  block-size: 50px;
+  border-radius: 999px;
+  display: grid; place-items: center;
+  background: #EFF4FA;               /* subtle disc */
+  color: #0f172a;
+  box-shadow: none;
 }
-.collapsed .controls{
-  padding-inline:12px;
+.night.collapsed .itemIcon{
+  background: rgba(255,255,255,.06);
+  color: #e2e8f0;
 }
-.collapsed .controlBtn,
-.collapsed .logoutBtn{
-  justify-content:center;
-  padding-block:14px;
+
+/* Hover glow on the disc */
+.collapsed .item:hover .itemIcon{
+  background: #ffffff;
 }
-.collapsed .controlIcon,
+.night.collapsed .item:hover .itemIcon{
+  background: rgba(255,255,255,.12);
+}
+
+/* ACTIVE = filled gold circle with white icon */
+.collapsed .active .itemIcon{
+  background: #A17D23;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(161,125,35,.35);
+}
+
+/* Night active (a bit brighter) */
+.night.collapsed .active .itemIcon{
+  background: linear-gradient(135deg,#B78A41,#A17D23);
+  color:#fff;
+  box-shadow: 0 10px 22px rgba(183,138,65,.40);
+}
+
+/* Hide texts/badges in rail (you already had this but keep for safety) */
+.collapsed .itemText,
+.collapsed .badge { display: none; }
+
+/* ================================
+   Controls at bottom = round discs
+   ================================ */
+
+/* .collapsed .controlsArea{ gap: 16px; } */
+
+.collapsed .controlItem{
+  justify-content: center;
+   inline-size: 50px;
+  block-size: 50px;
+  border-radius: 999px;
+  background: #EFF4FA;
+  transition: background .2s ease;
+}
+.night.collapsed .controlItem{
+    
+  background: rgba(248,250,252,.06);
+}
+
+.collapsed .controlItem:hover{
+  background: #ffffff;
+}
+.night.collapsed .controlItem:hover{
+  background: rgba(255,255,255,.12);
+}
+
+/* The single icon inside */
+.collapsed .controlIcon{
+  inline-size: 36px;
+  block-size: 36px;
+  
+  border-radius: 999px; /* purely for centering symmetry */
+  color: #0f172a;
+}
+.night.collapsed .controlIcon{ color: #e2e8f0; }
+
+/* Active control = filled gold disc */
+.collapsed .controlActive{
+  background: #A17D23;
+}
+.collapsed .controlActive .controlIcon{
+  color: #ffffff;
+}
+.night.collapsed .controlActive{
+  background: linear-gradient(135deg,#B78A41,#A17D23);
+}
+
+/* Logout button = big pale disc with gold inner circle */
+.collapsed .logoutItem{
+  inline-size: 50px;
+  block-size: 50px;
+  border-radius: 999px;
+  padding: 0;
+  background: #EFEAE4;
+  justify-content: center;
+}
+.night.collapsed .logoutItem{
+  background: rgba(183,138,65,.18);
+}
 .collapsed .logoutIcon{
-  inline-size:44px;
-  block-size:44px;
+  inline-size: 50px;
+  block-size: 50px;
+  border-radius: 999px;
+  display: grid; place-items: center;
+  background: #B78A41;              /* gold inner circle */
+  color: #fff;
 }
+
+/* ================================
+   Brand area (optional polish)
+   ================================ */
+/* ---------- Collapsed rail spacing controls ---------- */
+:root{
+  --rail-pad: 8px;          /* top/bottom padding inside the rail */
+  --rail-gap: 14px;         /* vertical gap between discs */
+  --rail-disc: 50px;        /* disc size (icons) */
+  --rail-ctrl: 50px;        /* control & logout disc size */
+}
+
+.collapsed.sidebar{
+  padding-inline: 12px;                 /* slimmer side padding */
+  padding-block: var(--rail-pad);
+}
+
+/* Rail “pill” cards */
+.collapsed .menuCard{
+  /* padding-block: var(--rail-pad); */
+  /* padding-inline: 0;                     remove extra side padding */
+  gap: var(--rail-gap);
+  align-items: center;
+}
+
+.night.collapsed .sectionDivider{ background: rgba(148,163,184,.16); }
+
+
+.collapsed .item:hover{ background: none; transform: none; }
+
+/* Disc size + look */
+.collapsed .itemIcon{
+  inline-size: var(--rail-disc);
+  block-size: var(--rail-disc);
+  border-radius: 999px;
+  display: grid; place-items: center;
+  background: #EFF4FA;
+  color: #0f172a;
+  box-shadow: none;
+}
+.night.collapsed .itemIcon{
+  background: rgba(255,255,255,.06);
+  color: #e2e8f0;
+}
+
+/* Active disc */
+.collapsed .active .itemIcon{
+  background: #A17D23;
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(161,125,35,.35);
+}
+.night.collapsed .active .itemIcon{
+  background: linear-gradient(135deg,#B78A41,#A17D23);
+}
+
+/* Hide labels/badges in rail */
+.collapsed .itemText,
+.collapsed .badge{ display:none; }
+
+/* ---------- Bottom controls spacing ---------- */
+
+
+
+/* one place to tune sizes */
+:root{
+  --rail-disc: 50px;   /* menu disc */
+  --rail-ctrl: 50px;   /* control/logout disc */
+}
+
+/* Center the whole rail */
+.collapsed.sidebar{
+  padding-inline: 12px;
+}
+
+/* Make each card a centered vertical stack with a fixed track width */
+
+
+/* Controls group centered to the same track */
+.collapsed .controlsArea{
+  width: var(--rail-track);
+  margin-inline: auto;
+  align-items: center;
+  gap: 14px;
+}
+
+/* each control is just a disc, centered */
+.collapsed .controlItem{
+  width: var(--rail-ctrl);
+  height: var(--rail-ctrl);
+  padding: 0;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  margin-inline: auto;         /* <- keep on the same line */
+}
+
+/* inner icon size + zero line-height prevents vertical drift */
+.collapsed .controlIcon,
+.collapsed .itemIcon i,
+.collapsed .itemIcon svg{
+  width: 28px;
+  height: 28px;
+  line-height: 0;
+  display: grid;
+  place-items: center;
+}
+
+/* logout button matches the same rail center */
+.collapsed .logoutItem{
+  width: var(--rail-ctrl);
+  height: var(--rail-ctrl);
+  padding: 0;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  margin-inline: auto;
+}
+.collapsed .logoutIcon{
+  width: var(--rail-ctrl);
+  height: var(--rail-ctrl);
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+}
+
+/* (Optional) make the active/hover styles you already have apply to the disc only */
+/* your existing colors for day/night will continue to work */
+
+
+
 </style>

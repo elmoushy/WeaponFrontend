@@ -1,22 +1,12 @@
 <template>
-  <div :class="$style.userManagement" :data-theme="currentTheme" :dir="isRTL ? 'rtl' : 'ltr'">
+  <div :class="$style.userManagement" :data-theme="currentTheme" >
     <!-- Header Section -->
     <header :class="$style.header">
       <div :class="$style.headerContent">
-        <!-- <div :class="$style.headerInfo">
-          <h1 :class="$style.title">{{ t('userManagement.title') }}</h1>
-          <p :class="$style.subtitle">{{ t('userManagement.subtitle') }}</p>
-        </div> -->
+    
         
         <div :class="$style.headerActions" v-if="isCurrentUserAdmin">
-          <button 
-            :class="[$style.actionBtn, $style.primaryBtn]" 
-            @click="openUserModal('create')"
-          >
-            <i class="fas fa-user-plus"></i>
-            {{ t('userManagement.users.addUser') }}
-          </button>
-          
+              
           <button 
             :class="[$style.actionBtn, $style.primaryBtn]" 
             @click="openGroupModal('create')"
@@ -24,15 +14,26 @@
             <i class="fas fa-users"></i>
             {{ t('userManagement.groups.addGroup') }}
           </button>
-          
           <button 
+            :class="[$style.actionBtn, $style.primaryBtn]" 
+            @click="openUserModal('create')"
+          >
+            <i class="fas fa-user-plus"></i>
+            {{ t('userManagement.users.addUser') }}
+          </button>
+      
+          
+          <!-- <button 
             :class="[$style.actionBtn, $style.refreshBtn]" 
             @click="refreshData"
             :disabled="loading"
           >
             <i class="fas fa-sync-alt" :class="{ [$style.spinning]: loading }"></i>
             {{ t('userManagement.buttons.refresh') }}
-          </button>
+          </button> -->
+        </div>
+            <div :class="$style.headerInfo">
+          <h1 :class="$style.title">{{ t('userManagement.title') }}</h1>
         </div>
       </div>
     </header>
@@ -41,67 +42,58 @@
     <section :class="$style.statsSection" v-if="dashboardStats">
       <div :class="$style.statsGrid">
         <div :class="[$style.statCard, $style.totalUsers]">
-          <div :class="$style.statIcon">
-            <i class="fas fa-users"></i>
-          </div>
+     
           <div :class="$style.statContent">
-            <div :class="$style.statNumber">{{ dashboardStats.total_users }}</div>
             <div :class="$style.statLabel">{{ t('userManagement.dashboard.totalUsers') }}</div>
+            <div :class="$style.statNumber">{{ dashboardStats.total_users }} <span :class="$style.statspan">مستخدم</span></div>
           </div>
         </div>
         
         <div :class="[$style.statCard, $style.activeUsers]">
-          <div :class="$style.statIcon">
-            <i class="fas fa-user-check"></i>
-          </div>
+         
           <div :class="$style.statContent">
-            <div :class="$style.statNumber">{{ dashboardStats.active_users }}</div>
             <div :class="$style.statLabel">{{ t('userManagement.dashboard.activeUsers') }}</div>
+            <div :class="$style.statNumber">{{ dashboardStats.active_users }} <span :class="$style.statspan">مستخدم نشط</span></div>
           </div>
         </div>
         
         <div :class="[$style.statCard, $style.totalGroups]">
-          <div :class="$style.statIcon">
-            <i class="fas fa-layer-group"></i>
-          </div>
+       
           <div :class="$style.statContent">
-            <div :class="$style.statNumber">{{ dashboardStats.total_groups }}</div>
             <div :class="$style.statLabel">{{ t('userManagement.dashboard.totalGroups') }}</div>
+            <div :class="$style.statNumber">{{ dashboardStats.total_groups }} <span :class="$style.statspan">مجموعة</span></div>
           </div>
         </div>
         
         <div :class="[$style.statCard, $style.admins]">
-          <div :class="$style.statIcon">
-            <i class="fas fa-user-shield"></i>
-          </div>
+        
           <div :class="$style.statContent">
-            <div :class="$style.statNumber">{{ dashboardStats.admins }}</div>
-            <div :class="$style.statLabel">{{ t('userManagement.dashboard.admins') }}</div>
+            <div :class="$style.statLabel">{{ t('userManagement.dashboard.admins') }}  </div>
+            <div :class="$style.statNumber">{{ dashboardStats.admins }} <span :class="$style.statspan">مدير</span></div>
           </div>
         </div>
       </div>
     </section>
-
-    <!-- Main Content Tabs -->
-    <main :class="$style.mainContent">
-      <div :class="$style.tabsContainer">
-        <div :class="$style.tabsHeader">
+  <div :class="$style.tabsHeader">
           <button 
-            :class="[$style.tabBtn, { [$style.active]: activeTab === 'users' }]"
+            :class="[$style.tabBtn, activeTab === 'users' ? $style.tabBtnActive : '']"
             @click="setActiveTab('users')"
           >
-            <i class="fas fa-users"></i>
             {{ t('userManagement.users.title') }}
           </button>
           
           <button 
-            :class="[$style.tabBtn, { [$style.active]: activeTab === 'groups' }]"
+            :class="[$style.tabBtn, activeTab === 'groups' ? $style.tabBtnActive : '']"
             @click="setActiveTab('groups')"
           >
-            <i class="fas fa-layer-group"></i>
             {{ t('userManagement.groups.title') }}
           </button>
         </div>
+        
+    <!-- Main Content Tabs -->
+    <main :class="$style.mainContent">
+      <div :class="$style.tabsContainer">
+      
 
         <!-- Tab Content -->
         <div :class="$style.tabContent">
@@ -208,12 +200,12 @@
     />
 
     <!-- Loading Overlay -->
-    <div v-if="loading" :class="$style.loadingOverlay">
+    <!-- <div v-if="loading" :class="$style.loadingOverlay">
       <div :class="$style.loadingSpinner">
         <i class="fas fa-spinner fa-spin"></i>
         <p>{{ t('common.loading') }}...</p>
       </div>
-    </div>
+    </div> -->
 
     <!-- Error Message -->
     <div v-if="error" :class="$style.errorMessage">

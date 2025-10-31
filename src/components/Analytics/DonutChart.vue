@@ -538,7 +538,7 @@ const onLegendClick = (item: any, index: number) => {
 }
 
 /* Dark theme */
-.donutChart[data-theme="dark"] {
+.donutChart[data-theme="night"] {
   --surface: #2d3748;
   --surface-variant: #4a5568;
   --ink: #f7fafc;
@@ -547,11 +547,11 @@ const onLegendClick = (item: any, index: number) => {
   --brand: #a17d23;
 }
 
-.donutChart[data-theme="dark"] .legendItem {
+.donutChart[data-theme="night"] .legendItem {
   background: #1a202c;
 }
 
-.donutChart[data-theme="dark"] .tooltip {
+.donutChart[data-theme="night"] .tooltip {
   background: #1a202c;
   border-color: #2d3748;
 }

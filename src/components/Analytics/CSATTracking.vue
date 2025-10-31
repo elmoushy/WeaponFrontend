@@ -14,31 +14,38 @@
       <!-- Current Score Card (for single data point) -->
       <div v-if="isSingleDataPoint" :class="$style.singlePointView">
         <div :class="$style.currentScoreCard">
-          <div :class="$style.scoreHeader">
-            <div :class="$style.scoreIcon">
+          <!-- <div :class="$style.scoreHeader">
+          
+          </div>
+           -->
+          <div :class="$style.scoreDisplay">
+              <div :class="$style.scoreIcon">
               <i :class="getScoreIconClass(latestScore)" :style="{ color: getScoreColor(latestScore) }"></i>
             </div>
             <div :class="$style.scoreInfo">
               <div :class="$style.scoreTitle">{{ isRTL ? 'درجة رضا العملاء' : 'Customer Satisfaction Score' }}</div>
               <div :class="$style.scorePeriod">{{ formatPeriodLabel(csatData[0].period) }}</div>
             </div>
-          </div>
-          
-          <div :class="$style.scoreDisplay">
-            <div :class="$style.bigScore" :style="{ color: getScoreColor(latestScore) }">
-              {{ latestScore }}%
-            </div>
             <div :class="$style.scoreBreakdown">
               <div :class="$style.breakdownItem" style="--item-color: #4CAF50">
-                <i class="fas fa-smile"></i>
+               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 8C0 3.58172 3.58172 0 8 0C12.4183 0 16 3.58172 16 8C16 12.4183 12.4183 16 8 16C3.58172 16 0 12.4183 0 8Z" fill="#00A350"/>
+</svg>
+
                 <span>{{ csatData[0].satisfied }} {{ isRTL ? 'راضٍ' : 'Satisfied' }}</span>
               </div>
               <div :class="$style.breakdownItem" style="--item-color: #FFC107">
-                <i class="fas fa-meh"></i>
+             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 8C0 3.58172 3.58172 0 8 0C12.4183 0 16 3.58172 16 8C16 12.4183 12.4183 16 8 16C3.58172 16 0 12.4183 0 8Z" fill="#FFC043"/>
+</svg>
+
                 <span>{{ csatData[0].neutral }} {{ isRTL ? 'محايد' : 'Neutral' }}</span>
               </div>
               <div :class="$style.breakdownItem" style="--item-color: #F44336">
-                <i class="fas fa-frown"></i>
+               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 8C0 3.58172 3.58172 0 8 0C12.4183 0 16 3.58172 16 8C16 12.4183 12.4183 16 8 16C3.58172 16 0 12.4183 0 8Z" fill="#D44333"/>
+</svg>
+
                 <span>{{ csatData[0].dissatisfied }} {{ isRTL ? 'غير راضٍ' : 'Dissatisfied' }}</span>
               </div>
             </div>
@@ -62,10 +69,10 @@
               :title="`${isRTL ? 'غير راضٍ' : 'Dissatisfied'}: ${csatData[0].dissatisfied} (${getPercentage(csatData[0].dissatisfied, csatData[0].total).toFixed(1)}%)`"
             ></div>
           </div>
-          
+<!--           
           <div :class="$style.totalResponsesInfo">
             {{ isRTL ? 'إجمالي الردود:' : 'Total Responses:' }} <strong>{{ csatData[0].total }}</strong>
-          </div>
+          </div> -->
         </div>
       </div>
 
@@ -615,10 +622,10 @@ const getScoreIconClass = (score: number) => {
 }
 
 .currentScoreCard {
-  background: var(--surface-variant);
+  /* background: var(--surface-variant); */
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); */
 }
 
 .csatTrackingContainer[data-theme="night"] .currentScoreCard {
@@ -686,15 +693,15 @@ const getScoreIconClass = (score: number) => {
 
 .scoreBreakdown {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-direction: row;
+  gap: 20px;
 }
 
 .breakdownItem {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 15px;
+  gap: 5px;
+  font-size: 13px;
   color: var(--item-color, #666);
   font-weight: 500;
 }

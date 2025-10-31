@@ -1086,10 +1086,12 @@
       "regularUsers": "المستخدمون العاديون",
       "recentActivity": "النشاط الأخير"
     },
-    "users": {
-      "title": "المستخدمون",
-      "addUser": "إضافة مستخدم",
-      "inviteUser": "دعوة مستخدم",
+  "users": {
+    "title": "المستخدمون",
+    "addUser": "إضافة مستخدم",
+    "headerTitle": "المستخدمون",
+    "headerSubtitle": "افحص كل المستخدمين وأضفهم وعدّل عليهم بسهولة من مكان واحد.",
+    "inviteUser": "دعوة مستخدم",
       "searchUsers": "البحث عن المستخدمين...",
       "noUsersFound": "لا توجد مستخدمون",
       "selectedUsers": "المستخدمون المحددون",
@@ -1126,10 +1128,12 @@
         "bulkDelete": "حذف جماعي"
       }
     },
-    "groups": {
-      "title": "المجموعات",
-      "addGroup": "إضافة مجموعة",
-      "searchGroups": "البحث عن المجموعات...",
+  "groups": {
+    "title": "المجموعات",
+    "addGroup": "إضافة مجموعة",
+    "headerTitle": "المجموعات",
+    "headerSubtitle": "رتب فرقك وخصص الأعضاء وتابع نشاط كل مجموعة بسهولة من مكان واحد.",
+    "searchGroups": "البحث عن المجموعات...",
       "noGroupsFound": "لا توجد مجموعات",
       "selectedGroups": "المجموعات المحددة",
       "columns": {

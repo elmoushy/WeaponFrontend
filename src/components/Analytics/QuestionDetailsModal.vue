@@ -1031,7 +1031,7 @@ const getInsightIcon = (type: string) => {
 }
 
 /* Dark Theme */
-.modalContainer[data-theme="dark"] {
+.modalContainer[data-theme="night"] {
   --surface: #2d3748;
   --surface-variant: #4a5568;
   --ink: #f7fafc;

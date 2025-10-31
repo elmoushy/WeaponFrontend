@@ -1305,14 +1305,18 @@
   "userManagement": {
     "title": "User Management",
     "subtitle": "Manage users and groups in your organization",
-    "users": {
-      "title": "Users",
-      "addUser": "Add User"
-    },
-    "groups": {
-      "title": "Groups",
-      "addGroup": "Add Group"
-    },
+  "users": {
+    "title": "Users",
+    "addUser": "Add User",
+    "headerTitle": "Users",
+    "headerSubtitle": "Review every user, add new members, and edit their permissions with ease."
+  },
+  "groups": {
+    "title": "Groups",
+    "addGroup": "Add Group",
+    "headerTitle": "Groups",
+    "headerSubtitle": "Organise teams, assign members, and track group activity in one place."
+  },
     "buttons": {
       "refresh": "Refresh",
       "save": "Save",

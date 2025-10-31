@@ -214,7 +214,7 @@ const trendIcon = computed(() => {
 }
 
 /* Dark theme */
-.kpiCard[data-theme="dark"] {
+.kpiCard[data-theme="night"] {
   --surface: #2d3748;
   --surface-variant: #4a5568;
   --ink: #f7fafc;

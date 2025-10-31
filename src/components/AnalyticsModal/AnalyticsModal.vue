@@ -422,34 +422,34 @@ const t = computed(() => store.t)
 }
 
 /* Dark Theme */
-.modalContainer[data-theme="dark"] {
+.modalContainer[data-theme="night"] {
   background: rgba(30, 35, 48, 0.95);
   border-color: rgba(74, 144, 226, 0.2);
 }
 
-.modalContainer[data-theme="dark"] .modalHeader {
+.modalContainer[data-theme="night"] .modalHeader {
   background: linear-gradient(135deg, 
     rgba(74, 144, 226, 0.08) 0%,
     rgba(80, 200, 120, 0.04) 100%);
   border-color: rgba(74, 144, 226, 0.15);
 }
 
-.modalContainer[data-theme="dark"] .statCard {
+.modalContainer[data-theme="night"] .statCard {
   background: rgba(30, 35, 48, 0.8);
   border-color: rgba(74, 144, 226, 0.15);
 }
 
-.modalContainer[data-theme="dark"] .activityCard {
+.modalContainer[data-theme="night"] .activityCard {
   background: rgba(74, 144, 226, 0.08);
   border-color: rgba(74, 144, 226, 0.15);
 }
 
-.modalContainer[data-theme="dark"] .topSurveysList {
+.modalContainer[data-theme="night"] .topSurveysList {
   background: rgba(74, 144, 226, 0.05);
   border-color: rgba(74, 144, 226, 0.15);
 }
 
-.modalContainer[data-theme="dark"] .topSurveyItem {
+.modalContainer[data-theme="night"] .topSurveyItem {
   border-color: rgba(74, 144, 226, 0.15);
 }
 

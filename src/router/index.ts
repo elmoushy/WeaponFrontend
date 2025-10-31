@@ -12,6 +12,7 @@ declare module "vue-router" {
     requiresAuth?: boolean;
     requiresGuest?: boolean;
     requiresAdmin?: boolean;
+    hideNavigation?: boolean;
   }
 }
 
@@ -102,6 +103,7 @@ const routes: RouteRecordRaw[] = [
     meta: {
       title: "Take Survey - WPC | WeaponpowerCloud App",
       requiresAuth: true,
+      hideNavigation: true,
     },
   },
 

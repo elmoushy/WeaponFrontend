@@ -1102,7 +1102,7 @@ const onResponseClick = (response: any, index: number) => {
 }
 
 /* Dark Theme */
-.textAnalytics[data-theme="dark"] {
+.textAnalytics[data-theme="night"] {
   --surface: #2d3748;
   --surface-variant: #4a5568;
   --ink: #f7fafc;

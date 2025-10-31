@@ -447,7 +447,7 @@ const onBarLeave = () => {
 }
 
 /* Dark theme */
-.horizontalBarChart[data-theme="dark"] {
+.horizontalBarChart[data-theme="night"] {
   --surface: #2d3748;
   --surface-variant: #4a5568;
   --ink: #f7fafc;

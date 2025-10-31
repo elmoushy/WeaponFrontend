@@ -1,105 +1,117 @@
 <template>
   <header :class="$style.header" :data-theme="currentTheme">
     <nav :class="$style.nav">
-      <!-- Logo Section -->
-      <!-- <div :class="$style.logo">
-        <img src="/News-Logo.png" alt="WPC Logo" :class="$style.logoIcon" />
-      </div> -->
+    
 
-      <!-- Navigation Links -->
-      <div :class="$style.navLinks">
-        <router-link 
-          v-for="link in navigationLinks" 
-          :key="link.name"
-          :to="link.path" 
-          :class="[$style.navLink, { [$style.active]: route.path === link.path }]"
-          :title="link.title"
-        >
-          <i :class="link.icon"></i>
-          <span>{{ t(link.label) }}</span>
-        </router-link>
+      <div :class="$style.greetingBlock">
+        <h1 :class="$style.greetingTitle">{{ greetingHeading }}</h1>
+        <span :class="$style.greetingDate">{{ todayFormatted }}</span>
       </div>
+        <div :class="$style.leftCluster">
+     
 
-      <!-- Right Section -->
-      <div :class="$style.rightSection">
-        <!-- Notifications -->
-        <div :class="$style.notifications" @click.stop="toggleNotifications" data-dropdown>
-          <div :class="$style.bellContainer">
-            <i class="fas fa-bell" :class="{ [$style.wsConnected]: wsConnected, [$style.wsDisconnected]: !wsConnected }"></i>
-            <span v-if="notificationCount > 0" :class="$style.badge">{{ notificationCount }}</span>
-            
-            <!-- New WebSocket Notification Indicator -->
-            <div v-if="hasNewWebSocketNotification" :class="$style.newNotificationIndicator" title="New notification received">
-              <i class="fas fa-circle"></i>
+        <div :class="$style.iconButtons">
+          <div :class="$style.iconButtonWrap">
+            <button
+              type="button"
+              :class="$style.iconButton"
+              @click.stop="toggleNotifications"
+              data-dropdown
+            >
+              <i class="fas fa-bell" :class="{ [$style.wsConnected]: wsConnected, [$style.wsDisconnected]: !wsConnected }"></i>
+              <span v-if="notificationCount > 0" :class="$style.badge">{{ notificationCount }}</span>
+              <span v-if="hasNewWebSocketNotification" :class="$style.dotIndicator"></span>
+            </button>
+
+            <div v-if="wsConnecting" :class="$style.wsStatus" title="Connecting to notification service...">
+              <i class="fas fa-spinner fa-spin"></i>
             </div>
-          </div>
-          
-          <!-- WebSocket Connection Indicator -->
-          <div v-if="wsConnecting" :class="$style.wsStatus" title="Connecting to notification service...">
-            <i class="fas fa-spinner fa-spin"></i>
-          </div>
-          <div v-else-if="wsConnectionError" :class="$style.wsError" :title="`Connection error: ${wsConnectionError}`">
-            <i class="fas fa-exclamation-triangle"></i>
-          </div>
-          
-          <!-- Notifications Dropdown -->
-          <div v-if="showNotifications" :class="$style.dropdown" data-dropdown @click.stop>
-            <div :class="$style.dropdownHeader">
-              <h3>{{ t('notifications.title') }}</h3>
-              <button @click="markAllAsRead" :class="$style.markAllRead" :disabled="isMarkingAllRead">
-                <i v-if="isMarkingAllRead" class="fas fa-spinner fa-spin"></i>
-                {{ t('notifications.markAllRead') }}
-              </button>
+            <div v-else-if="wsConnectionError" :class="$style.wsError" :title="`Connection error: ${wsConnectionError}`">
+              <i class="fas fa-exclamation-triangle"></i>
             </div>
-            <div :class="$style.notificationsList">
-              <div v-if="!hasLoadedNotifications && !isLoadingNotifications" :class="$style.noNotifications">
-                <i class="fas fa-bell"></i>
-                <p>{{ currentLanguage === 'ar' ? 'انقر لتحميل الإشعارات' : 'Click to load notifications' }}</p>
+
+            <div v-if="showNotifications" :class="$style.dropdown" data-dropdown @click.stop>
+              <div :class="$style.dropdownHeader">
+                <h3>{{ t('notifications.title') }}</h3>
+                <button @click="markAllAsRead" :class="$style.markAllRead" :disabled="isMarkingAllRead">
+                  <i v-if="isMarkingAllRead" class="fas fa-spinner fa-spin"></i>
+                  {{ t('notifications.markAllRead') }}
+                </button>
               </div>
-              <div v-else-if="notifications.length === 0 && !isLoadingNotifications" :class="$style.noNotifications">
-                <i class="fas fa-bell-slash"></i>
-                <p>{{ t('notifications.noNotifications') }}</p>
-                <span>{{ t('notifications.noNotificationsDesc') }}</span>
-              </div>
-              <div v-if="isLoadingNotifications" :class="$style.loadingNotifications">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>{{ currentLanguage === 'ar' ? 'جاري التحميل...' : 'Loading...' }}</p>
-              </div>
-              <div 
-                v-for="notification in notifications" 
-                :key="notification.id"
-                :class="[$style.notificationItem, { [$style.unread]: !notification.is_read }]"
-                @click="handleNotificationClick(notification)"
-              >
-                <i :class="getNotificationIcon(notification.notification_type)" :style="{ color: getPriorityColor(notification.priority) }"></i>
-                <div :class="$style.notificationContent">
-                  <p :class="$style.notificationTitle">{{ notification.title_localized }}</p>
-                  <p :class="$style.notificationBody">{{ notification.body_localized }}</p>
-                  <span :class="$style.notificationTime">{{ formatTime(notification.created_at) }}</span>
+              <div :class="$style.notificationsList">
+                <div v-if="!hasLoadedNotifications && !isLoadingNotifications" :class="$style.noNotifications">
+                  <i class="fas fa-bell"></i>
+                  <p>{{ currentLanguage === 'ar' ? 'انقر لتحميل الإشعارات' : 'Click to load notifications' }}</p>
                 </div>
-                <div v-if="!notification.is_read" :class="$style.unreadDot"></div>
+                <div v-else-if="notifications.length === 0 && !isLoadingNotifications" :class="$style.noNotifications">
+                  <i class="fas fa-bell-slash"></i>
+                  <p>{{ t('notifications.noNotifications') }}</p>
+                  <span>{{ t('notifications.noNotificationsDesc') }}</span>
+                </div>
+                <div v-if="isLoadingNotifications" :class="$style.loadingNotifications">
+                  <i class="fas fa-spinner fa-spin"></i>
+                  <p>{{ currentLanguage === 'ar' ? 'جاري التحميل...' : 'Loading...' }}</p>
+                </div>
+                <div
+                  v-for="notification in notifications"
+                  :key="notification.id"
+                  :class="[$style.notificationItem, { [$style.unread]: !notification.is_read }]"
+                  @click="handleNotificationClick(notification)"
+                >
+                  <i :class="getNotificationIcon(notification.notification_type)" :style="{ color: getPriorityColor(notification.priority) }"></i>
+                  <div :class="$style.notificationContent">
+                    <p :class="$style.notificationTitle">{{ notification.title_localized }}</p>
+                    <p :class="$style.notificationBody">{{ notification.body_localized }}</p>
+                    <span :class="$style.notificationTime">{{ formatTime(notification.created_at) }}</span>
+                  </div>
+                  <div v-if="!notification.is_read" :class="$style.unreadDot"></div>
+                </div>
+              </div>
+              <div v-if="notifications.length > 0" :class="$style.notificationFooter">
+                <router-link to="/notifications" @click="closeAllDropdowns" :class="$style.viewAllLink">
+                  {{ t('notifications.viewAll') }}
+                </router-link>
               </div>
             </div>
-            <div v-if="notifications.length > 0" :class="$style.notificationFooter">
-              <router-link to="/notifications" @click="closeAllDropdowns" :class="$style.viewAllLink">
-                {{ t('notifications.viewAll') }}
-              </router-link>
-            </div>
           </div>
-        </div>
 
-        <!-- User Info -->
-        <div :class="$style.userInfo" @click.stop="toggleUserMenu" data-dropdown>
-          <div :class="$style.userAvatar">
+          <button type="button" :class="$style.iconButton">
+            <i class="fas fa-search"></i>
+          </button>
+
+          <button
+            :class="$style.mobileToggle"
+            @click.stop="toggleMobileMenu"
+            :aria-expanded="showMobileMenu"
+            aria-label="Toggle mobile menu"
+            data-dropdown
+          >
+            <i :class="showMobileMenu ? 'fas fa-times' : 'fas fa-bars'"></i>
+          </button>
+        </div>
+           <div
+          :class="$style.profileCard"
+          @click.stop="toggleUserMenu"
+          role="button"
+          tabindex="0"
+          data-dropdown
+          @keydown.enter.prevent="toggleUserMenu"
+          @keydown.space.prevent="toggleUserMenu"
+        >
+         <span :class="$style.profileAvatar">
             <img v-if="userDisplayName" :src="generateAvatarUrl(userEmail)" :alt="userDisplayName" />
             <i v-else class="fas fa-user"></i>
-          </div>
-          <span :class="$style.username">{{ userDisplayName || 'Guest' }}</span>
-          <i class="fas fa-chevron-down" :class="{ [$style.rotated]: showUserMenu }"></i>
-          
-          <!-- User Dropdown -->
+          </span>
+      
+          <span :class="$style.profileInfo">
+            <span :class="$style.profileName">{{ userDisplayName || 'زائر' }}</span>
+            <span :class="$style.profileEmail">{{ userEmail || 'company@mail.com' }}</span>
+          </span>
+             <span :class="$style.profileArrow">
+            <i class="fas fa-chevron-down" :class="{ [$style.rotated]: showUserMenu }"></i>
+          </span>
+
           <div v-if="showUserMenu" :class="$style.userDropdown" data-dropdown @click.stop>
-            <!-- User Profile Header -->
             <div :class="$style.userDropdownHeader">
               <div :class="$style.userProfileSection">
                 <div :class="$style.userAvatarLarge">
@@ -112,17 +124,13 @@
                   <div :class="$style.userRoleText">{{ userRole || 'No role assigned' }}</div>
                   <div :class="$style.userStatus">
                     <div :class="$style.statusIndicator"></div>
-                    <span>{{'Online' }}</span>
+                    <span>Online</span>
                   </div>
                 </div>
               </div>
             </div>
-            
-            <!-- Dropdown Menu Items -->
             <div :class="$style.userDropdownContent">
-              
               <div :class="$style.dropdownDivider"></div>
-              
               <button @click="handleLogout" :class="[$style.userDropdownLink, $style.logoutButton]">
                 <div :class="$style.linkIcon">
                   <i class="fas fa-sign-out-alt"></i>
@@ -134,55 +142,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Settings -->
-        <!-- <div :class="$style.settings" @click.stop="toggleSettings" data-dropdown>
-          <i class="fas fa-cog"></i> -->
-          
-          <!-- Settings Dropdown -->
-          <!-- <div v-if="showSettings" :class="$style.dropdown" data-dropdown @click.stop>
-            <div :class="$style.dropdownHeader">
-              <h3>{{ t('header.settings') }}</h3>
-            </div> -->
-            
-            <!-- Language Section - Release One: Arabic Only -->
-            <!-- <div :class="$style.settingItem">
-              <i class="fas fa-language"></i>
-              <span>{{ t('header.language') }}</span>
-              <select v-model="currentLanguage" @change="changeLanguage" :class="$style.select" disabled>
-                <option value="en">English</option>
-                <option value="ar">العربية</option>
-              </select>
-            </div> -->
-
-            <!-- Theme Toggle -->
-            <!-- <div :class="$style.settingItem">
-              <i class="fas fa-palette"></i>
-              <span>{{ t('header.theme') }}</span>
-              <button @click="toggleTheme" :class="$style.themeToggle">
-                <i :class="currentTheme === 'light' ? 'fas fa-sun' : 'fas fa-moon'"></i>
-                {{ t(currentTheme === 'light' ? 'header.lightMode' : 'header.darkMode') }}
-              </button>
-            </div> -->
-
-            <!-- Logout -->
-            <!-- <div :class="$style.settingItem" @click="handleLogout">
-              <i class="fas fa-sign-out-alt"></i>
-              <span>{{ t('header.logout') }}</span>
-            </div>
-          </div>
-        </div> -->
-
-        <!-- Mobile Menu Toggle -->
-        <button 
-          :class="$style.mobileToggle" 
-          @click.stop="toggleMobileMenu"
-          :aria-expanded="showMobileMenu"
-          aria-label="Toggle mobile menu"
-          data-dropdown
-        >
-          <i :class="showMobileMenu ? 'fas fa-times' : 'fas fa-bars'"></i>
-        </button>
       </div>
     </nav>
 
@@ -330,6 +289,35 @@ const currentLanguage = computed({
 
 const currentTheme = computed(() => store.currentTheme)
 const t = computed(() => store.t)
+
+const greetingName = computed(() => {
+  const raw = userDisplayName.value?.trim()
+  if (raw) {
+    const parts = raw.split(/\s+/)
+    if (parts.length > 0) return parts[0]
+    return raw
+  }
+  return currentLanguage.value === 'ar' ? 'صديقي' : 'Friend'
+})
+
+const greetingHeading = computed(() => {
+  return currentLanguage.value === 'ar'
+    ? `اهلا بك يا ${greetingName.value}`
+    : `Welcome back, ${greetingName.value}`
+})
+
+const todayFormatted = computed(() => {
+  const now = new Date()
+  const formatted = now.toLocaleDateString("ar-EG", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+  return `${formatted}`
+})
+
+
 
 // Navigation links - Release One: Only Surveys and Control pages
 const baseNavigationLinks = ref<NavigationLink[]>([

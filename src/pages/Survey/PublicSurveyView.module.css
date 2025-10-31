@@ -2481,201 +2481,201 @@
  * Dark Theme Overrides
  * ============================== */
 
-.publicSurveyContainer[data-theme="dark"] {
+.publicSurveyContainer[data-theme="night"] {
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
 }
 
-.publicSurveyContainer[data-theme="dark"] .surveyContent,
-.publicSurveyContainer[data-theme="dark"] .surveyForm,
-.publicSurveyContainer[data-theme="dark"] .accessCard,
-.publicSurveyContainer[data-theme="dark"] .accessDenied {
+.publicSurveyContainer[data-theme="night"] .surveyContent,
+.publicSurveyContainer[data-theme="night"] .surveyForm,
+.publicSurveyContainer[data-theme="night"] .accessCard,
+.publicSurveyContainer[data-theme="night"] .accessDenied {
   background: var(--color-surface);
   border: 1px solid var(--color-border-default);
 }
 
-.publicSurveyContainer[data-theme="dark"] .errorState {
+.publicSurveyContainer[data-theme="night"] .errorState {
   background: var(--color-surface);
   border: 1px solid var(--color-border-default);
 }
 
-.publicSurveyContainer[data-theme="dark"] .errorState::before {
+.publicSurveyContainer[data-theme="night"] .errorState::before {
   background: var(--color-surface-variant);
 }
 
-.publicSurveyContainer[data-theme="dark"] .errorState:hover {
+.publicSurveyContainer[data-theme="night"] .errorState:hover {
   background: var(--color-surface-variant);
 }
 
-.publicSurveyContainer[data-theme="dark"] .errorIcon {
+.publicSurveyContainer[data-theme="night"] .errorIcon {
   color: var(--color-error);
 }
 
-.publicSurveyContainer[data-theme="dark"] .errorTitle {
+.publicSurveyContainer[data-theme="night"] .errorTitle {
   color: var(--color-text-primary);
 }
 
-.publicSurveyContainer[data-theme="dark"] .errorMessage {
+.publicSurveyContainer[data-theme="night"] .errorMessage {
   color: var(--color-text-secondary);
 }
 
-.publicSurveyContainer[data-theme="dark"] .surveyHeader,
-.publicSurveyContainer[data-theme="dark"] .formHeader,
-.publicSurveyContainer[data-theme="dark"] .accessHeader {
+.publicSurveyContainer[data-theme="night"] .surveyHeader,
+.publicSurveyContainer[data-theme="night"] .formHeader,
+.publicSurveyContainer[data-theme="night"] .accessHeader {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
 }
 
-.publicSurveyContainer[data-theme="dark"] .welcomeSection {
+.publicSurveyContainer[data-theme="night"] .welcomeSection {
   background: var(--color-surface);
 }
 
-.publicSurveyContainer[data-theme="dark"] .welcomeSection::before {
+.publicSurveyContainer[data-theme="night"] .welcomeSection::before {
   background: var(--color-surface-variant);
 }
 
-.publicSurveyContainer[data-theme="dark"] .welcomeTitle {
+.publicSurveyContainer[data-theme="night"] .welcomeTitle {
   color: var(--color-text-primary);
 }
 
-.publicSurveyContainer[data-theme="dark"] .welcomeTitle::after {
+.publicSurveyContainer[data-theme="night"] .welcomeTitle::after {
   background: var(--color-primary);
 }
 
-.publicSurveyContainer[data-theme="dark"] .welcomeText {
+.publicSurveyContainer[data-theme="night"] .welcomeText {
   color: var(--color-text-secondary);
 }
 
-.publicSurveyContainer[data-theme="dark"] .welcomeIcon {
+.publicSurveyContainer[data-theme="night"] .welcomeIcon {
   color: var(--color-primary);
 }
 
-.publicSurveyContainer[data-theme="dark"] .feature {
+.publicSurveyContainer[data-theme="night"] .feature {
   background: var(--color-surface-variant);
   border: 1px solid var(--color-border-default);
 }
 
-.publicSurveyContainer[data-theme="dark"] .feature i {
+.publicSurveyContainer[data-theme="night"] .feature i {
   color: var(--color-primary);
 }
 
-.publicSurveyContainer[data-theme="dark"] .questionItem {
+.publicSurveyContainer[data-theme="night"] .questionItem {
   background: var(--color-surface-variant);
   border-color: var(--color-border-default);
 }
 
-.publicSurveyContainer[data-theme="dark"] .questionItem:hover {
+.publicSurveyContainer[data-theme="night"] .questionItem:hover {
   border-color: var(--color-primary);
 }
 
-.publicSurveyContainer[data-theme="dark"] .actionButtons {
+.publicSurveyContainer[data-theme="night"] .actionButtons {
   background: var(--color-surface-variant);
 }
 
-.publicSurveyContainer[data-theme="dark"] .formNavigation {
+.publicSurveyContainer[data-theme="night"] .formNavigation {
   background: var(--color-surface-variant);
 }
 
 /* Enhanced dark theme styles for Yes/No components */
-.publicSurveyContainer[data-theme="dark"] .yesNoWrapper {
+.publicSurveyContainer[data-theme="night"] .yesNoWrapper {
   background: var(--color-surface);
 }
 
-.publicSurveyContainer[data-theme="dark"] .yesNoTitleText {
+.publicSurveyContainer[data-theme="night"] .yesNoTitleText {
   color: var(--color-text-primary);
 }
 
-.publicSurveyContainer[data-theme="dark"] .yesNoSubtitle {
+.publicSurveyContainer[data-theme="night"] .yesNoSubtitle {
   color: var(--color-text-secondary);
 }
 
-.publicSurveyContainer[data-theme="dark"] .yesNoButton {
+.publicSurveyContainer[data-theme="night"] .yesNoButton {
   background: var(--color-surface-variant);
   border-color: var(--color-border-default);
 }
 
-.publicSurveyContainer[data-theme="dark"] .yesNoButtonIcon {
+.publicSurveyContainer[data-theme="night"] .yesNoButtonIcon {
   color: var(--color-text-secondary);
 }
 
-.publicSurveyContainer[data-theme="dark"] .yesNoButton.yes:hover,
-.publicSurveyContainer[data-theme="dark"] .yesNoButton.yes.selected {
+.publicSurveyContainer[data-theme="night"] .yesNoButton.yes:hover,
+.publicSurveyContainer[data-theme="night"] .yesNoButton.yes.selected {
   background: var(--color-success-bg);
   border-color: var(--color-success);
 }
 
-.publicSurveyContainer[data-theme="dark"] .yesNoButton.no:hover,
-.publicSurveyContainer[data-theme="dark"] .yesNoButton.no.selected {
+.publicSurveyContainer[data-theme="night"] .yesNoButton.no:hover,
+.publicSurveyContainer[data-theme="night"] .yesNoButton.no.selected {
   background: var(--color-error-bg);
   border-color: var(--color-error);
 }
 
 /* Dark theme styles for phone input */
-.publicSurveyContainer[data-theme="dark"] .countryButton {
+.publicSurveyContainer[data-theme="night"] .countryButton {
   background: var(--color-surface-variant);
   border-color: var(--color-border-default);
 }
 
-.publicSurveyContainer[data-theme="dark"] .countryButton:hover {
+.publicSurveyContainer[data-theme="night"] .countryButton:hover {
   background: var(--color-surface-accent);
 }
 
-.publicSurveyContainer[data-theme="dark"] .countryCode {
+.publicSurveyContainer[data-theme="night"] .countryCode {
   color: var(--color-text-primary);
 }
 
-.publicSurveyContainer[data-theme="dark"] .dropdownIcon {
+.publicSurveyContainer[data-theme="night"] .dropdownIcon {
   color: var(--color-text-muted);
 }
 
-.publicSurveyContainer[data-theme="dark"] .countryDropdown {
+.publicSurveyContainer[data-theme="night"] .countryDropdown {
   background: var(--color-surface);
   border-color: var(--color-border-default);
 }
 
-.publicSurveyContainer[data-theme="dark"] .searchInput {
+.publicSurveyContainer[data-theme="night"] .searchInput {
   background: var(--color-surface-variant);
   border-color: var(--color-border-default);
   color: var(--color-text-primary);
 }
 
-.publicSurveyContainer[data-theme="dark"] .searchInput:focus {
+.publicSurveyContainer[data-theme="night"] .searchInput:focus {
   border-color: var(--color-border-focus);
 }
 
-.publicSurveyContainer[data-theme="dark"] .countryOption:hover {
+.publicSurveyContainer[data-theme="night"] .countryOption:hover {
   background: var(--color-surface-accent);
 }
 
-.publicSurveyContainer[data-theme="dark"] .countryOption.selected {
+.publicSurveyContainer[data-theme="night"] .countryOption.selected {
   background: var(--color-primary);
   color: white;
 }
 
-.publicSurveyContainer[data-theme="dark"] .optionCode {
+.publicSurveyContainer[data-theme="night"] .optionCode {
   color: var(--color-text-muted);
 }
 
-.publicSurveyContainer[data-theme="dark"] .phoneInput {
+.publicSurveyContainer[data-theme="night"] .phoneInput {
   background: var(--color-surface);
   color: var(--color-text-primary);
 }
 
-.publicSurveyContainer[data-theme="dark"] .phoneInput:focus {
+.publicSurveyContainer[data-theme="night"] .phoneInput:focus {
   background: var(--color-surface);
 }
 
-.publicSurveyContainer[data-theme="dark"] .phoneIcon {
+.publicSurveyContainer[data-theme="night"] .phoneIcon {
   color: var(--color-text-muted);
 }
 
-.publicSurveyContainer[data-theme="dark"] .phonePreview {
+.publicSurveyContainer[data-theme="night"] .phonePreview {
   background: var(--color-surface-variant);
 }
 
-.publicSurveyContainer[data-theme="dark"] .previewLabel {
+.publicSurveyContainer[data-theme="night"] .previewLabel {
   color: var(--color-text-muted);
 }
 
-.publicSurveyContainer[data-theme="dark"] .previewNumber {
+.publicSurveyContainer[data-theme="night"] .previewNumber {
   color: var(--color-text-primary);
 }
 
