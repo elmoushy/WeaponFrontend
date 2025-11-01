@@ -12,16 +12,45 @@
           <span>{{ isRTL ? 'تصميم الاستطلاع' : 'Survey Builder' }}</span>
         </div>
         <div :class="$style.headerActions">
-          <button :class="[$style.headerButton, $style.settingsButton]" @click="openSchedulingModal" :title="isRTL ? 'إعدادات الجدولة' : 'Scheduling Settings'">
-            <i class="fas fa-calendar-alt"></i>
+          <!-- Button 1: Scheduling Settings -->
+          <button :class="[$style.headerButton, $style.iconButton]" @click="openSchedulingModal" :title="isRTL ? 'تحديد المدة' : 'Scheduling Settings'">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1.5 9C1.5 6.17157 1.5 4.75736 2.37868 3.87868C3.25736 3 4.67157 3 7.5 3H10.5C13.3284 3 14.7426 3 15.6213 3.87868C16.5 4.75736 16.5 6.17157 16.5 9V10.5C16.5 13.3284 16.5 14.7426 15.6213 15.6213C14.7426 16.5 13.3284 16.5 10.5 16.5H7.5C4.67157 16.5 3.25736 16.5 2.37868 15.6213C1.5 14.7426 1.5 13.3284 1.5 10.5V9Z" stroke="currentColor" stroke-width="1.125"/>
+              <path d="M5.25 3V1.875" stroke="currentColor" stroke-width="1.125" stroke-linecap="round"/>
+              <path d="M12.75 3V1.875" stroke="currentColor" stroke-width="1.125" stroke-linecap="round"/>
+              <path d="M6.75 10.875L7.875 9.75V12.75" stroke="currentColor" stroke-width="1.125" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M9.75 12V10.5C9.75 10.0858 10.0858 9.75 10.5 9.75C10.9142 9.75 11.25 10.0858 11.25 10.5V12C11.25 12.4142 10.9142 12.75 10.5 12.75C10.0858 12.75 9.75 12.4142 9.75 12Z" stroke="currentColor" stroke-width="1.125" stroke-linecap="round"/>
+              <path d="M1.875 6.75H16.125" stroke="currentColor" stroke-width="1.125" stroke-linecap="round"/>
+            </svg>
+            <span>{{ isRTL ? 'تحديد المدة' : 'Schedule' }}</span>
           </button>
-          <button :class="[$style.headerButton, $style.settingsButton]" @click="openSurveySettingsModal" :title="isRTL ? 'إعدادات الاستطلاع' : 'Survey Settings'">
-            <i class="fas fa-cog"></i>
-          </button>
-          <button :class="[$style.headerButton, $style.previewButton]" @click="togglePreview">
-            <i class="fas fa-eye"></i>
+
+          <!-- Button 2: Preview -->
+          <button :class="[$style.headerButton, $style.iconButton]" @click="togglePreview" :title="isRTL ? 'معاينة' : 'Preview'">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g clip-path="url(#clip0_219_10368)">
+                <path d="M1.54688 9.26103C1.48437 9.09264 1.48437 8.90741 1.54688 8.73903C2.15565 7.26292 3.18902 6.00081 4.51596 5.1127C5.8429 4.22459 7.40366 3.75049 9.00038 3.75049C10.5971 3.75049 12.1579 4.22459 13.4848 5.1127C14.8117 6.00081 15.8451 7.26292 16.4539 8.73903C16.5164 8.90741 16.5164 9.09264 16.4539 9.26103C15.8451 10.7371 14.8117 11.9992 13.4848 12.8874C12.1579 13.7755 10.5971 14.2496 9.00038 14.2496C7.40366 14.2496 5.8429 13.7755 4.51596 12.8874C3.18902 11.9992 2.15565 10.7371 1.54688 9.26103Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M9 11.25C10.2426 11.25 11.25 10.2426 11.25 9C11.25 7.75736 10.2426 6.75 9 6.75C7.75736 6.75 6.75 7.75736 6.75 9C6.75 10.2426 7.75736 11.25 9 11.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+              <defs>
+                <clipPath id="clip0_219_10368">
+                  <rect width="18" height="18" fill="white"/>
+                </clipPath>
+              </defs>
+            </svg>
             <span>{{ isRTL ? 'معاينة' : 'Preview' }}</span>
           </button>
+
+          <!-- Button 3: Survey Settings -->
+          <button :class="[$style.headerButton, $style.iconButton]" @click="openSurveySettingsModal" :title="isRTL ? 'الإعدادات' : 'Settings'">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7.25177 3.10211C7.29309 2.66737 7.49502 2.26365 7.8181 1.96982C8.14117 1.676 8.56219 1.51318 8.99889 1.51318C9.4356 1.51318 9.85662 1.676 10.1797 1.96982C10.5028 2.26365 10.7047 2.66737 10.746 3.10211C10.7709 3.38295 10.863 3.65368 11.0146 3.89137C11.1662 4.12906 11.3729 4.32672 11.6171 4.46762C11.8613 4.60852 12.1359 4.68851 12.4175 4.70083C12.6992 4.71314 12.9797 4.65742 13.2353 4.53836C13.6321 4.3582 14.0818 4.33213 14.4968 4.46523C14.9118 4.59833 15.2624 4.88108 15.4804 5.25844C15.6984 5.63581 15.7682 6.08079 15.6763 6.50679C15.5843 6.93279 15.3371 7.30933 14.9828 7.56311C14.7521 7.725 14.5637 7.94007 14.4337 8.19013C14.3037 8.4402 14.2358 8.71789 14.2358 8.99974C14.2358 9.28158 14.3037 9.55928 14.4337 9.80934C14.5637 10.0594 14.7521 10.2745 14.9828 10.4364C15.3371 10.6902 15.5843 11.0667 15.6763 11.4927C15.7682 11.9187 15.6984 12.3637 15.4804 12.741C15.2624 13.1184 14.9118 13.4011 14.4968 13.5342C14.0818 13.6673 13.6321 13.6413 13.2353 13.4611C12.9797 13.3421 12.6992 13.2863 12.4175 13.2986C12.1359 13.311 11.8613 13.391 11.6171 13.5319C11.3729 13.6728 11.1662 13.8704 11.0146 14.1081C10.863 14.3458 10.7709 14.6165 10.746 14.8974C10.7047 15.3321 10.5028 15.7358 10.1797 16.0297C9.85662 16.3235 9.4356 16.4863 8.99889 16.4863C8.56219 16.4863 8.14117 16.3235 7.8181 16.0297C7.49502 15.7358 7.29309 15.3321 7.25177 14.8974C7.22698 14.6164 7.13484 14.3456 6.98317 14.1078C6.83149 13.87 6.62475 13.6723 6.38044 13.5314C6.13614 13.3905 5.86147 13.3105 5.5797 13.2983C5.29794 13.2861 5.01737 13.3419 4.76177 13.4611C4.36494 13.6413 3.91526 13.6673 3.50027 13.5342C3.08527 13.4011 2.73465 13.1184 2.51663 12.741C2.29862 12.3637 2.22881 11.9187 2.32079 11.4927C2.41277 11.0667 2.65997 10.6902 3.01427 10.4364C3.24498 10.2745 3.43332 10.0594 3.56334 9.80934C3.69335 9.55928 3.76123 9.28158 3.76123 8.99974C3.76123 8.71789 3.69335 8.4402 3.56334 8.19013C3.43332 7.94007 3.24498 7.725 3.01427 7.56311C2.66047 7.3092 2.41371 6.93281 2.32195 6.5071C2.23018 6.08139 2.29998 5.63677 2.51776 5.25965C2.73554 4.88253 3.08575 4.59985 3.50034 4.46654C3.91492 4.33324 4.36426 4.35884 4.76102 4.53836C5.01659 4.65742 5.29708 4.71314 5.57874 4.70083C5.86041 4.68851 6.13497 4.60852 6.37917 4.46762C6.62338 4.32672 6.83004 4.12906 6.98167 3.89137C7.1333 3.65368 7.22543 3.38295 7.25027 3.10211" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M9 11.25C10.2426 11.25 11.25 10.2426 11.25 9C11.25 7.75736 10.2426 6.75 9 6.75C7.75736 6.75 6.75 7.75736 6.75 9C6.75 10.2426 7.75736 11.25 9 11.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>{{ isRTL ? 'الإعدادات' : 'Settings' }}</span>
+          </button>
+
+          <!-- Button 4 & 5: Draft and Publish (conditional) -->
           <template v-if="props.isCreatingPredefinedTemplate">
             <button :class="[$style.headerButton, $style.publishButton]" @click="handleSaveTemplate" :disabled="!canPublish">
               <i class="fas fa-save"></i>
@@ -30,11 +59,9 @@
           </template>
           <template v-else>
             <button :class="[$style.headerButton, $style.draftButton]" @click="handleSaveAsDraft" :disabled="!canPublish">
-              <i class="fas fa-save"></i>
               <span>{{ isRTL ? 'حفظ كمسودة' : 'Save as Draft' }}</span>
             </button>
             <button :class="[$style.headerButton, $style.publishButton]" @click="handlePublish" :disabled="!canPublish">
-              <i class="fas fa-paper-plane"></i>
               <span>{{ isRTL ? 'نشر' : 'Publish' }}</span>
             </button>
           </template>
@@ -44,17 +71,20 @@
 
     <!-- Main Content -->
     <div :class="$style.editorMain">
-      <!-- Info Banner for Template Creation -->
-      <div v-if="isCreatingTemplate" :class="$style.infoBanner">
-        <i class="fas fa-info-circle"></i>
-        <div :class="$style.infoContent">
-          <strong>{{ isRTL ? 'إنشاء قالب جديد' : 'Creating New Template' }}</strong>
-          <p>{{ isRTL ? 'قم بإنشاء الاستطلاع الخاص بك، وعند النشر يمكنك حفظه كقالب لاستخدامه لاحقاً.' : 'Create your survey, and when you publish it, you can save it as a template for future use.' }}</p>
-        </div>
-      </div>
-      
-      <!-- Survey Header Section -->
-      <div :class="$style.surveyHeaderSection">
+      <div :class="$style.editorGrid">
+          <!-- Right Content: Editor (col-span-9) -->
+        <div :class="$style.editorContent">
+          <!-- Info Banner for Template Creation -->
+          <div v-if="isCreatingTemplate" :class="$style.infoBanner">
+            <i class="fas fa-info-circle"></i>
+            <div :class="$style.infoContent">
+              <strong>{{ isRTL ? 'إنشاء قالب جديد' : 'Creating New Template' }}</strong>
+              <p>{{ isRTL ? 'قم بإنشاء الاستطلاع الخاص بك، وعند النشر يمكنك حفظه كقالب لاستخدامه لاحقاً.' : 'Create your survey, and when you publish it, you can save it as a template for future use.' }}</p>
+            </div>
+          </div>
+          
+          <!-- Survey Header Section -->
+          <div :class="$style.surveyHeaderSection">
         <div :class="$style.surveyHeaderCard">
           <input
             type="text"
@@ -76,7 +106,21 @@
       </div>
 
       <!-- Questions Section -->
-      <div :class="$style.questionsSection">
+      <div 
+        :class="$style.questionsSection"
+        @dragover="handleQuestionsSectionDragOver($event)"
+        @drop="handleQuestionsSectionDrop($event)"
+      >
+        <!-- Empty State / Drop Zone -->
+        <div 
+          v-if="surveyData.questions.length === 0" 
+          :class="$style.emptyDropZone"
+        >
+          <i class="fas fa-hand-pointer"></i>
+          <h3>{{ isRTL ? 'ابدأ بإضافة سؤال' : 'Start by adding a question' }}</h3>
+          <p>{{ isRTL ? 'انقر على نوع السؤال أو اسحبه إلى هنا من القائمة اليمنى' : 'Click on a question type or drag it here from the left panel' }}</p>
+        </div>
+
         <div
           v-for="(question, index) in surveyData.questions"
           :key="question.tempId"
@@ -414,12 +458,121 @@
         </div>
 
         <!-- Add Question Button -->
-        <div :class="$style.addQuestionSection">
-          <button :class="$style.addQuestionButton" @click="addQuestion">
-            <i class="fas fa-plus-circle"></i>
-            <span>{{ isRTL ? 'إضافة سؤال' : 'Add Question' }}</span>
-          </button>
+        <div v-if="surveyData.questions.length > 0" :class="$style.addQuestionSection">
+          <div :class="$style.dropHint">
+            <i class="fas fa-info-circle"></i>
+            <span>{{ isRTL ? 'انقر على نوع السؤال أو اسحبه لإضافة المزيد من الأسئلة' : 'Click or drag a question type to add more questions' }}</span>
+          </div>
         </div>
+      </div>
+        </div>
+        <!-- Left Sidebar: Question Palette (col-span-3) -->
+        <div :class="$style.questionPalette">
+          <div :class="$style.paletteHeader">
+            <i class="fas fa-puzzle-piece"></i>
+            <h3>{{ isRTL ? 'أنواع الأسئلة' : 'Question Types' }}</h3>
+          </div>
+          
+          <div :class="$style.paletteItems">
+            <!-- Short Text -->
+            <div 
+              :class="$style.paletteItem" 
+              draggable="true" 
+              @dragstart="handlePaletteDragStart('text', $event)"
+              @click="handlePaletteClick('text')"
+            >
+              <div :class="$style.paletteIcon">
+                <i class="fas fa-font"></i>
+              </div>
+              <div :class="$style.paletteContent">
+                <h4>{{ isRTL ? 'نص قصير' : 'Short Text' }}</h4>
+                <p>{{ isRTL ? 'إجابة نصية قصيرة' : 'Single line text' }}</p>
+              </div>
+            </div>
+
+            <!-- Long Text -->
+            <div 
+              :class="$style.paletteItem" 
+              draggable="true" 
+              @dragstart="handlePaletteDragStart('textarea', $event)"
+              @click="handlePaletteClick('textarea')"
+            >
+              <div :class="$style.paletteIcon">
+                <i class="fas fa-align-left"></i>
+              </div>
+              <div :class="$style.paletteContent">
+                <h4>{{ isRTL ? 'نص طويل' : 'Long Text' }}</h4>
+                <p>{{ isRTL ? 'نص متعدد الأسطر' : 'Multi-line text' }}</p>
+              </div>
+            </div>
+
+            <!-- Single Choice -->
+            <div 
+              :class="$style.paletteItem" 
+              draggable="true" 
+              @dragstart="handlePaletteDragStart('single_choice', $event)"
+              @click="handlePaletteClick('single_choice')"
+            >
+              <div :class="$style.paletteIcon">
+                <i class="far fa-circle"></i>
+              </div>
+              <div :class="$style.paletteContent">
+                <h4>{{ isRTL ? 'اختيار واحد' : 'Single Choice' }}</h4>
+                <p>{{ isRTL ? 'خيار واحد فقط' : 'Select one option' }}</p>
+              </div>
+            </div>
+
+            <!-- Multiple Choice -->
+            <div 
+              :class="$style.paletteItem" 
+              draggable="true" 
+              @dragstart="handlePaletteDragStart('multiple_choice', $event)"
+              @click="handlePaletteClick('multiple_choice')"
+            >
+              <div :class="$style.paletteIcon">
+                <i class="far fa-square"></i>
+              </div>
+              <div :class="$style.paletteContent">
+                <h4>{{ isRTL ? 'اختيار متعدد' : 'Multiple Choice' }}</h4>
+                <p>{{ isRTL ? 'عدة خيارات' : 'Select multiple' }}</p>
+              </div>
+            </div>
+
+            <!-- Rating -->
+            <div 
+              :class="$style.paletteItem" 
+              draggable="true" 
+              @dragstart="handlePaletteDragStart('rating', $event)"
+              @click="handlePaletteClick('rating')"
+            >
+              <div :class="$style.paletteIcon">
+                <i class="fas fa-star"></i>
+              </div>
+              <div :class="$style.paletteContent">
+                <h4>{{ isRTL ? 'تقييم' : 'Rating' }}</h4>
+                <p>{{ isRTL ? 'تقييم بالنجوم' : 'Star rating' }}</p>
+              </div>
+            </div>
+
+            <!-- Yes/No -->
+            <div 
+              :class="$style.paletteItem" 
+              draggable="true" 
+              @dragstart="handlePaletteDragStart('yes_no', $event)"
+              @click="handlePaletteClick('yes_no')"
+            >
+              <div :class="$style.paletteIcon">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <div :class="$style.paletteContent">
+                <h4>{{ isRTL ? 'نعم/لا' : 'Yes/No' }}</h4>
+                <p>{{ isRTL ? 'سؤال بنعم أو لا' : 'Binary choice' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      
       </div>
     </div>
 
@@ -596,7 +749,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { useAppStore } from '../../stores/useAppStore'
 import type { PredefinedTemplate, SurveyTemplate, RecentSurvey, Survey, QuestionType } from '../../types/survey.types'
 import FlatPickr from 'vue-flatpickr-component'
@@ -818,38 +971,102 @@ const schedulingPreview = computed(() => {
   return null
 })
 
+// Watch for modal state changes to prevent body scroll
+watch([showPreview, showSchedulingModal, showSurveySettingsModal], ([preview, scheduling, settings]) => {
+  const anyModalOpen = preview || scheduling || settings
+  
+  if (anyModalOpen) {
+    // Prevent body scroll when any modal is open
+    document.body.style.overflow = 'hidden'
+  } else {
+    // Restore body scroll when all modals are closed
+    document.body.style.overflow = ''
+  }
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  document.body.style.overflow = ''
+})
+
 // Methods
 const initializeSurvey = () => {
+  console.log('🔧 Initializing Survey Editor with template:', props.template)
+  
   if (props.template) {
     // Check if it's a full Survey object
     if ('questions' in props.template && Array.isArray(props.template.questions)) {
+      console.log('✅ Loading survey data from template')
+      
       surveyData.value = {
         title: (props.template as any).name || (props.template as any).title || '',
         description: (props.template as any).description || '',
-        questions: props.template.questions.map((q: any, index: number) => ({
-          tempId: `temp-${Date.now()}-${index}`,
-          text: q.text || '',
-          question_type: q.question_type,
-          options: q.options ? (typeof q.options === 'string' ? JSON.parse(q.options) : q.options) : [],
-          is_required: q.is_required || false,
-          order: index + 1,
-          // Analytics fields
-          NPS_Calculate: q.NPS_Calculate || false,
-          CSAT_Calculate: q.CSAT_Calculate || false,
-          min_scale: q.min_scale !== undefined ? q.min_scale : 0,
-          max_scale: q.max_scale !== undefined ? q.max_scale : 5,
-          semantic_tag: q.semantic_tag || 'none',
-          options_satisfaction_values: q.options_satisfaction_values 
-            ? (typeof q.options_satisfaction_values === 'string' 
-              ? JSON.parse(q.options_satisfaction_values) 
-              : q.options_satisfaction_values)
-            : [],
-          // Validation field
-          validation_type: q.validation_type || 'none'
-        }))
+        questions: props.template.questions.map((q: any, index: number) => {
+          // Parse options - handle string, array, or null/undefined
+          let parsedOptions: string[] = []
+          if (q.options) {
+            if (typeof q.options === 'string') {
+              try {
+                parsedOptions = JSON.parse(q.options)
+              } catch {
+                parsedOptions = []
+              }
+            } else if (Array.isArray(q.options)) {
+              parsedOptions = q.options
+            }
+          }
+          
+          // Parse satisfaction values - handle string, array, or null/undefined
+          let parsedSatisfactionValues: (0 | 1 | 2 | null)[] = []
+          if (q.options_satisfaction_values) {
+            if (typeof q.options_satisfaction_values === 'string') {
+              try {
+                parsedSatisfactionValues = JSON.parse(q.options_satisfaction_values)
+              } catch {
+                parsedSatisfactionValues = []
+              }
+            } else if (Array.isArray(q.options_satisfaction_values)) {
+              parsedSatisfactionValues = q.options_satisfaction_values
+            }
+          }
+          
+          return {
+            tempId: `temp-${Date.now()}-${index}`,
+            text: q.text || '',
+            question_type: q.question_type,
+            options: parsedOptions,
+            is_required: q.is_required !== undefined ? q.is_required : false,
+            order: q.order !== undefined ? q.order : index + 1,
+            // Analytics fields
+            NPS_Calculate: q.NPS_Calculate || false,
+            CSAT_Calculate: q.CSAT_Calculate || false,
+            min_scale: q.min_scale !== undefined && q.min_scale !== null ? q.min_scale : 0,
+            max_scale: q.max_scale !== undefined && q.max_scale !== null ? q.max_scale : 5,
+            semantic_tag: q.semantic_tag || 'none',
+            options_satisfaction_values: parsedSatisfactionValues,
+            // Validation field
+            validation_type: q.validation_type || 'none'
+          }
+        })
       }
+      
+      console.log('📝 Initialized surveyData:', surveyData.value)
+      
+      // Load scheduling settings if available
+      schedulingSettings.value = {
+        start_date: (props.template as any).start_date || null,
+        end_date: (props.template as any).end_date || null
+      }
+      console.log('📅 Scheduling settings:', schedulingSettings.value)
+      
+      // Load survey settings if available
+      surveySettings.value = {
+        is_active: (props.template as any).is_active !== undefined ? (props.template as any).is_active : true
+      }
+      console.log('⚙️ Survey settings:', surveySettings.value)
     }
   } else {
+    console.log('➕ No template provided, adding default question')
     // Start with empty survey and one default question
     addQuestion()
   }
@@ -1054,6 +1271,42 @@ const updateQuestionOrders = () => {
 }
 
 // Drag and Drop handlers
+const handlePaletteDragStart = (questionType: QuestionType, event: DragEvent) => {
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'copy'
+    event.dataTransfer.setData('questionType', questionType)
+  }
+}
+
+// Click handler for palette items
+const handlePaletteClick = (questionType: QuestionType) => {
+  // Create new question and add to the end
+  const newQuestion = {
+    tempId: `temp-${Date.now()}`,
+    text: '',
+    question_type: questionType,
+    options: needsOptions(questionType) ? [isRTL.value ? 'خيار 1' : 'Option 1'] : [],
+    is_required: false,
+    order: surveyData.value.questions.length + 1,
+    NPS_Calculate: false,
+    CSAT_Calculate: false,
+    min_scale: 0,
+    max_scale: 5,
+    semantic_tag: 'none' as 'none' | 'nps' | 'csat',
+    options_satisfaction_values: [],
+    validation_type: 'none' as 'none' | 'email' | 'phone' | 'number' | 'url'
+  }
+  
+  // Add to end
+  surveyData.value.questions.push(newQuestion)
+  updateQuestionOrders()
+  
+  // Auto-focus on the new question
+  setTimeout(() => {
+    setActiveQuestion(surveyData.value.questions.length - 1)
+  }, 100)
+}
+
 const handleDragStart = (index: number, event: DragEvent) => {
   draggedQuestionIndex.value = index
   if (event.dataTransfer) {
@@ -1073,9 +1326,76 @@ const handleDragOver = (event: DragEvent) => {
   }
 }
 
-const handleDrop = (dropIndex: number, event: DragEvent) => {
+// Handler for dropping on the questions section (adds to end)
+const handleQuestionsSectionDragOver = (event: DragEvent) => {
+  event.preventDefault()
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'copy'
+  }
+}
+
+const handleQuestionsSectionDrop = (event: DragEvent) => {
   event.preventDefault()
   
+  // Check if it's a new question from palette
+  const questionType = event.dataTransfer?.getData('questionType') as QuestionType | ''
+  
+  if (questionType) {
+    // Adding new question from palette at the end
+    const newQuestion = {
+      tempId: `temp-${Date.now()}`,
+      text: '',
+      question_type: questionType,
+      options: needsOptions(questionType) ? [isRTL.value ? 'خيار 1' : 'Option 1'] : [],
+      is_required: false,
+      order: surveyData.value.questions.length + 1,
+      NPS_Calculate: false,
+      CSAT_Calculate: false,
+      min_scale: 0,
+      max_scale: 5,
+      semantic_tag: 'none' as 'none' | 'nps' | 'csat',
+      options_satisfaction_values: [],
+      validation_type: 'none' as 'none' | 'email' | 'phone' | 'number' | 'url'
+    }
+    
+    // Add to end
+    surveyData.value.questions.push(newQuestion)
+    updateQuestionOrders()
+  }
+}
+
+const handleDrop = (dropIndex: number, event: DragEvent) => {
+  event.preventDefault()
+  event.stopPropagation() // Prevent event from bubbling to parent
+  
+  // Check if it's a new question from palette
+  const questionType = event.dataTransfer?.getData('questionType') as QuestionType | ''
+  
+  if (questionType) {
+    // Adding new question from palette at specific position
+    const newQuestion = {
+      tempId: `temp-${Date.now()}`,
+      text: '',
+      question_type: questionType,
+      options: needsOptions(questionType) ? [isRTL.value ? 'خيار 1' : 'Option 1'] : [],
+      is_required: false,
+      order: dropIndex + 1,
+      NPS_Calculate: false,
+      CSAT_Calculate: false,
+      min_scale: 0,
+      max_scale: 5,
+      semantic_tag: 'none' as 'none' | 'nps' | 'csat',
+      options_satisfaction_values: [],
+      validation_type: 'none' as 'none' | 'email' | 'phone' | 'number' | 'url'
+    }
+    
+    // Insert at drop position
+    surveyData.value.questions.splice(dropIndex, 0, newQuestion)
+    updateQuestionOrders()
+    return
+  }
+  
+  // Existing reorder logic
   if (draggedQuestionIndex.value === null || draggedQuestionIndex.value === dropIndex) {
     return
   }
@@ -1298,8 +1618,23 @@ const handleSaveTemplate = () => {
 
 // Lifecycle
 onMounted(() => {
+  console.log('🎬 SurveyEditor mounted')
+  console.log('📦 Initial props.template:', props.template)
   initializeSurvey()
+  console.log('✅ After initialization, surveyData:', surveyData.value)
 })
+
+// Watch for template changes (when loading existing survey)
+watch(() => props.template, (newTemplate, oldTemplate) => {
+  console.log('👀 Template prop changed!')
+  console.log('   Old:', oldTemplate)
+  console.log('   New:', newTemplate)
+  if (newTemplate) {
+    console.log('🔄 Re-initializing survey with new template data')
+    initializeSurvey()
+    console.log('✅ After re-initialization, surveyData:', surveyData.value)
+  }
+}, { immediate: false, deep: true })
 </script>
 
 <style module src="./SurveyEditor.module.css">

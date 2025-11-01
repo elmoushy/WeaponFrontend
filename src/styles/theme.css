@@ -133,3 +133,11 @@ body {
 .swal2-popup[dir="rtl"] .swal2-actions {
   flex-direction: row-reverse !important;
 }
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+  overflow: hidden !important;
+  height: 100vh;
+  position: fixed;
+  width: 100%;
+}

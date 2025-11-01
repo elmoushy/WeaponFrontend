@@ -45,6 +45,7 @@ const PublicSurveyView = () => import("../pages/Survey/PublicSurveyView.vue");
 const PasswordProtectedSurveyView = () =>
   import("../pages/Survey/PasswordProtectedSurveyView.vue");
 const AuthSurveyView = () => import("../pages/Survey/AuthSurveyView.vue");
+const SurveyEditorPage = () => import("../pages/Control/SurveyEditorPage.vue");
 
 // Notifications
 const Notifications = () => import("../pages/Notifications");
@@ -140,6 +141,26 @@ const routes: RouteRecordRaw[] = [
     component: SurveyControl,
     meta: {
       title: "Survey Management - WPC | WeaponpowerCloud App",
+      requiresAuth: true,
+      requiresAdmin: true,
+    },
+  },
+  {
+    path: "/control/surveys/create",
+    name: "SurveyCreate",
+    component: SurveyEditorPage,
+    meta: {
+      title: "Create Survey - WPC | WeaponpowerCloud App",
+      requiresAuth: true,
+      requiresAdmin: true,
+    },
+  },
+  {
+    path: "/control/surveys/edit/:id",
+    name: "SurveyEdit",
+    component: SurveyEditorPage,
+    meta: {
+      title: "Edit Survey - WPC | WeaponpowerCloud App",
       requiresAuth: true,
       requiresAdmin: true,
     },

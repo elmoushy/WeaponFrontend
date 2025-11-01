@@ -50,28 +50,31 @@
               <div v-if="selectedAccess === 'PUBLIC'" :class="$style.publicLinkSection">
                 <!-- Per-Device Access Option -->
                 <div :class="$style.perDeviceAccessSection">
-                  <div :class="$style.perDeviceAccessHeader">
-                    <h4 :class="$style.perDeviceAccessTitle">
-                      <i class="fas fa-mobile-alt"></i>
-                      {{ getText('survey.access.perDeviceAccess') }}
-                    </h4>
-                    <div :class="$style.perDeviceToggleContainer">
-                      <label :class="$style.toggleSwitch">
-                        <input 
-                          type="checkbox" 
-                          v-model="perDeviceAccessEnabled"
-                          :class="$style.toggleInput"
-                        />
-                        <span :class="$style.toggleSlider"></span>
-                      </label>
-                      <span :class="$style.toggleLabel">
-                        {{ getText('survey.access.enablePerDeviceAccess') }}
-                      </span>
+                  <div :class="$style.perDeviceAccessCard">
+                    <div :class="$style.perDeviceAccessHeader">
+                      <div :class="$style.perDeviceIconWrapper">
+                        <i class="fas fa-mobile-alt"></i>
+                      </div>
+                      <div :class="$style.perDeviceTextContent">
+                        <h4 :class="$style.perDeviceAccessTitle">
+                          {{ getText('survey.access.perDeviceAccess') }}
+                        </h4>
+                        <p :class="$style.perDeviceDescription">
+                          {{ getText('survey.access.perDeviceAccessDescription') }}
+                        </p>
+                      </div>
+                      <div :class="$style.perDeviceToggleContainer">
+                        <label :class="$style.toggleSwitch">
+                          <input 
+                            type="checkbox" 
+                            v-model="perDeviceAccessEnabled"
+                            :class="$style.toggleInput"
+                          />
+                          <span :class="$style.toggleSlider"></span>
+                        </label>
+                      </div>
                     </div>
                   </div>
-                  <p :class="$style.perDeviceDescription">
-                    {{ getText('survey.access.perDeviceAccessDescription') }}
-                  </p>
                 </div>
 
                 <!-- Contact Method Selection - Hidden when password protection is enabled with specific email/phone OR per-device access is enabled -->
@@ -90,34 +93,44 @@
                   </div>
                   
                   <div :class="$style.contactMethodOptions">
+                    <!-- Email Contact Card -->
                     <div 
-                      :class="[$style.contactMethodOption, { [$style.selected]: selectedContactMethod === 'email' }]"
+                      :class="[$style.contactMethodCard, { [$style.selected]: selectedContactMethod === 'email' }]"
                       @click="selectedContactMethod = 'email'"
                     >
-                      <div :class="$style.contactMethodRadio">
-                        <div v-if="selectedContactMethod === 'email'" :class="$style.radioSelected2"></div>
-                      </div>
-                      <div :class="$style.contactMethodInfo">
-                        <i class="fas fa-envelope" :class="$style.contactMethodIcon"></i>
-                        <div>
-                          <span :class="$style.contactMethodName">{{ getText('survey.access.emailContact') }}</span>
-                          <small :class="$style.contactMethodDesc">{{ getText('survey.access.emailDescription') }}</small>
+                      <div :class="$style.contactMethodCardContent">
+                        <div :class="$style.contactMethodIconWrapper">
+                          <i class="fas fa-envelope"></i>
+                        </div>
+                        <div :class="$style.contactMethodTextContent">
+                          <h5 :class="$style.contactMethodName">{{ getText('survey.access.emailContact') }}</h5>
+                          <p :class="$style.contactMethodDesc">{{ getText('survey.access.emailDescription') }}</p>
+                        </div>
+                        <div :class="$style.contactMethodRadioContainer">
+                          <div :class="$style.contactMethodRadio">
+                            <div v-if="selectedContactMethod === 'email'" :class="$style.radioSelected"></div>
+                          </div>
                         </div>
                       </div>
                     </div>
                     
+                    <!-- Phone Contact Card -->
                     <div 
-                      :class="[$style.contactMethodOption, { [$style.selected]: selectedContactMethod === 'phone' }]"
+                      :class="[$style.contactMethodCard, { [$style.selected]: selectedContactMethod === 'phone' }]"
                       @click="selectedContactMethod = 'phone'"
                     >
-                      <div :class="$style.contactMethodRadio">
-                        <div v-if="selectedContactMethod === 'phone'" :class="$style.radioSelected"></div>
-                      </div>
-                      <div :class="$style.contactMethodInfo">
-                        <i class="fas fa-phone" :class="$style.contactMethodIcon"></i>
-                        <div>
-                          <span :class="$style.contactMethodName">{{ getText('survey.access.phoneContact') }}</span>
-                          <small :class="$style.contactMethodDesc">{{ getText('survey.access.phoneDescription') }}</small>
+                      <div :class="$style.contactMethodCardContent">
+                        <div :class="$style.contactMethodIconWrapper">
+                          <i class="fas fa-phone"></i>
+                        </div>
+                        <div :class="$style.contactMethodTextContent">
+                          <h5 :class="$style.contactMethodName">{{ getText('survey.access.phoneContact') }}</h5>
+                          <p :class="$style.contactMethodDesc">{{ getText('survey.access.phoneDescription') }}</p>
+                        </div>
+                        <div :class="$style.contactMethodRadioContainer">
+                          <div :class="$style.contactMethodRadio">
+                            <div v-if="selectedContactMethod === 'phone'" :class="$style.radioSelected"></div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -126,32 +139,35 @@
 
                 <!-- Password Protection Section - Hidden when per-device access is enabled -->
                 <div v-if="!perDeviceAccessEnabled" :class="$style.passwordProtectionSection">
-                  <div :class="$style.passwordProtectionHeader">
-                    <h4 :class="$style.passwordProtectionTitle">
-                      <i class="fas fa-shield-alt"></i>
-                      {{ getText('survey.access.passwordProtection') }}
-                    </h4>
-                    <div :class="$style.passwordToggleContainer">
-                      <label :class="$style.toggleSwitch">
-                        <input 
-                          type="checkbox" 
-                          v-model="passwordProtectionEnabled"
-                          :class="$style.toggleInput"
-                        />
-                        <span :class="$style.toggleSlider"></span>
-                      </label>
-                      <span :class="$style.toggleLabel">
-                        {{ getText('survey.access.enablePasswordProtection') }}
-                      </span>
+                  <!-- Password Protection Card -->
+                  <div :class="$style.passwordProtectionCard">
+                    <div :class="$style.passwordProtectionCardHeader">
+                      <div :class="$style.passwordProtectionIconWrapper">
+                        <i class="fas fa-shield-alt"></i>
+                      </div>
+                      <div :class="$style.passwordProtectionTextContent">
+                        <h4 :class="$style.passwordProtectionTitle">
+                          {{ getText('survey.access.passwordProtection') }}
+                        </h4>
+                        <p :class="$style.passwordProtectionSubtitle">
+                          {{ getText('survey.access.passwordDescription') }}
+                        </p>
+                      </div>
+                      <div :class="$style.passwordProtectionToggleContainer">
+                        <label :class="$style.toggleSwitch">
+                          <input 
+                            type="checkbox" 
+                            v-model="passwordProtectionEnabled"
+                            :class="$style.toggleInput"
+                          />
+                          <span :class="$style.toggleSlider"></span>
+                        </label>
+                      </div>
                     </div>
                   </div>
                   
                   <!-- Password Protection Options -->
                   <div v-if="passwordProtectionEnabled" :class="$style.passwordOptions">
-                    <p :class="$style.passwordDescription">
-                      {{ getText('survey.access.passwordDescription') }}
-                    </p>
-                    
                     <!-- Access Control Options -->
                     <div :class="$style.accessControlSection">
                       <h5 :class="$style.accessControlTitle">
@@ -161,51 +177,63 @@
                       <div :class="$style.accessControlOptions">
                         <!-- Anyone with password -->
                         <div 
-                          :class="[$style.accessControlOption, { [$style.selected]: passwordAccessMode === 'anyone' }]"
+                          :class="[$style.accessControlCard, { [$style.selected]: passwordAccessMode === 'anyone' }]"
                           @click="passwordAccessMode = 'anyone'"
                         >
-                          <div :class="$style.accessControlRadio">
-                            <div v-if="passwordAccessMode === 'anyone'" :class="$style.radioSelected"></div>
-                          </div>
-                          <div :class="$style.accessControlInfo">
-                            <i class="fas fa-users" :class="$style.accessControlIcon"></i>
-                            <div>
-                              <span :class="$style.accessControlName">{{ getText('survey.access.anyoneWithPassword') }}</span>
-                              <small :class="$style.accessControlDesc">{{ getText('survey.access.anyoneWithPasswordDesc') }}</small>
+                          <div :class="$style.accessControlCardContent">
+                            <div :class="$style.accessControlIconWrapper">
+                              <i class="fas fa-users"></i>
+                            </div>
+                            <div :class="$style.accessControlTextContent">
+                              <h5 :class="$style.accessControlName">{{ getText('survey.access.anyoneWithPassword') }}</h5>
+                              <p :class="$style.accessControlDesc">{{ getText('survey.access.anyoneWithPasswordDesc') }}</p>
+                            </div>
+                            <div :class="$style.accessControlRadioContainer">
+                              <div :class="$style.accessControlRadio">
+                                <div v-if="passwordAccessMode === 'anyone'" :class="$style.radioSelected"></div>
+                              </div>
                             </div>
                           </div>
                         </div>
                         
                         <!-- Specific email with password -->
                         <div 
-                          :class="[$style.accessControlOption, { [$style.selected]: passwordAccessMode === 'email' }]"
+                          :class="[$style.accessControlCard, { [$style.selected]: passwordAccessMode === 'email' }]"
                           @click="passwordAccessMode = 'email'"
                         >
-                          <div :class="$style.accessControlRadio">
-                            <div v-if="passwordAccessMode === 'email'" :class="$style.radioSelected"></div>
-                          </div>
-                          <div :class="$style.accessControlInfo">
-                            <i class="fas fa-envelope-open" :class="$style.accessControlIcon"></i>
-                            <div>
-                              <span :class="$style.accessControlName">{{ getText('survey.access.specificEmail') }}</span>
-                              <small :class="$style.accessControlDesc">{{ getText('survey.access.specificEmailDesc') }}</small>
+                          <div :class="$style.accessControlCardContent">
+                            <div :class="$style.accessControlIconWrapper">
+                              <i class="fas fa-envelope-open"></i>
+                            </div>
+                            <div :class="$style.accessControlTextContent">
+                              <h5 :class="$style.accessControlName">{{ getText('survey.access.specificEmail') }}</h5>
+                              <p :class="$style.accessControlDesc">{{ getText('survey.access.specificEmailDesc') }}</p>
+                            </div>
+                            <div :class="$style.accessControlRadioContainer">
+                              <div :class="$style.accessControlRadio">
+                                <div v-if="passwordAccessMode === 'email'" :class="$style.radioSelected"></div>
+                              </div>
                             </div>
                           </div>
                         </div>
                         
                         <!-- Specific phone with password -->
                         <div 
-                          :class="[$style.accessControlOption, { [$style.selected]: passwordAccessMode === 'phone' }]"
+                          :class="[$style.accessControlCard, { [$style.selected]: passwordAccessMode === 'phone' }]"
                           @click="passwordAccessMode = 'phone'"
                         >
-                          <div :class="$style.accessControlRadio">
-                            <div v-if="passwordAccessMode === 'phone'" :class="$style.radioSelected"></div>
-                          </div>
-                          <div :class="$style.accessControlInfo">
-                            <i class="fas fa-phone-alt" :class="$style.accessControlIcon"></i>
-                            <div>
-                              <span :class="$style.accessControlName">{{ getText('survey.access.specificPhone') }}</span>
-                              <small :class="$style.accessControlDesc">{{ getText('survey.access.specificPhoneDesc') }}</small>
+                          <div :class="$style.accessControlCardContent">
+                            <div :class="$style.accessControlIconWrapper">
+                              <i class="fas fa-phone-alt"></i>
+                            </div>
+                            <div :class="$style.accessControlTextContent">
+                              <h5 :class="$style.accessControlName">{{ getText('survey.access.specificPhone') }}</h5>
+                              <p :class="$style.accessControlDesc">{{ getText('survey.access.specificPhoneDesc') }}</p>
+                            </div>
+                            <div :class="$style.accessControlRadioContainer">
+                              <div :class="$style.accessControlRadio">
+                                <div v-if="passwordAccessMode === 'phone'" :class="$style.radioSelected"></div>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -406,24 +434,13 @@
               <div v-if="selectedAccess === 'GROUPS'" :class="$style.groupsSection">
                 <div :class="$style.groupManagement">
                   <!-- Selected Groups Count -->
-                  <div v-if="selectedGroups.length > 0" :class="$style.groupsCount">
-                    <i class="fas fa-users-cog"></i>
-                    <span>{{ selectedGroups.length }} {{ getText('survey.access.groupsSelected') }}</span>
-                    <button 
-                      :class="$style.clearAllButton"
-                      @click="clearAllGroups"
-                      :title="getText('survey.access.clearAll')"
-                    >
-                      <i class="fas fa-times-circle"></i>
-                    </button>
-                  </div>
-                  
+                
                   <!-- Groups List -->
                   <div v-if="availableGroups.length > 0" :class="$style.groupsList">
                     <div 
                       v-for="group in availableGroups" 
                       :key="group.id"
-                      :class="[$style.groupItem, { [$style.selected]: isGroupSelected(group.id) }]"
+                      :class="[$style.groupCard, { [$style.selected]: isGroupSelected(group.id) }]"
                       @click="toggleGroupSelection(group)"
                       role="button"
                       :aria-pressed="isGroupSelected(group.id)"
@@ -431,34 +448,36 @@
                       @keydown.enter="toggleGroupSelection(group)"
                       @keydown.space.prevent="toggleGroupSelection(group)"
                     >
-                      <div :class="$style.groupCheckbox">
-                        <input 
-                          type="checkbox"
-                          :checked="isGroupSelected(group.id)"
-                          :id="`group-${group.id}`"
-                          :class="$style.hiddenCheckbox"
-                          @click.stop
-                          @change="toggleGroupSelection(group)"
-                        />
-                        <label 
-                          :for="`group-${group.id}`" 
-                          :class="$style.customCheckbox"
-                          @click.stop
-                        >
-                          <i :class="isGroupSelected(group.id) ? 'fas fa-check' : ''"></i>
-                        </label>
-                      </div>
-                      <div :class="$style.groupInfo">
-                        <span :class="$style.groupName">{{ group.name }}</span>
-                        <small :class="$style.groupDescription">
-                          {{ group.user_count }} {{ getText('survey.access.members') }}
-                          <span v-if="group.admin_level" :class="$style.adminLevel">
-                            ({{ getText(`userManagement.adminLevel.${group.admin_level}`) || group.admin_level }})
-                          </span>
-                        </small>
-                      </div>
-                      <div :class="$style.groupStatus">
-                        <i v-if="isGroupSelected(group.id)" class="fas fa-check-circle" :class="$style.selectedIcon"></i>
+                      <div :class="$style.groupCardContent">
+                        <div :class="$style.groupIconWrapper">
+                          <i class="fas fa-users"></i>
+                        </div>
+                        <div :class="$style.groupTextContent">
+                          <h5 :class="$style.groupName">{{ group.name }}</h5>
+                          <p :class="$style.groupDescription">
+                            {{ group.user_count }} {{ getText('survey.access.members') }}
+                            <span v-if="group.admin_level" :class="$style.adminLevel">
+                              • {{ getText(`userManagement.adminLevel.${group.admin_level}`) || group.admin_level }}
+                            </span>
+                          </p>
+                        </div>
+                        <div :class="$style.groupCheckboxContainer">
+                          <input 
+                            type="checkbox"
+                            :checked="isGroupSelected(group.id)"
+                            :id="`group-${group.id}`"
+                            :class="$style.hiddenCheckbox"
+                            @click.stop
+                            @change="toggleGroupSelection(group)"
+                          />
+                          <label 
+                            :for="`group-${group.id}`" 
+                            :class="$style.customCheckbox"
+                            @click.stop
+                          >
+                            <i v-if="isGroupSelected(group.id)" class="fas fa-check"></i>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -470,7 +489,20 @@
                       @click="selectAllGroups"
                       :disabled="selectedGroups.length === availableGroups.length"
                     >
-                      <i class="fas fa-check-double"></i>
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_137_8979)">
+<path d="M1.66797 10.0001C1.66797 6.07171 1.66797 4.10752 2.88836 2.88714C4.10875 1.66675 6.07293 1.66675 10.0013 1.66675C13.9297 1.66675 15.8939 1.66675 17.1142 2.88714C18.3346 4.10752 18.3346 6.07171 18.3346 10.0001C18.3346 13.9285 18.3346 15.8926 17.1142 17.113C15.8939 18.3334 13.9297 18.3334 10.0013 18.3334C6.07293 18.3334 4.10875 18.3334 2.88836 17.113C1.66797 15.8926 1.66797 13.9285 1.66797 10.0001Z" stroke="white" stroke-width="1.5"/>
+<path d="M5 13.1667L5.95238 14.1667L8.33333 11.6667" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M5 7.33325L5.95238 8.33325L8.33333 5.83325" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M10.832 7.5L14.9987 7.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+<path d="M10.832 13.3333L14.9987 13.3333" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_137_8979">
+<rect width="20" height="20" fill="white"/>
+</clipPath>
+</defs>
+</svg>
                       {{ getText('survey.access.selectAll') }}
                     </button>
                     <button 
@@ -478,7 +510,7 @@
                       @click="clearAllGroups"
                       :disabled="selectedGroups.length === 0"
                     >
-                      <i class="fas fa-times"></i>
+                      <!-- <i class="fas fa-times"></i> -->
                       {{ getText('survey.access.clearAll') }}
                     </button>
                   </div>
@@ -557,14 +589,7 @@
 
       <!-- Footer -->
       <div :class="$style.modalFooter">
-        <button
-          type="button"
-          :class="[$style.footerButton, $style.cancelButton]"
-          @click="$emit('cancel')"
-        >
-          {{ getText('common.cancel') }}
-        </button>
-        
+      
         <button
           type="button"
           :class="[$style.footerButton, $style.saveButton, { [$style.loading]: isSaving }]"
@@ -576,6 +601,14 @@
           <i v-else class="fas fa-save"></i>
           {{ getText('survey.access.saveChanges') }}
         </button>
+          <button
+          type="button"
+          :class="[$style.footerButton, $style.cancelButton]"
+          @click="$emit('cancel')"
+        >
+          {{ getText('common.cancel') }}
+        </button>
+        
       </div>
     </div>
   </div>
@@ -593,7 +626,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '../../stores/useAppStore'
 import { surveyService } from '../../services/surveyService'
 import LinkSharingModal from '../LinkSharingModal/LinkSharingModal.vue'
@@ -637,6 +670,9 @@ const currentLanguage = computed(() => store.currentLanguage)
 const isSaveDisabled = computed(() => {
   if (isSaving.value) return true
   
+  // Disable if no access level is selected
+  if (!selectedAccess.value) return true
+  
   // Disable save if GROUPS is selected but no groups available
   if (selectedAccess.value === 'GROUPS' && availableGroups.value.length === 0 && !isLoadingGroups.value) {
     return true
@@ -649,6 +685,12 @@ const isSaveDisabled = computed(() => {
 const saveButtonTooltip = computed(() => {
   if (isSaving.value) {
     return currentLanguage.value === 'ar' ? 'جاري الحفظ...' : 'Saving...'
+  }
+  
+  if (!selectedAccess.value) {
+    return currentLanguage.value === 'ar' 
+      ? 'يرجى اختيار مستوى الوصول'
+      : 'Please select an access level'
   }
   
   if (selectedAccess.value === 'GROUPS' && availableGroups.value.length === 0 && !isLoadingGroups.value) {
@@ -868,7 +910,7 @@ const getText = (key: string, fallback?: string) => {
 }
 
 // State
-const selectedAccess = ref<SurveyVisibility>(props.survey.visibility)
+const selectedAccess = ref<SurveyVisibility | ''>('') // Start with no selection
 const selectedContactMethod = ref<PublicContactMethod>(props.survey.public_contact_method || 'email')
 const perDeviceAccessEnabled = ref(props.survey.per_device_access || false)
 const publicLink = ref<PublicLinkResponse | null>(null)
@@ -1173,6 +1215,15 @@ const handleSave = async () => {
     isSaving.value = true
     clearStatusMessage()
 
+    // Validate that an access level is selected
+    if (!selectedAccess.value) {
+      const message = currentLanguage.value === 'ar' 
+        ? 'يرجى اختيار مستوى الوصول'
+        : 'Please select an access level'
+      setStatusMessage(message, 'warning')
+      return
+    }
+
     // Validate survey ID is present
     if (!props.survey?.id) {
       const message = currentLanguage.value === 'ar' 
@@ -1407,6 +1458,9 @@ watch(() => perDeviceAccessEnabled.value, (isEnabled) => {
 
 // Lifecycle
 onMounted(() => {
+  // Prevent body scroll when modal is open
+  document.body.classList.add('modal-open')
+  
   loadSharedUsers()
   if (props.survey.visibility === 'GROUPS') {
     loadAdminGroups()
@@ -1428,6 +1482,18 @@ onMounted(() => {
   
   // Store cleanup function for potential manual cleanup
   ;(window as any).__countryDropdownCleanup = cleanup
+})
+
+// Cleanup when component unmounts
+onUnmounted(() => {
+  // Restore body scroll
+  document.body.classList.remove('modal-open')
+  
+  // Clean up event listeners
+  if ((window as any).__countryDropdownCleanup) {
+    ;(window as any).__countryDropdownCleanup()
+    delete (window as any).__countryDropdownCleanup
+  }
 })
 </script>
 

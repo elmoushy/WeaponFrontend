@@ -67,7 +67,11 @@
                 @click="copyToClipboard(currentLink)"
                 :title="getText('common.copy')"
               >
-                <i class="fas fa-copy"></i>
+               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M16.668 6.66669H8.33464C7.41416 6.66669 6.66797 7.41288 6.66797 8.33335V16.6667C6.66797 17.5872 7.41416 18.3334 8.33464 18.3334H16.668C17.5884 18.3334 18.3346 17.5872 18.3346 16.6667V8.33335C18.3346 7.41288 17.5884 6.66669 16.668 6.66669Z" stroke="#525866" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M3.33464 13.3334C2.41797 13.3334 1.66797 12.5834 1.66797 11.6667V3.33335C1.66797 2.41669 2.41797 1.66669 3.33464 1.66669H11.668C12.5846 1.66669 13.3346 2.41669 13.3346 3.33335" stroke="#525866" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
               </button>
             </div>
 
@@ -84,30 +88,29 @@
                   {{ getText('survey.access.scanToAccess') }}
                 </div>
               </div>
-              <div :class="$style.qrActions">
-                <button 
-                  :class="$style.qrActionButton"
-                  @click="downloadQRCode"
-                  :title="getText('survey.access.downloadQR')"
-                >
-                  <i class="fas fa-download"></i>
-                  {{ getText('survey.access.download') }}
-                </button>
-                <button 
-                  :class="$style.qrActionButton"
-                  @click="copyQRToClipboard"
-                  :title="getText('survey.access.copyQR')"
-                >
-                  <i class="fas fa-copy"></i>
-                  {{ getText('survey.access.copy') }}
-                </button>
-              </div>
+          
             </div>
 
             <!-- Share Actions -->
             <div :class="$style.shareActions">
               <button 
-                :class="[$style.shareButton, { [$style.disabled]: !currentLinkData && !publicLink }]"
+                :class="$style.actionButton1"
+                @click="downloadQRCode"
+                :title="getText('survey.access.downloadQR')"
+              >
+                <i class="fas fa-download"></i>
+                {{ getText('survey.access.download') }}
+              </button>
+              <button 
+                :class="$style.actionButton2"
+                @click="copyQRToClipboard"
+                :title="getText('survey.access.copyQR')"
+              >
+                <i class="fas fa-copy"></i>
+                {{ getText('survey.access.copy') }}
+              </button>
+              <button 
+                :class="[$style.actionButton3, { [$style.disabled]: !currentLinkData && !publicLink }]"
                 @click="shareByEmail"
                 :disabled="!currentLinkData && !publicLink"
                 :title="getText('survey.access.shareByEmail')"
@@ -115,24 +118,6 @@
                 <i class="fas fa-envelope"></i>
                 {{ getText('survey.access.email') }}
               </button>
-              <!-- <button 
-                :class="[$style.shareButton, { [$style.disabled]: !currentLinkData && !publicLink }]"
-                @click="shareByWhatsApp"
-                :disabled="!currentLinkData && !publicLink"
-                :title="getText('survey.access.shareByWhatsApp')"
-              >
-                <i class="fab fa-whatsapp"></i>
-                {{ getText('survey.access.whatsapp') }}
-              </button> -->
-              <!-- <button 
-                :class="[$style.shareButton, { [$style.disabled]: !currentLinkData && !publicLink }]"
-                @click="shareBySMS"
-                :disabled="!currentLinkData && !publicLink"
-                :title="getText('survey.access.shareBySMS')"
-              >
-                <i class="fas fa-sms"></i>
-                {{ getText('survey.access.sms') }}
-              </button> -->
             </div>
           </div>
           
@@ -156,7 +141,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '../../stores/useAppStore'
 import { surveyService } from '../../services/surveyService'
 import QRCode from 'qrcode'
@@ -633,6 +618,11 @@ watch(() => props.isVisible, async (visible) => {
   if (visible) {
     // Load current link data when modal becomes visible
     await loadCurrentLink()
+    // Prevent body scroll when modal is open
+    document.body.classList.add('modal-open')
+  } else {
+    // Restore body scroll when modal is closed
+    document.body.classList.remove('modal-open')
   }
 }, { immediate: true })
 
@@ -641,7 +631,14 @@ onMounted(() => {
   // Load current link data if modal is visible
   if (props.isVisible) {
     loadCurrentLink()
+    document.body.classList.add('modal-open')
   }
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  // Restore body scroll when component is unmounted
+  document.body.classList.remove('modal-open')
 })
 </script>
 

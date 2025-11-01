@@ -26,46 +26,34 @@ Warm Beige: #D6CDBD (214, 205, 189)
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
-    radial-gradient(circle at 50% 50%, rgba(161, 125, 35, 0.15) 0%, transparent 70%);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
+background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
   padding: 20px;
+  animation: overlayFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modalContainer {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: white;
+
+  /* border: 1px solid black; */
   border-radius: 28px;
   width: 100%;
-  max-width: 700px;
+  max-width: 600px;
   max-height: 90vh;
   overflow: hidden;
   box-shadow: 
-    0 25px 50px rgba(161, 125, 35, 0.2),
+    0 25px 50px rgba(153, 122, 81, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   display: flex;
   flex-direction: column;
   position: relative;
+  animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.modalContainer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    linear-gradient(135deg, rgba(161, 125, 35, 0.05) 0%, rgba(183, 138, 65, 0.08) 100%);
-  z-index: -1;
-}
+
 
 .modalContainer[data-theme="night"] {
   background: rgba(66, 64, 59, 0.25);
@@ -101,28 +89,48 @@ Warm Beige: #D6CDBD (214, 205, 189)
 }
 
 /* Header */
+/* Modal Header */
 .modalHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 32px 40px 24px 40px;
-  border-bottom: 1px solid rgba(161, 125, 35, 0.1);
+  padding: 28px 36px;
+  background: linear-gradient(135deg, rgba(161, 125, 35, 0.08) 0%, rgba(183, 138, 65, 0.12) 100%);
+  border-bottom: 2px solid rgba(161, 125, 35, 0.15);
   position: relative;
+  overflow: hidden;
+}
+
+.modalHeader::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #A17D23 0%, #B78A41 50%, #CEA55B 100%);
+  opacity: 0.6;
 }
 
 .modalContainer[data-theme="night"] .modalHeader {
-  border-bottom: 1px solid rgba(161, 125, 35, 0.2);
+  background: linear-gradient(135deg, rgba(153, 122, 81, 0.12) 0%, rgba(153, 122, 81, 0.18) 100%);
+  border-bottom: 2px solid rgba(153, 122, 81, 0.25);
+}
+
+.modalContainer[data-theme="night"] .modalHeader::before {
+  background: linear-gradient(90deg, #997A51 0%, #B38D65 50%, #C9A579 100%);
+  opacity: 0.5;
 }
 
 .modalTitle {
-  font-size: 1.75rem;
-  font-weight: 700;
   margin: 0;
-  color: #262626;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #2C2C2C;
   display: flex;
   align-items: center;
-  gap: 16px;
-  letter-spacing: -0.3px;
+  gap: 14px;
+  letter-spacing: -0.02em;
 }
 
 .modalContainer[data-theme="night"] .modalTitle {
@@ -130,59 +138,66 @@ Warm Beige: #D6CDBD (214, 205, 189)
 }
 
 .modalIcon {
-  color: #A17D23;
-  font-size: 1.5rem;
-  filter: drop-shadow(0 2px 4px rgba(161, 125, 35, 0.3));
-}
-
-.modalContainer[data-theme="night"] .modalIcon {
-  color: #B78A41;
-  filter: drop-shadow(0 2px 4px rgba(183, 138, 65, 0.4));
-}
-
-.closeButton {
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(161, 125, 35, 0.2);
-  font-size: 1.2rem;
-  color: #A17D23;
-  cursor: pointer;
-  padding: 12px;
-  border-radius: 12px;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, #A17D23 0%, #B78A41 100%);
+  border-radius: 12px;
+  color: white;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 12px rgba(161, 125, 35, 0.25);
+}
+
+.modalContainer[data-theme="night"] .modalIcon {
+  background: linear-gradient(135deg, #997A51 0%, #B38D65 100%);
+  box-shadow: 0 4px 12px rgba(153, 122, 81, 0.35);
+}
+
+.closeButton {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(161, 125, 35, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #666;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .modalContainer[data-theme="night"] .closeButton {
-  background: rgba(66, 64, 59, 0.3);
+  background: rgba(30, 35, 48, 0.8);
   color: #F5F3EE;
-  border-color: rgba(245, 243, 238, 0.3);
+  border-color: rgba(153, 122, 81, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .closeButton:hover {
-  background: rgba(161, 125, 35, 0.15);
-  border-color: rgba(161, 125, 35, 0.4);
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 6px 20px rgba(161, 125, 35, 0.3);
+  background: linear-gradient(135deg, rgba(212, 67, 51, 0.1) 0%, rgba(212, 67, 51, 0.15) 100%);
+  border-color: rgba(212, 67, 51, 0.4);
+  color: #D44333;
+  transform: translateY(-2px) rotate(90deg);
+  box-shadow: 0 6px 16px rgba(212, 67, 51, 0.2);
 }
 
 .modalContainer[data-theme="night"] .closeButton:hover {
-  background: rgba(245, 243, 238, 0.15);
-  border-color: rgba(245, 243, 238, 0.4);
+  background: linear-gradient(135deg, rgba(212, 67, 51, 0.15) 0%, rgba(212, 67, 51, 0.2) 100%);
+  border-color: rgba(212, 67, 51, 0.5);
+  color: #E76B5A;
+  box-shadow: 0 6px 16px rgba(212, 67, 51, 0.3);
 }
 
 /* Body */
 .modalBody {
-  flex: 1;
-  padding: 40px;
+  padding: 0 32px 32px;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
+  flex: 1;
 }
 
 /* Survey Info */
@@ -276,13 +291,13 @@ Warm Beige: #D6CDBD (214, 205, 189)
 }
 
 .accessOption {
-  border: 2px solid rgba(161, 125, 35, 0.2);
+  border: 2px solid #F5F7FA;
   border-radius: 20px;
   padding: 24px;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(15px);
+  background: #F5F7FA;
+  /* backdrop-filter: blur(15px); */
   position: relative;
   overflow: hidden;
 }
@@ -292,16 +307,7 @@ Warm Beige: #D6CDBD (214, 205, 189)
   border-color: rgba(161, 125, 35, 0.3);
 }
 
-.accessOption::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(161, 125, 35, 0.1), transparent);
-  transition: left 0.6s ease;
-}
+
 
 .accessOption:hover::before {
   left: 100%;
@@ -320,7 +326,7 @@ Warm Beige: #D6CDBD (214, 205, 189)
 }
 
 .accessOption.selected {
-  border-color: #997A51;
+  border-color: #CFA365;
   background: rgba(153, 122, 81, 0.1);
   box-shadow: 
     0 8px 25px rgba(153, 122, 81, 0.25),
@@ -338,7 +344,7 @@ Warm Beige: #D6CDBD (214, 205, 189)
 }
 
 .accessOption.selected {
-  border-color: var(--primary-color);
+  border-color: #CFA365;
   background: rgba(74, 144, 226, 0.05);
 }
 
@@ -406,10 +412,10 @@ Warm Beige: #D6CDBD (214, 205, 189)
 .optionRadio {
   width: 24px;
   height: 24px;
-  border: 2px solid rgba(161, 125, 35, 0.4);
+  border: 1px solid #BEBEC8;
   border-radius: 50%;
   position: relative;
-  background: rgba(255, 255, 255, 0.2);
+  background: transparent;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -444,6 +450,91 @@ Warm Beige: #D6CDBD (214, 205, 189)
 
 .modalContainer[data-theme="night"] .publicLinkSection {
   border-top: 1px solid rgba(161, 125, 35, 0.3);
+}
+
+/* Per-Device Access Section - Modern Card Design */
+.perDeviceAccessSection {
+  margin-bottom: 24px;
+}
+
+.perDeviceAccessCard {
+  background: linear-gradient(135deg, rgba(161, 125, 35, 0.05) 0%, rgba(183, 138, 65, 0.08) 100%);
+  border: 1px solid rgba(161, 125, 35, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.perDeviceAccessCard:hover {
+  border-color: rgba(161, 125, 35, 0.35);
+  box-shadow: 0 4px 16px rgba(161, 125, 35, 0.12);
+}
+
+.perDeviceAccessHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.perDeviceIconWrapper {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #A17D23 0%, #B78A41 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  box-shadow: 0 4px 12px rgba(161, 125, 35, 0.25);
+}
+
+.perDeviceTextContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.perDeviceAccessTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.perDeviceDescription {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.perDeviceToggleContainer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* Dark theme for Per-Device Access */
+.modalContainer[data-theme="night"] .perDeviceAccessCard {
+  background: linear-gradient(135deg, rgba(161, 125, 35, 0.15) 0%, rgba(183, 138, 65, 0.12) 100%);
+  border-color: rgba(161, 125, 35, 0.3);
+}
+
+.modalContainer[data-theme="night"] .perDeviceAccessCard:hover {
+  border-color: rgba(161, 125, 35, 0.45);
+  box-shadow: 0 4px 16px rgba(161, 125, 35, 0.2);
+}
+
+.modalContainer[data-theme="night"] .perDeviceAccessTitle {
+  color: #E5E5E5;
+}
+
+.modalContainer[data-theme="night"] .perDeviceDescription {
+  color: #B8B8B8;
 }
 
 .linkContainer {
@@ -1618,45 +1709,93 @@ Warm Beige: #D6CDBD (214, 205, 189)
   width: fit-content;
 }
 
+/* Groups List */
 .groupsList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  max-height: 200px;
+  gap: 12px;
+  max-height: 400px;
   overflow-y: auto;
   padding-right: 4px;
 }
 
-.groupItem {
+.groupCard {
+  background: linear-gradient(135deg, rgba(161, 125, 35, 0.05) 0%, rgba(183, 138, 65, 0.08) 100%);
+  border: 2px solid rgba(161, 125, 35, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.groupCard:hover {
+  border-color: rgba(161, 125, 35, 0.35);
+  box-shadow: 0 4px 16px rgba(161, 125, 35, 0.12);
+  /* transform: translateY(-2px); */
+}
+
+.groupCard.selected {
+  background: linear-gradient(135deg, rgba(161, 125, 35, 0.12) 0%, rgba(183, 138, 65, 0.15) 100%);
+  border-color: #A17D23;
+  box-shadow: 0 6px 20px rgba(161, 125, 35, 0.18);
+}
+
+.groupCardContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.groupIconWrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #A17D23 0%, #B78A41 100%);
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.groupItem:hover {
-  background: rgba(255, 255, 255, 0.8);
-  border-color: var(--primary-color);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.groupItem.selected {
-  background: rgba(0, 123, 255, 0.1);
-  border-color: var(--primary-color);
-  box-shadow: 0 2px 12px rgba(0, 123, 255, 0.2);
-}
-
-.groupCheckbox {
-  margin-right: 12px;
-  position: relative;
+  justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(161, 125, 35, 0.2);
+}
+
+.groupIconWrapper i {
+  color: white;
+  font-size: 18px;
+}
+
+.groupTextContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.groupName {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2C2C2C;
+  margin: 0 0 4px 0;
+  line-height: 1.4;
+}
+
+.groupDescription {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.adminLevel {
+  font-weight: 600;
+  color: #A17D23;
+}
+
+.groupCheckboxContainer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding-top: 8px;
 }
 
 .hiddenCheckbox {
@@ -1670,60 +1809,32 @@ Warm Beige: #D6CDBD (214, 205, 189)
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(0, 123, 255, 0.3);
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.8);
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(161, 125, 35, 0.3);
+  border-radius: 6px;
+  background: white;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 12px;
+  font-size: 14px;
   color: white;
 }
 
 .hiddenCheckbox:checked + .customCheckbox {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
+  background: linear-gradient(135deg, #A17D23 0%, #B78A41 100%);
+  border-color: #A17D23;
+  box-shadow: 0 2px 6px rgba(161, 125, 35, 0.3);
 }
 
-.groupInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
+.customCheckbox i {
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.2s ease;
 }
 
-.groupName {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-color);
-  margin: 0;
-}
-
-.groupDescription {
-  font-size: 0.75rem;
-  color: var(--text-color);
-  opacity: 0.6;
-  margin: 0;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.adminLevel {
-  font-weight: 500;
-  color: var(--primary-color);
-  opacity: 0.8;
-}
-
-.groupStatus {
-  margin-left: 12px;
-  flex-shrink: 0;
-}
-
-.selectedIcon {
-  color: var(--success-color);
-  font-size: 1.1rem;
+.hiddenCheckbox:checked + .customCheckbox i {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .bulkActions {
@@ -1739,8 +1850,8 @@ Warm Beige: #D6CDBD (214, 205, 189)
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: rgba(0, 123, 255, 0.1);
-  color: var(--primary-color);
+  background: #A17D23;
+  color: white;
   border: 1px solid rgba(0, 123, 255, 0.2);
   border-radius: 8px;
   font-size: 0.8rem;
@@ -1750,8 +1861,8 @@ Warm Beige: #D6CDBD (214, 205, 189)
 }
 
 .bulkActionButton:hover:not(:disabled) {
-  background: rgba(0, 123, 255, 0.15);
-  border-color: var(--primary-color);
+  background: #473505;
+  /* border-color: var(--primary-color); */
   transform: translateY(-1px);
 }
 
@@ -1782,14 +1893,9 @@ Warm Beige: #D6CDBD (214, 205, 189)
 }
 
 /* RTL Support for group items */
-[dir="rtl"] .groupCheckbox {
+[dir="rtl"] .groupCheckboxContainer {
   margin-right: 0;
-  margin-left: 12px;
-}
-
-[dir="rtl"] .groupStatus {
   margin-left: 0;
-  margin-right: 12px;
 }
 
 [dir="rtl"] .clearAllButton {
@@ -1825,19 +1931,26 @@ Warm Beige: #D6CDBD (214, 205, 189)
   background: rgba(0, 123, 255, 0.15);
 }
 
-.modalContainer[data-theme="night"] .groupItem {
-  background: rgba(245, 243, 238, 0.08);
-  border-color: rgba(245, 243, 238, 0.15);
+.modalContainer[data-theme="night"] .groupCard {
+  background: linear-gradient(135deg, rgba(153, 122, 81, 0.08) 0%, rgba(153, 122, 81, 0.12) 100%);
+  border-color: rgba(153, 122, 81, 0.25);
 }
 
-.modalContainer[data-theme="night"] .groupItem:hover {
-  background: rgba(245, 243, 238, 0.15);
-  border-color: var(--primary-color);
+.modalContainer[data-theme="night"] .groupCard:hover {
+  background: linear-gradient(135deg, rgba(153, 122, 81, 0.12) 0%, rgba(153, 122, 81, 0.18) 100%);
+  border-color: rgba(153, 122, 81, 0.4);
+  box-shadow: 0 4px 16px rgba(153, 122, 81, 0.2);
 }
 
-.modalContainer[data-theme="night"] .groupItem.selected {
-  background: rgba(0, 123, 255, 0.15);
-  border-color: var(--primary-color);
+.modalContainer[data-theme="night"] .groupCard.selected {
+  background: linear-gradient(135deg, rgba(153, 122, 81, 0.18) 0%, rgba(153, 122, 81, 0.25) 100%);
+  border-color: #997A51;
+  box-shadow: 0 6px 20px rgba(153, 122, 81, 0.3);
+}
+
+.modalContainer[data-theme="night"] .groupIconWrapper {
+  background: linear-gradient(135deg, #997A51 0%, #B38D65 100%);
+  box-shadow: 0 2px 8px rgba(153, 122, 81, 0.3);
 }
 
 .modalContainer[data-theme="night"] .groupName {
@@ -1845,16 +1958,22 @@ Warm Beige: #D6CDBD (214, 205, 189)
 }
 
 .modalContainer[data-theme="night"] .groupDescription {
-  color: rgba(245, 243, 238, 0.6);
+  color: #B8B8B8;
 }
 
 .modalContainer[data-theme="night"] .adminLevel {
-  color: rgba(183, 138, 65, 0.9);
+  color: #997A51;
 }
 
 .modalContainer[data-theme="night"] .customCheckbox {
-  background: rgba(245, 243, 238, 0.1);
-  border-color: rgba(0, 123, 255, 0.4);
+  border-color: rgba(153, 122, 81, 0.4);
+  background: rgba(30, 35, 48, 0.6);
+}
+
+.modalContainer[data-theme="night"] .hiddenCheckbox:checked + .customCheckbox {
+  background: linear-gradient(135deg, #997A51 0%, #B38D65 100%);
+  border-color: #997A51;
+  box-shadow: 0 2px 6px rgba(153, 122, 81, 0.4);
 }
 
 .modalContainer[data-theme="night"] .bulkActionButton {
@@ -1928,6 +2047,8 @@ Warm Beige: #D6CDBD (214, 205, 189)
 .modalFooter {
   padding: 16px 24px; /* Reduced from more padding */
   gap: 12px;
+  display: flex;
+justify-content: flex-start;
 }
 
 .footerButton {
@@ -2000,79 +2121,102 @@ Warm Beige: #D6CDBD (214, 205, 189)
   gap: 12px;
 }
 
-.contactMethodOption {
+.contactMethodCard {
+  background: linear-gradient(135deg, rgba(161, 125, 35, 0.05) 0%, rgba(183, 138, 65, 0.08) 100%);
+  border: 2px solid rgba(161, 125, 35, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.contactMethodCard:hover {
+  border-color: rgba(161, 125, 35, 0.35);
+  box-shadow: 0 4px 16px rgba(161, 125, 35, 0.12);
+  transform: translateY(-2px);
+}
+
+.contactMethodCard.selected {
+  background: linear-gradient(135deg, rgba(161, 125, 35, 0.12) 0%, rgba(183, 138, 65, 0.15) 100%);
+  border-color: #A17D23;
+  box-shadow: 0 6px 20px rgba(161, 125, 35, 0.18);
+}
+
+.contactMethodCardContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.contactMethodIconWrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #A17D23 0%, #B78A41 100%);
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
-  background: white;
-  border: 2px solid rgba(161, 125, 35, 0.2);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(161, 125, 35, 0.2);
 }
 
-.contactMethodOption:hover {
-  background: rgba(161, 125, 35, 0.05);
-  border-color: rgba(161, 125, 35, 0.3);
+.contactMethodIconWrapper i {
+  color: white;
+  font-size: 18px;
 }
 
-.contactMethodOption.selected {
-  background: rgba(161, 125, 35, 0.1);
-  border-color: #A17D23;
+.contactMethodTextContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.contactMethodName {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2C2C2C;
+  margin: 0 0 4px 0;
+  line-height: 1.4;
+}
+
+.contactMethodDesc {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.contactMethodRadioContainer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding-top: 8px;
 }
 
 .contactMethodRadio {
-  width: 18px ;
-  height: 18px ;
-  border: 2px solid #ddd;
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(161, 125, 35, 0.3);
   border-radius: 50%;
   position: relative;
-  flex-shrink: 0;
-  transition: border-color 0.2s ease;
+  transition: all 0.2s ease;
+  background: white;
 }
 
-.contactMethodOption.selected .contactMethodRadio {
+.contactMethodCard.selected .contactMethodRadio {
   border-color: #A17D23;
+  background: linear-gradient(135deg, rgba(161, 125, 35, 0.1) 0%, rgba(183, 138, 65, 0.15) 100%);
 }
 
-.radioSelected2 {
+.radioSelected {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 10px;
-  height: 10px;
-  background: #A17D23;
+  width: 12px;
+  height: 12px;
+  background: linear-gradient(135deg, #A17D23 0%, #B78A41 100%);
   border-radius: 50%;
-}
-
-.contactMethodInfo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-}
-
-.contactMethodIcon {
-  color: #A17D23;
-  font-size: 1rem;
-  width: 20px;
-  text-align: center;
-}
-
-.contactMethodName {
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-  display: block;
-  margin-bottom: 2px;
-}
-
-.contactMethodDesc {
-  color: #666;
-  font-size: 14px;
-  line-height: 1.3;
+  box-shadow: 0 1px 4px rgba(161, 125, 35, 0.3);
 }
 
 /* Dark theme styles */
@@ -2089,19 +2233,26 @@ Warm Beige: #D6CDBD (214, 205, 189)
   color: #B8B8B8;
 }
 
-.modalContainer[data-theme="night"] .contactMethodOption {
-  background: rgba(30, 35, 48, 0.8);
+.modalContainer[data-theme="night"] .contactMethodCard {
+  background: linear-gradient(135deg, rgba(153, 122, 81, 0.08) 0%, rgba(153, 122, 81, 0.12) 100%);
   border-color: rgba(153, 122, 81, 0.25);
 }
 
-.modalContainer[data-theme="night"] .contactMethodOption:hover {
-  background: rgba(30, 35, 48, 0.95);
+.modalContainer[data-theme="night"] .contactMethodCard:hover {
+  background: linear-gradient(135deg, rgba(153, 122, 81, 0.12) 0%, rgba(153, 122, 81, 0.18) 100%);
   border-color: rgba(153, 122, 81, 0.4);
+  box-shadow: 0 4px 16px rgba(153, 122, 81, 0.2);
 }
 
-.modalContainer[data-theme="night"] .contactMethodOption.selected {
-  background: rgba(153, 122, 81, 0.15);
+.modalContainer[data-theme="night"] .contactMethodCard.selected {
+  background: linear-gradient(135deg, rgba(153, 122, 81, 0.18) 0%, rgba(153, 122, 81, 0.25) 100%);
   border-color: #997A51;
+  box-shadow: 0 6px 20px rgba(153, 122, 81, 0.3);
+}
+
+.modalContainer[data-theme="night"] .contactMethodIconWrapper {
+  background: linear-gradient(135deg, #997A51 0%, #B38D65 100%);
+  box-shadow: 0 2px 8px rgba(153, 122, 81, 0.3);
 }
 
 .modalContainer[data-theme="night"] .contactMethodName {
@@ -2113,43 +2264,87 @@ Warm Beige: #D6CDBD (214, 205, 189)
 }
 
 .modalContainer[data-theme="night"] .contactMethodRadio {
-  border-color: #666;
+  border-color: rgba(153, 122, 81, 0.4);
+  background: rgba(30, 35, 48, 0.6);
 }
 
-.modalContainer[data-theme="night"] .contactMethodOption.selected .contactMethodRadio {
+.modalContainer[data-theme="night"] .contactMethodCard.selected .contactMethodRadio {
   border-color: #997A51;
+  background: linear-gradient(135deg, rgba(153, 122, 81, 0.15) 0%, rgba(153, 122, 81, 0.22) 100%);
+}
+
+.modalContainer[data-theme="night"] .radioSelected {
+  background: linear-gradient(135deg, #997A51 0%, #B38D65 100%);
+  box-shadow: 0 1px 4px rgba(153, 122, 81, 0.4);
 }
 
 /* Password Protection Styles */
+/* Password Protection Section */
 .passwordProtectionSection {
   margin-top: 20px;
-  padding: 20px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.passwordProtectionHeader {
+.passwordProtectionCard {
+  background: linear-gradient(135deg, rgba(161, 125, 35, 0.05) 0%, rgba(183, 138, 65, 0.08) 100%);
+  border: 2px solid rgba(161, 125, 35, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.passwordProtectionCard:hover {
+  border-color: rgba(161, 125, 35, 0.3);
+  box-shadow: 0 4px 16px rgba(161, 125, 35, 0.1);
+}
+
+.passwordProtectionCardHeader {
   display: flex;
-  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.passwordProtectionIconWrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #A17D23 0%, #B78A41 100%);
+  display: flex;
   align-items: center;
-  margin-bottom: 15px;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(161, 125, 35, 0.2);
+}
+
+.passwordProtectionIconWrapper i {
+  color: white;
+  font-size: 18px;
+}
+
+.passwordProtectionTextContent {
+  flex: 1;
+  min-width: 0;
 }
 
 .passwordProtectionTitle {
   font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
+  font-weight: 700;
+  color: #2C2C2C;
+  margin: 0 0 4px 0;
+  line-height: 1.4;
 }
 
-.passwordToggleContainer {
+.passwordProtectionSubtitle {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.passwordProtectionToggleContainer {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
+  padding-top: 8px;
 }
 
 .toggleSwitch {
@@ -2191,39 +2386,26 @@ Warm Beige: #D6CDBD (214, 205, 189)
 }
 
 .toggleInput:checked + .toggleSlider {
-  background-color: #997A51;
+  background: linear-gradient(135deg, #A17D23 0%, #B78A41 100%);
 }
 
 .toggleInput:checked + .toggleSlider::before {
   transform: translateX(26px);
 }
 
-.toggleLabel {
-  font-size: 14px;
-  color: #666;
-  font-weight: 500;
-}
-
 .passwordOptions {
-  margin-top: 15px;
-}
-
-.passwordDescription {
-  font-size: 14px;
-  color: #666;
-  margin: 0 0 20px 0;
-  line-height: 1.5;
+  margin-top: 20px;
 }
 
 .accessControlSection {
-  margin-top: 20px;
+  margin-top: 0;
 }
 
 .accessControlTitle {
   font-size: 15px;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 15px 0;
+  font-weight: 700;
+  color: #2C2C2C;
+  margin: 0 0 16px 0;
 }
 
 .accessControlOptions {
@@ -2232,73 +2414,102 @@ Warm Beige: #D6CDBD (214, 205, 189)
   gap: 12px;
 }
 
-.accessControlOption {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 15px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid transparent;
+.accessControlCard {
+  background: linear-gradient(135deg, rgba(161, 125, 35, 0.05) 0%, rgba(183, 138, 65, 0.08) 100%);
+  border: 2px solid rgba(161, 125, 35, 0.2);
+  border-radius: 16px;
+  padding: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.accessControlOption:hover {
-  background: rgba(255, 255, 255, 0.15);
+.accessControlCard:hover {
+  border-color: rgba(161, 125, 35, 0.35);
+  box-shadow: 0 4px 16px rgba(161, 125, 35, 0.12);
+  transform: translateY(-2px);
 }
 
-.accessControlOption.selected {
-  border-color: #997A51;
-  background: rgba(153, 122, 81, 0.1);
+.accessControlCard.selected {
+  background: linear-gradient(135deg, rgba(161, 125, 35, 0.12) 0%, rgba(183, 138, 65, 0.15) 100%);
+  border-color: #A17D23;
+  box-shadow: 0 6px 20px rgba(161, 125, 35, 0.18);
 }
 
-.accessControlRadio {
-  width: 18px;
-  height: 18px;
-  border: 2px solid #ccc;
-  border-radius: 50%;
+.accessControlCardContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.accessControlIconWrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #A17D23 0%, #B78A41 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(161, 125, 35, 0.2);
 }
 
-.accessControlOption.selected .accessControlRadio {
-  border-color: #997A51;
+.accessControlIconWrapper i {
+  color: white;
+  font-size: 18px;
 }
 
-.radioSelected {
-  width: 8px;
-  height: 8px;
-  background: #997A51;
-  border-radius: 50%;
-}
-
-.accessControlInfo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.accessControlIcon {
-  color: #997A51;
-  font-size: 16px;
+.accessControlTextContent {
+  flex: 1;
+  min-width: 0;
 }
 
 .accessControlName {
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #2C2C2C;
+  margin: 0 0 4px 0;
+  line-height: 1.4;
 }
 
 .accessControlDesc {
   font-size: 13px;
   color: #666;
-  margin: 2px 0 0 0;
-  display: block;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.accessControlRadioContainer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding-top: 8px;
+}
+
+.accessControlRadio {
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(161, 125, 35, 0.3);
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.accessControlCard.selected .accessControlRadio {
+  border-color: #A17D23;
+  background: linear-gradient(135deg, rgba(161, 125, 35, 0.1) 0%, rgba(183, 138, 65, 0.15) 100%);
+}
+
+.radioSelected {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  background: linear-gradient(135deg, #A17D23 0%, #B78A41 100%);
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(161, 125, 35, 0.3);
 }
 
 .contactInput {
@@ -2478,38 +2689,94 @@ Warm Beige: #D6CDBD (214, 205, 189)
 }
 
 /* Night theme for password protection */
+.modalContainer[data-theme="night"] .passwordProtectionCard {
+  background: linear-gradient(135deg, rgba(153, 122, 81, 0.08) 0%, rgba(153, 122, 81, 0.12) 100%);
+  border-color: rgba(153, 122, 81, 0.25);
+}
+
+.modalContainer[data-theme="night"] .passwordProtectionCard:hover {
+  border-color: rgba(153, 122, 81, 0.35);
+  box-shadow: 0 4px 16px rgba(153, 122, 81, 0.15);
+}
+
+.modalContainer[data-theme="night"] .passwordProtectionIconWrapper {
+  background: linear-gradient(135deg, #997A51 0%, #B38D65 100%);
+  box-shadow: 0 2px 8px rgba(153, 122, 81, 0.3);
+}
+
 .modalContainer[data-theme="night"] .passwordProtectionTitle {
-  color: #E5E5E5;
+  color: #F5F3EE;
 }
 
-.modalContainer[data-theme="night"] .toggleLabel {
+.modalContainer[data-theme="night"] .passwordProtectionSubtitle {
   color: #B8B8B8;
 }
 
-.modalContainer[data-theme="night"] .passwordDescription {
-  color: #B8B8B8;
+.modalContainer[data-theme="night"] .toggleSlider {
+  background-color: #555;
+}
+
+.modalContainer[data-theme="night"] .toggleInput:checked + .toggleSlider {
+  background: linear-gradient(135deg, #997A51 0%, #B38D65 100%);
 }
 
 .modalContainer[data-theme="night"] .accessControlTitle {
-  color: #E5E5E5;
+  color: #F5F3EE;
+}
+
+.modalContainer[data-theme="night"] .accessControlCard {
+  background: linear-gradient(135deg, rgba(153, 122, 81, 0.08) 0%, rgba(153, 122, 81, 0.12) 100%);
+  border-color: rgba(153, 122, 81, 0.25);
+}
+
+.modalContainer[data-theme="night"] .accessControlCard:hover {
+  background: linear-gradient(135deg, rgba(153, 122, 81, 0.12) 0%, rgba(153, 122, 81, 0.18) 100%);
+  border-color: rgba(153, 122, 81, 0.4);
+  box-shadow: 0 4px 16px rgba(153, 122, 81, 0.2);
+}
+
+.modalContainer[data-theme="night"] .accessControlCard.selected {
+  background: linear-gradient(135deg, rgba(153, 122, 81, 0.18) 0%, rgba(153, 122, 81, 0.25) 100%);
+  border-color: #997A51;
+  box-shadow: 0 6px 20px rgba(153, 122, 81, 0.3);
+}
+
+.modalContainer[data-theme="night"] .accessControlIconWrapper {
+  background: linear-gradient(135deg, #997A51 0%, #B38D65 100%);
+  box-shadow: 0 2px 8px rgba(153, 122, 81, 0.3);
 }
 
 .modalContainer[data-theme="night"] .accessControlName {
-  color: #E5E5E5;
+  color: #F5F3EE;
 }
 
 .modalContainer[data-theme="night"] .accessControlDesc {
   color: #B8B8B8;
 }
 
+.modalContainer[data-theme="night"] .accessControlRadio {
+  border-color: rgba(153, 122, 81, 0.4);
+  background: rgba(30, 35, 48, 0.6);
+}
+
+.modalContainer[data-theme="night"] .accessControlCard.selected .accessControlRadio {
+  border-color: #997A51;
+  background: linear-gradient(135deg, rgba(153, 122, 81, 0.15) 0%, rgba(153, 122, 81, 0.22) 100%);
+}
+
+.modalContainer[data-theme="night"] .radioSelected {
+  background: linear-gradient(135deg, #997A51 0%, #B38D65 100%);
+  box-shadow: 0 1px 4px rgba(153, 122, 81, 0.4);
+}
+
 .modalContainer[data-theme="night"] .inputLabel {
-  color: #E5E5E5;
+  color: #F5F3EE;
 }
 
 .modalContainer[data-theme="night"] .textInput {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.15);
-  color: #E5E5E5;
+  color: #F5F3EE;
 }
 
 .modalContainer[data-theme="night"] .textInput:focus {
@@ -2518,23 +2785,6 @@ Warm Beige: #D6CDBD (214, 205, 189)
 
 .modalContainer[data-theme="night"] .textInput::placeholder {
   color: #888;
-}
-
-.modalContainer[data-theme="night"] .accessControlOption {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.modalContainer[data-theme="night"] .accessControlOption:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.modalContainer[data-theme="night"] .accessControlRadio {
-  border-color: #666;
-}
-
-.modalContainer[data-theme="night"] .passwordProtectionSection {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Phone Input with Country Dropdown Styles */

@@ -1,20 +1,8 @@
 <template>
   <div :class="$style.surveyPanel" :data-theme="currentTheme" :dir="isRTL ? 'rtl' : 'ltr'">
-    <!-- Survey Editor View -->
-    <SurveyEditor
-      v-if="showEditorView"
-      :template="selectedTemplateForEditor"
-      :isCreatingPredefinedTemplate="isCreatingPredefinedTemplate"
-      @back="closeEditorView"
-      @publish="handleEditorPublish"
-      @saveDraft="handleEditorSaveDraft"
-      @saveTemplate="handleEditorSaveTemplate"
-    />
-
     <!-- Main Survey Control View -->
-    <template v-else>
-      <!-- Hero -->
-      <section :class="$style.heroSection">
+    <!-- Hero -->
+    <section :class="$style.heroSection">
         <div :class="$style.heroContent">
           <div :class="$style.heroText">
             <div :class="$style.sectionHerto">
@@ -540,17 +528,15 @@
         @recent-survey-selected="handleRecentSurveySelected"
         @create-new-template="handleCreateNewTemplate"
       />
-    </template>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, defineComponent, h } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../../stores/useAppStore'
 import { surveyService } from '../../services/surveyService'
-import { templateService } from '../../services/templateService'
 import type {
   Survey,
   SurveyAnalytics,
@@ -566,11 +552,11 @@ import AnalyticsModal from '../../components/AnalyticsModal/AnalyticsModal.vue'
 import SurveyAccessModal from '../../components/SurveyAccessModal/SurveyAccessModal.vue'
 import LinkSharingModal from '../../components/LinkSharingModal/LinkSharingModal.vue'
 import TemplateGalleryModal from '../../components/TemplateGalleryModal/TemplateGalleryModal.vue'
-import SurveyEditor from '../../components/SurveyEditor/SurveyEditor.vue'
 import Swal from 'sweetalert2'
 
 // Router & Store
 const router = useRouter()
+const route = useRoute()
 const store = useAppStore()
 const { currentTheme, currentLanguage } = storeToRefs(store)
 
@@ -600,15 +586,12 @@ const showAnalytics = ref(false)
 const showAccessModal = ref(false)
 const showLinkSharingModal = ref(false)
 const showTemplateGallery = ref(false)
-const showEditorView = ref(false)
 
 const selectedSurveyForEdit = ref<Survey | null>(null)
 const selectedSurveyForAccess = ref<Survey | null>(null)
 const selectedSurveyForLinkSharing = ref<Survey | null>(null)
-const selectedTemplateForEditor = ref<PredefinedTemplate | SurveyTemplate | RecentSurvey | Survey | null>(null)
 const publicLinkForSharing = ref<any | null>(null)
 const isSubmissionFlow = ref(false)
-const isCreatingPredefinedTemplate = ref(false)
 
 // Pagination
 const currentPage = ref(1)
@@ -866,17 +849,10 @@ const editSurvey = (survey: Survey) => {
 }
 
 const editSurveyWithEditor = async (survey: Survey) => {
-  try {
-    const isArabic = store.currentLanguage === 'ar'
-    Swal.fire({ title: isArabic ? 'جاري تحميل الاستطلاع...' : 'Loading Survey...', allowOutsideClick: false, didOpen: () => Swal.showLoading() })
-    const response = await surveyService.getSurvey(survey.id)
-    Swal.close()
-    selectedTemplateForEditor.value = response.data
-    showEditorView.value = true
-  } catch (error: any) {
-    const isArabic = store.currentLanguage === 'ar'
-    Swal.fire({ icon: 'error', title: isArabic ? 'خطأ' : 'Error', text: error.message || (isArabic ? 'فشل في تحميل الاستطلاع' : 'Failed to load survey'), confirmButtonText: isArabic ? 'موافق' : 'OK' })
-  }
+  router.push({
+    name: 'SurveyEdit',
+    params: { id: survey.id }
+  })
 }
 
 const manageSurveyAccess = (survey: Survey) => {
@@ -1074,8 +1050,7 @@ const handleDropdownClickOutside = (e: MouseEvent) => {
 }
 const createDefaultSurvey = () => {
   showCreateDropdown.value = false
-  selectedTemplateForEditor.value = null
-  showEditorView.value = true
+  router.push({ name: 'SurveyCreate' })
 }
 const openTemplateGallery = () => {
   showCreateDropdown.value = false
@@ -1084,20 +1059,23 @@ const openTemplateGallery = () => {
 const closeTemplateGallery = () => { showTemplateGallery.value = false }
 const handleTemplateSelected = (template: PredefinedTemplate | SurveyTemplate) => {
   closeTemplateGallery()
-  selectedTemplateForEditor.value = template
-  showEditorView.value = true
+  router.push({ 
+    name: 'SurveyCreate',
+    query: {
+      templateId: template.id,
+      type: 'name' in template ? 'predefined' : 'custom'
+    }
+  })
 }
 const handleRecentSurveySelected = async (survey: RecentSurvey) => {
-  try {
-    const response = await surveyService.getSurvey(survey.id)
-    const { id: _id, ...surveyAsTemplate } = response.data
-    closeTemplateGallery()
-    selectedTemplateForEditor.value = surveyAsTemplate as any
-    showEditorView.value = true
-  } catch (error: any) {
-    const isArabic = store.currentLanguage === 'ar'
-    Swal.fire({ icon: 'error', title: isArabic ? 'خطأ' : 'Error', text: error.message || (isArabic ? 'فشل في تحميل الاستطلاع' : 'Failed to load survey'), confirmButtonText: isArabic ? 'موافق' : 'OK' })
-  }
+  closeTemplateGallery()
+  router.push({
+    name: 'SurveyCreate',
+    query: {
+      templateId: survey.id,
+      type: 'recent'
+    }
+  })
 }
 const handleCreateNewTemplate = () => {
   const isArabic = store.currentLanguage === 'ar'
@@ -1113,87 +1091,12 @@ const handleCreateNewTemplate = () => {
   }).then((r) => {
     if (r.isConfirmed) {
       closeTemplateGallery()
-      selectedTemplateForEditor.value = null
-      isCreatingPredefinedTemplate.value = true
-      showEditorView.value = true
+      router.push({
+        name: 'SurveyCreate',
+        query: { createTemplate: 'true' }
+      })
     }
   })
-}
-
-// Editor exit
-const closeEditorView = () => {
-  showEditorView.value = false
-  selectedTemplateForEditor.value = null
-  isCreatingPredefinedTemplate.value = false
-}
-const handleEditorSaveDraft = async (data: any) => {
-  try {
-    const isArabic = store.currentLanguage === 'ar'
-    const isTemplate =
-      selectedTemplateForEditor.value && ('name' in selectedTemplateForEditor.value || 'name_ar' in selectedTemplateForEditor.value || 'category' in selectedTemplateForEditor.value)
-    const isEditingExisting = selectedTemplateForEditor.value && 'id' in selectedTemplateForEditor.value && 'title' in selectedTemplateForEditor.value && !isTemplate
-
-    Swal.fire({ title: isArabic ? 'جاري حفظ المسودة...' : 'Saving Draft...', allowOutsideClick: false, didOpen: () => Swal.showLoading() })
-    if (isEditingExisting) {
-      const id = (selectedTemplateForEditor.value as Survey).id
-      await surveyService.updateSurvey(id, data)
-    } else {
-      await surveyService.createDraft(data)
-    }
-    Swal.close()
-    closeEditorView()
-    Swal.fire({ icon: 'success', title: isArabic ? 'تم الحفظ بنجاح' : 'Saved Successfully', confirmButtonText: isArabic ? 'موافق' : 'OK' }).then(() => refreshData())
-  } catch (error: any) {
-    const isArabic = store.currentLanguage === 'ar'
-    Swal.fire({ icon: 'error', title: isArabic ? 'خطأ' : 'Error', text: error.message || (isArabic ? 'فشل في حفظ المسودة' : 'Failed to save draft'), confirmButtonText: isArabic ? 'موافق' : 'OK' })
-  }
-}
-const handleEditorPublish = async (data: any) => {
-  try {
-    const isArabic = store.currentLanguage === 'ar'
-    const isTemplate =
-      selectedTemplateForEditor.value && ('name' in selectedTemplateForEditor.value || 'name_ar' in selectedTemplateForEditor.value || 'category' in selectedTemplateForEditor.value)
-    const isEditingExisting = selectedTemplateForEditor.value && 'id' in selectedTemplateForEditor.value && 'title' in selectedTemplateForEditor.value && !isTemplate
-
-    Swal.fire({ title: isArabic ? 'جاري إنشاء الاستطلاع...' : 'Creating Survey...', allowOutsideClick: false, didOpen: () => Swal.showLoading() })
-    let created: Survey
-    if (isEditingExisting) {
-      const id = (selectedTemplateForEditor.value as Survey).id
-      const update = await surveyService.updateSurvey(id, data)
-      created = update.data
-    } else {
-      const draft = await surveyService.createDraft(data)
-      created = draft.data
-    }
-    Swal.close()
-
-    closeEditorView()
-    selectedSurveyForAccess.value = created
-    isSubmissionFlow.value = true
-    showAccessModal.value = true
-    ;(created as any)._isSubmissionFlow = true
-  } catch (error: any) {
-    const isArabic = store.currentLanguage === 'ar'
-    Swal.fire({ icon: 'error', title: isArabic ? 'خطأ' : 'Error', text: error.message || (isArabic ? 'فشل في إنشاء الاستطلاع' : 'Failed to create survey'), confirmButtonText: isArabic ? 'موافق' : 'OK' })
-  }
-}
-const handleEditorSaveTemplate = async (templateData: any) => {
-  try {
-    const isArabic = store.currentLanguage === 'ar'
-    Swal.fire({ title: isArabic ? 'جاري حفظ القالب...' : 'Saving Template...', allowOutsideClick: false, didOpen: () => Swal.showLoading() })
-    await templateService.createPredefinedTemplate(templateData)
-    Swal.close()
-    closeEditorView()
-    Swal.fire({
-      icon: 'success',
-      title: isArabic ? 'تم الحفظ بنجاح' : 'Saved Successfully',
-      text: isArabic ? 'تم حفظ القالب المحدد مسبقاً بنجاح وهو الآن متاح لجميع المستخدمين' : 'Predefined template saved successfully and is now available to all users',
-      confirmButtonText: isArabic ? 'موافق' : 'OK'
-    }).then(() => refreshData())
-  } catch (error: any) {
-    const isArabic = store.currentLanguage === 'ar'
-    Swal.fire({ icon: 'error', title: isArabic ? 'خطأ' : 'Error', text: error.message || (isArabic ? 'فشل في حفظ القالب' : 'Failed to save template'), confirmButtonText: isArabic ? 'موافق' : 'OK' })
-  }
 }
 
 // List actions menu
@@ -1210,6 +1113,17 @@ onMounted(() => {
   refreshData()
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('click', handleDropdownClickOutside)
+  
+  // Check if we need to open access modal (from redirect after publish)
+  if (route.query.openAccess === 'true' && route.query.surveyId) {
+    const surveyId = route.query.surveyId as string
+    const survey = surveys.value.find(s => s.id === surveyId)
+    if (survey) {
+      selectedSurveyForAccess.value = survey
+      isSubmissionFlow.value = route.query.isSubmission === 'true'
+      showAccessModal.value = true
+    }
+  }
 })
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)

@@ -6,10 +6,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
-    radial-gradient(circle at 50% 50%, rgba(153, 122, 81, 0.15) 0%, transparent 70%);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
+background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -19,10 +16,9 @@
 }
 
 .modalContainer {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: white;
+
+  /* border: 1px solid black; */
   border-radius: 28px;
   width: 100%;
   max-width: 600px;
@@ -54,8 +50,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 32px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 24px 32px 16px;
+  border-bottom: 1px solid #E1E4EA;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
   margin-bottom: 24px;
 }
@@ -76,11 +72,10 @@
 }
 
 .closeButton {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  background: transparent;
+  border: 1px solid #E1E4EA;
+  border-radius: 25%;
+padding: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -119,10 +114,10 @@
 .linkInput {
   flex: 1;
   padding: 16px 20px;
-  border: 1px solid rgba(153, 122, 81, 0.3);
+  border: 1px solid #E1E4EA;
   border-radius: 12px;
   font-size: 0.95rem;
-  background: rgba(255, 255, 255, 0.9);
+  background: #E1E4EA;
   backdrop-filter: blur(10px);
   color: #333;
   font-family: 'Monaco', 'Menlo', monospace;
@@ -136,16 +131,17 @@
 }
 
 .copyButton {
-  background: linear-gradient(135deg, var(--primary-color) 0%, rgba(153, 122, 81, 0.8) 100%);
+  /* background: linear-gradient(135deg, var(--primary-color) 0%, rgba(153, 122, 81, 0.8) 100%); */
   color: white;
   border: none;
+  border: 1px solid #E1E4EA;
   border-radius: 12px;
   padding: 16px 20px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 0.95rem;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(153, 122, 81, 0.3);
+  /* box-shadow: 0 4px 12px rgba(153, 122, 81, 0.3); */
 }
 
 .copyButton:hover {
@@ -166,15 +162,16 @@
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  background: rgba(255, 255, 255, 0.95);
+  /* background: rgba(255, 255, 255, 0.95); */
   border-radius: 20px;
   padding: 32px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(20px);
+  /* box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); */
+  /* backdrop-filter: blur(20px); */
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .qrCanvas {
+    border: 1px solid #E1E4EA;
   border-radius: 12px;
   background: white;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
@@ -223,8 +220,80 @@
 .shareActions {
   display: flex;
   gap: 12px;
-  flex-wrap: wrap;
   justify-content: center;
+}
+
+/* Base button styles - all buttons same size */
+.actionButton1,
+.actionButton2,
+.actionButton3 {
+  flex: 1;
+  border-radius: 12px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  min-width: 110px;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  border: none;
+}
+
+/* First button - Gold background */
+.actionButton1 {
+  background: #A17D23;
+  color: white;
+  border: 1px solid #A17D23;
+}
+
+.actionButton1:hover {
+  background: #8B6A1E;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(161, 125, 35, 0.3);
+}
+
+/* Second button - Transparent */
+.actionButton2 {
+  background: transparent;
+  color: #A17D23;
+  border: 1px solid #A17D23;
+}
+
+.actionButton2:hover {
+  background: rgba(161, 125, 35, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(161, 125, 35, 0.2);
+}
+
+/* Third button - Red background */
+.actionButton3 {
+  background: #D44333;
+  color: white;
+  border: 1px solid #D44333;
+}
+
+.actionButton3:hover {
+  background: #B83929;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 67, 51, 0.3);
+}
+
+/* Disabled state */
+.actionButton1.disabled,
+.actionButton1:disabled,
+.actionButton2.disabled,
+.actionButton2:disabled,
+.actionButton3.disabled,
+.actionButton3:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .shareButton {
