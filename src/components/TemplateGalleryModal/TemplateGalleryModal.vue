@@ -30,7 +30,7 @@
             >
               <i :class="['fas', tab.icon]"></i>
               <span>{{ isRTL ? tab.label_ar : tab.label }}</span>
-              <span :class="$style.tabBadge">
+              <span v-if="tab.value !== 'user'" :class="$style.tabBadge">
                 {{ tab.count }}
               </span>
             </button>
@@ -253,7 +253,7 @@ const tabs = computed(() => [
   {
     value: 'predefined',
     label: 'Predefined Templates',
-    label_ar: 'قوالب محددة مسبقاً',
+    label_ar: 'قوالب ',
     icon: 'fa-star',
     count: predefinedTemplates.value.length
   },
@@ -267,7 +267,7 @@ const tabs = computed(() => [
   {
     value: 'user',
     label: 'My Templates',
-    label_ar: 'قوالبي',
+    label_ar: 'انشاء قالب للجميع',
     icon: 'fa-folder',
     count: userTemplates.value.length
   }

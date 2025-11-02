@@ -459,6 +459,14 @@
 
         <!-- Add Question Button -->
         <div v-if="surveyData.questions.length > 0" :class="$style.addQuestionSection">
+          <button :class="$style.addQuestionButton" @click="addQuestion">
+            <i class="fas fa-plus-circle"></i>
+            <span>{{ isRTL ? 'إضافة سؤال' : 'Add Question' }}</span>
+          </button>
+        </div>
+        
+        <!-- Drop Hint (Optional: can be shown as additional hint below the button) -->
+        <div v-if="surveyData.questions.length > 0" :class="$style.addQuestionSection">
           <div :class="$style.dropHint">
             <i class="fas fa-info-circle"></i>
             <span>{{ isRTL ? 'انقر على نوع السؤال أو اسحبه لإضافة المزيد من الأسئلة' : 'Click or drag a question type to add more questions' }}</span>

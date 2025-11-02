@@ -21,26 +21,29 @@
       role="status"
       aria-live="polite"
     >
-     <!-- Top row: arrow • title • badge -->
-<!-- Top row -->
-<!-- Top row: [ Head (title+badge) | Arrow ] -->
-<div :class="$style.kpiTop">
-  <!-- RIGHT side: title + icon -->
-  <div :class="$style.kpiHead">
-      <div :class="[$style.kpiBadge, card.dot ? $style.hasDot : '']" aria-hidden="true">
-      <component :is="card.icon" />
-    </div>
-    <div :class="$style.kpiTitle">{{ card.title }}</div>
-  
-  </div>
 
-  <!-- LEFT side: arrow -->
-  <div :class="$style.kpiArrowWrap">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M9.01562 5V6.96875H15.625L4 18.5938L5.40625 20L17.0312 8.375V14.9844H19V5H9.01562Z" fill="#00A350"/>
-    </svg>
+  <!-- Top row: [ Head (title+badge) | Arrow ] -->
+  <div :class="$style.kpiTop">
+    <!-- RIGHT side: title + icon -->
+    <div :class="$style.kpiHead">
+        <div :class="[$style.kpiBadge, card.dot ? '' : '']" aria-hidden="true">
+        <component :is="card.icon" />
+      </div>
+      <div :class="$style.kpiTitle">{{ card.title }}</div>
+    </div>
+
+    <!-- LEFT side: arrow -->
+    <div :class="$style.kpiArrowWrap" v-if="card.trend !== undefined && card.trend !== null">
+      <!-- Up arrow for positive trend -->
+      <svg v-if="card.trend >= 0" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M9.01562 5V6.96875H15.625L4 18.5938L5.40625 20L17.0312 8.375V14.9844H19V5H9.01562Z" fill="#00A350"/>
+      </svg>
+      <!-- Down arrow for negative trend -->
+      <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M9.01562 19V17.0312H15.625L4 5.40625L5.40625 4L17.0312 15.625V9.01562H19V19H9.01562Z" fill="#DC3545"/>
+      </svg>
+    </div>
   </div>
-</div>
 
 
 
@@ -52,16 +55,19 @@
       </div>
 
       <!-- Bottom row -->
-      <div :class="$style.kpiBottom">
+      <!-- <div :class="$style.kpiBottom">
       
         <span :class="$style.kpiFoot">{{ isRTL ? 'في هذا الشهر' : 'this month' }}</span>
-       <span :class="[$style.kpiTrend, card.trend >= 0 ? $style.positive : $style.negative]">
-          {{ Math.round(card.trend) + '%' }}
+       <span 
+          v-if="card.trend !== undefined && card.trend !== null"
+          :class="[$style.kpiTrend, card.trend >= 0 ? $style.positive : $style.negative]"
+        >
+          {{ (card.trend >= 0 ? '+' : '') + Math.round(card.trend) + '%' }}
         </span>
-      </div>
+      </div> -->
     </div>
   </div>
-</section>
+      </section>
 
 
     <!-- Filters and Search -->
@@ -614,14 +620,6 @@ const IconBadgeCheck = defineComponent({
 })
 
 /* --- computed cards --- */
-const totalResponses = computed(() =>
-  surveys.value.reduce((sum, survey) => {
-    const direct = (survey as any).responses_count ?? (survey as any).response_count ?? 0
-    const access = survey.access_info?.responses_count ?? survey.access_info?.response_count ?? 0
-    return sum + Number(direct || access || 0)
-  }, 0)
-)
-
 const kpiCards = computed(() => {
   const rtl = unref(isRTL)
   const summary = accessSummary.value
@@ -629,10 +627,15 @@ const kpiCards = computed(() => {
   const authCount = summary?.auth_surveys ?? 0
   const privateCount = summary?.private_shared ?? 0
   const availableCount = availableSurveysCount.value
-  const responses = totalResponses.value
 
   const surveysUnit = rtl ? 'استطلاع' : 'surveys'
-  const responseUnit = rtl ? 'رد' : 'responses'
+
+  // Get trend values from backend (if available)
+  const authTrend = (summary as any)?.auth_surveys_trend ?? null
+  const privateTrend = (summary as any)?.private_shared_trend ?? null
+  const totalTrend = authTrend !== null && privateTrend !== null 
+    ? ((authTrend + privateTrend) / 2) 
+    : null
 
   return [
     {
@@ -640,7 +643,7 @@ const kpiCards = computed(() => {
       title: t('survey.shared.overview.totalShared'),
       value: totalShared,
       unit: surveysUnit,
-      trend: 0,
+      trend: totalTrend,
       icon: IconBadgeCheck,
       dot: false
     },
@@ -649,7 +652,7 @@ const kpiCards = computed(() => {
       title:t('survey.shared.overview.authSurveys'),
       value: authCount,
       unit: surveysUnit,
-      trend: 0,
+      trend: authTrend,
       icon: IconBadgeCheck2,
       dot: true
     },
@@ -658,7 +661,7 @@ const kpiCards = computed(() => {
       title: t('survey.shared.overview.privateShared'),
       value: privateCount,
       unit: surveysUnit,
-      trend: 0,
+      trend: privateTrend,
       icon: IconBadgeCheck,
       dot: false
     },
@@ -667,7 +670,7 @@ const kpiCards = computed(() => {
       title: t('survey.shared.overview.available'),
       value: availableCount,
       unit: surveysUnit,
-      trend: 0,
+      trend: null,
       icon: IconBadgeCheck,
       dot: false
     },

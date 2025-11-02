@@ -42,14 +42,15 @@ const navGroups = computed<NavGroup[]>(() => {
   ]
 
   const support: NavItem[] = [
-    { name: 'settings', icon: 'fas fa-gear', label: 'الاعدادات' },
-    { name: 'support', icon: 'far fa-circle-question', label: 'الدعم والمساعدة' },
+    // Hidden items:
+    // { name: 'settings', icon: 'fas fa-gear', label: 'الاعدادات' },
+    // { name: 'support', icon: 'far fa-circle-question', label: 'الدعم والمساعدة' },
   ]
 
   const allowedRoles = new Set(['admin', 'super_admin'])
   const filteredPrimary = primary.filter(item => {
     if (!item.requiresRole) return true
-    return props.userRole !== null && allowedRoles.has(props.userRole)
+    return props.userRole !== null && props.userRole !== undefined && allowedRoles.has(props.userRole)
   })
 
   const groups: NavGroup[] = []
@@ -99,7 +100,7 @@ const logoSrc = computed(() => isCollapsed.value ? '/logomobile.png' : '/public/
     </div>
 
     <nav :class="$style.navArea">
-      <template v-for="(group, index) in navGroups" :key="group.id">
+      <template v-for="group in navGroups" :key="group.id">
         <section :class="$style.menuCard">
           <button
             v-for="item in group.items"

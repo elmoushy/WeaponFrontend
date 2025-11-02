@@ -54,7 +54,6 @@
         </div>
       </section>
 
-      <!-- Stats -->
 <!-- Stats -->
 <section :class="$style.statsSection" v-if="analytics">
   <div :class="$style.kpiGrid">
@@ -65,13 +64,12 @@
       role="status"
       aria-live="polite"
     >
-     <!-- Top row: arrow • title • badge -->
-<!-- Top row -->
+
 <!-- Top row: [ Head (title+badge) | Arrow ] -->
 <div :class="$style.kpiTop">
   <!-- RIGHT side: title + icon -->
   <div :class="$style.kpiHead">
-      <div :class="[$style.kpiBadge, card.dot ? $style.hasDot : '']" aria-hidden="true">
+      <div :class="[$style.kpiBadge, card.dot ? '' : '']" aria-hidden="true">
       <component :is="card.icon" />
     </div>
     <div :class="$style.kpiTitle">{{ card.title }}</div>
@@ -79,9 +77,14 @@
   </div>
 
   <!-- LEFT side: arrow -->
-  <div :class="$style.kpiArrowWrap">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <div :class="$style.kpiArrowWrap" v-if="card.trend !== undefined && card.trend !== null">
+    <!-- Up arrow for positive trend -->
+    <svg v-if="card.trend >= 0" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M9.01562 5V6.96875H15.625L4 18.5938L5.40625 20L17.0312 8.375V14.9844H19V5H9.01562Z" fill="#00A350"/>
+    </svg>
+    <!-- Down arrow for negative trend -->
+    <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M9.01562 19V17.0312H15.625L4 5.40625L5.40625 4L17.0312 15.625V9.01562H19V19H9.01562Z" fill="#DC3545"/>
     </svg>
   </div>
 </div>
@@ -96,13 +99,16 @@
       </div>
 
       <!-- Bottom row -->
-      <div :class="$style.kpiBottom">
+      <!-- <div :class="$style.kpiBottom">
       
         <span :class="$style.kpiFoot">{{ isRTL ? 'في هذا الشهر' : 'this month' }}</span>
-       <span :class="[$style.kpiTrend, card.trend >= 0 ? $style.positive : $style.negative]">
-          {{ Math.round(card.trend) + '%' }}
+       <span 
+          v-if="card.trend !== undefined && card.trend !== null"
+          :class="[$style.kpiTrend, card.trend >= 0 ? $style.positive : $style.negative]"
+        >
+          {{ (card.trend >= 0 ? '+' : '') + Math.round(card.trend) + '%' }}
         </span>
-      </div>
+      </div> -->
     </div>
   </div>
 </section>
@@ -245,6 +251,7 @@
               </button>
 
               <button
+                v-if="survey.status === 'submitted' || survey.status === 'active'"
                 :class="[$style.actionButton, $style.outlinedAction]"
                 @click.stop="viewResponses(survey.id)"
                 :title="t('survey.card.viewResponses')"
@@ -1221,14 +1228,13 @@ const kpiCards = computed(() => {
 
   // if backend doesn’t send trends, default to +10
   const trends: Record<string, number | undefined> = (a as any)?.trends || {}
-  const pct = (v: number | undefined, fallback = 10) => (typeof v === 'number' ? v : fallback)
 
   return [
-      {
+    {
       key: 'total',
       title: rtl ? 'إجمالي الاستطلاعات' : 'Total surveys',
       value: a?.total_surveys ?? 0,
-      trend: pct(trends.total, 10),
+      trend: trends.total ?? null,
       icon: IconBadgeCheck,
       dot: false
     },
@@ -1237,14 +1243,15 @@ const kpiCards = computed(() => {
       key: 'active',
       title: rtl ? 'الاستطلاعات النشطة' : 'Active surveys',
       value: a?.active_surveys ?? 0,
-      trend: pct(trends.active, 10),
+      trend: trends.active ?? null,
       icon: IconBadgeCheck2,   // with notification dot
+      dot: true
     },
-       {
+    {
       key: 'responses',
       title: rtl ? 'إجمالي الردود' : 'Total responses',
       value: a?.total_responses ?? 0,
-      trend: pct(trends.responses, 10),
+      trend: trends.responses ?? null,
       icon: IconBadgeCheck,
       dot: false
     }

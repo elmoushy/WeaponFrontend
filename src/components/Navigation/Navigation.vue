@@ -75,9 +75,9 @@
             </div>
           </div>
 
-          <button type="button" :class="$style.iconButton">
+          <!-- <button type="button" :class="$style.iconButton">
             <i class="fas fa-search"></i>
-          </button>
+          </button> -->
 
           <button
             :class="$style.mobileToggle"
