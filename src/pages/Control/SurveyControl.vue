@@ -462,7 +462,7 @@
           </button>
 
           <span :class="$style.pageNumbers">
-            <template v-for="(page, index) in visiblePages" :key="`page-${index}`">
+            <template v-for="page in visiblePages" :key="`page-${page}`">
               <span v-if="page === -1" :class="$style.ellipsis">…</span>
               <button
                 v-else

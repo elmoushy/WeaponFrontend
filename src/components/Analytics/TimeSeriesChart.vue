@@ -69,8 +69,8 @@
           <circle
             v-for="(point, index) in responsePoints"
             :key="`response-${index}`"
-            :cx="point.x"
-            :cy="point.y"
+            :cx="point!.x"
+            :cy="point!.y"
             r="6"
             :class="$style.responsePoint"
             fill="#4CAF50"
@@ -82,8 +82,8 @@
           <circle
             v-for="(point, index) in completionRatePoints"
             :key="`completion-${index}`"
-            :cx="point.x"
-            :cy="point.y"
+            :cx="point!.x"
+            :cy="point!.y"
             r="6"
             :class="$style.completionRatePoint"
             fill="#2196F3"
