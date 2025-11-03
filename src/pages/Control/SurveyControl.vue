@@ -185,9 +185,8 @@
             v-for="survey in paginatedSurveys"
             :key="survey.id"
             :class="[$style.surveyCard, { [$style.selected]: selectedSurveys?.includes(survey.id) }]"
-            @click="selectSurvey(survey.id)"
+            @click="toggleSurveySelection(survey.id)"
             :aria-pressed="selectedSurveys?.includes(survey.id)"
-                @click.stop="toggleSurveySelection(survey.id)"
           >
             <div :class="$style.cardHeader">
               <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -334,7 +333,7 @@
             v-for="survey in paginatedSurveys"
             :key="survey.id"
             :class="[$style.listItem, { [$style.selected]: selectedSurveys?.includes(survey.id) }]"
-            @click="selectSurvey(survey.id)"
+            @click="toggleSurveySelection(survey.id)"
           >
             <div :class="$style.listItemCheckbox">
               <input
@@ -837,7 +836,6 @@ const changePage = (page: number) => {
 
 
 // Selection & actions
-const selectSurvey = (_id: string) => {}
 const toggleSurveySelection = (id: string) => {
   const idx = selectedSurveys.value.indexOf(id)
   if (idx > -1) selectedSurveys.value.splice(idx, 1)

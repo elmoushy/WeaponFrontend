@@ -361,6 +361,9 @@ const hideTooltip = () => {
   --highlight: #ffd700;
 
   width: 100%;
+  max-width: 100%;
+  flex: 1 1 100%;
+  min-width: 0;
   padding: 2rem;
   position: relative;
   background: var(--surface);
@@ -541,6 +544,7 @@ const hideTooltip = () => {
 
 /* Grid Container */
 .gridContainer {
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;

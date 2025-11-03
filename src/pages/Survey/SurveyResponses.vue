@@ -820,7 +820,7 @@ import { useAppStore } from "../../stores/useAppStore";
 import { apiClient } from "../../services/jwtAuthService";
 import Swal from "sweetalert2";
 import jsPDF from "jspdf";
-import amiriUrl from "../../lib/fonts/Amiri.ttf?url";
+import "../../lib/fonts/Amiri-normal.js";
 
 // Analytics Components
 import SurveyAnalytics from "../../components/Analytics/SurveyAnalytics.vue";
@@ -847,29 +847,6 @@ const store = useAppStore();
 const currentTheme = computed(() => store.currentTheme);
 const isRTL = computed(() => store.currentLanguage === "ar");
 const t = computed(() => store.t);
-let amiriRegistered = false;
-
-async function ensureAmiri(pdf: jsPDF) {
-  if (amiriRegistered) return;
-
-  const buf = await fetch(amiriUrl).then(r => r.arrayBuffer());
-  
-  // Convert ArrayBuffer to base64 in chunks to avoid stack overflow
-  const uint8Array = new Uint8Array(buf);
-  let binaryString = '';
-  const chunkSize = 8192; // Process 8KB at a time
-  
-  for (let i = 0; i < uint8Array.length; i += chunkSize) {
-    const chunk = uint8Array.subarray(i, i + chunkSize);
-    binaryString += String.fromCharCode.apply(null, Array.from(chunk));
-  }
-  
-  const base64 = btoa(binaryString);
-
-  pdf.addFileToVFS("Amiri.ttf", base64);
-  pdf.addFont("Amiri.ttf", "Amiri", "normal"); // we only have the normal weight
-  amiriRegistered = true;
-}
 
 
 const ARABIC_DIGIT_MAP: Record<string, string> = {
@@ -894,81 +871,15 @@ const pdfColors = {
   white: "#FFFFFF",
 };
 
-// Unicode control characters for bidirectional text
-// const LRM = "\u200E"; // Left-to-Right Mark (unused)
-// const RLM = "\u200F"; // Right-to-Left Mark (unused)
-const RLI = "\u2067"; // Right-to-Left Isolate
-const PDI = "\u2069"; // Pop Directional Isolate
+const LRM = "\u200E";
+const RLM = "\u200F";
+const RLI = "\u2067";
+const PDI = "\u2069";
 
-// Check if a string contains Arabic characters
 function isArabicLine(s: string): boolean {
   return /[\u0600-\u06FF]/.test(String(s || ""));
 }
 
-// Reverse Arabic text for proper display in PDF
-function reverseArabicText(text: string): string {
-  if (!text) return "";
-  
-  // Define character types
-  const isArabicChar = (char: string) => /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(char);
-  const isLatinChar = (char: string) => /[A-Za-z]/.test(char);
-  const isDigit = (char: string) => /[0-9\u0660-\u0669]/.test(char); // Latin and Arabic digits
-  const isPunctuation = (char: string) => /[.,;:!?،؛؟\-_/\\()[\]{}'"<>«»]/.test(char);
-  const isSpace = (char: string) => /\s/.test(char);
-  
-  // Tokenize the text into segments
-  const tokens: Array<{ text: string; type: 'arabic' | 'latin' | 'number' | 'punct' | 'space' }> = [];
-  let currentText = "";
-  let currentType: 'arabic' | 'latin' | 'number' | 'punct' | 'space' | null = null;
-  
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    let charType: 'arabic' | 'latin' | 'number' | 'punct' | 'space';
-    
-    if (isSpace(char)) {
-      charType = 'space';
-    } else if (isArabicChar(char)) {
-      charType = 'arabic';
-    } else if (isLatinChar(char)) {
-      charType = 'latin';
-    } else if (isDigit(char)) {
-      charType = 'number';
-    } else if (isPunctuation(char)) {
-      charType = 'punct';
-    } else {
-      charType = 'punct'; // Default for other characters
-    }
-    
-    // Group consecutive characters of the same type
-    if (currentType === charType && charType !== 'space' && charType !== 'punct') {
-      currentText += char;
-    } else {
-      if (currentText) {
-        tokens.push({ text: currentText, type: currentType! });
-      }
-      currentText = char;
-      currentType = charType;
-    }
-  }
-  
-  if (currentText) {
-    tokens.push({ text: currentText, type: currentType! });
-  }
-  
-  // Reverse the order of tokens, but keep Latin/number sequences in their original order
-  const reversedTokens = tokens.reverse();
-  
-  // Build the final string
-  return reversedTokens.map(token => {
-    // Keep numbers and Latin text in their original internal order
-    if (token.type === 'number' || token.type === 'latin') {
-      return token.text;
-    }
-    return token.text;
-  }).join("");
-}
-
-// Protect LTR segments (emails, URLs, numbers) with RLI/PDI
 function protectLTRSegments(s: string): string {
   if (!s) return "";
   return String(s)
@@ -977,8 +888,7 @@ function protectLTRSegments(s: string): string {
     .replace(/\b[0-9][0-9A-Za-z\-_.:/]*\b/g, m => `${RLI}${m}${PDI}`);
 }
 
-// Helper to wrap text with RLI/PDI (unused)
-// const asLTR = (s: string) => `${RLI}${s}${PDI}`;
+const asLTR = (s: string) => `${RLI}${s}${PDI}`;
 
 const localizeDigits = (value: string, rtl: boolean) =>
   rtl ? value.replace(/[0-9]/g, (digit) => ARABIC_DIGIT_MAP[digit] ?? digit) : value;
@@ -1013,28 +923,26 @@ const drawText = (
     align?: "left" | "right" | "center";
   },
 ) => {
-  const { rtl, size = 12, weight = "normal", color = pdfColors.secondary } = options;
+  const { rtl, size = 12, weight = "normal", color = pdfColors.secondary } =
+    options;
   const align = options.align ?? (rtl ? "right" : "left");
-  
-  // Only localize digits when UI is RTL
-  let value = rtl ? localizeDigits(text ?? "", true) : (text ?? "");
-  
-  // Check if the text contains Arabic
-  const hasArabic = isArabicLine(value);
-  
-  // Reverse Arabic text for proper display in PDF
-  if (hasArabic && rtl) {
-    value = reverseArabicText(value);
-  }
-  
-  const amiriWeights = (pdf.getFontList()?.Amiri as string[]) || [];
-  const chosenWeight = amiriWeights.includes(weight) ? weight : "normal";
 
-  pdf.setFont("Amiri", chosenWeight);
+  const base = text ?? "";
+  const localized = rtl ? localizeDigits(base, true) : base;
+  const lineHasArabic = isArabicLine(localized);
+  const guarded =
+    localized.includes(RLI) && localized.includes(PDI)
+      ? localized
+      : protectLTRSegments(localized);
+  const fontWeight = weight === "bold" ? "bold" : "normal";
+
+  pdf.setFont("Amiri", fontWeight);
   pdf.setFontSize(size);
   pdf.setTextColor(color);
-  // Don't use isInputRtl flag as we're manually reversing the text
-  pdf.text(value, x, y, { align });
+  pdf.text(guarded, x, y, {
+    align,
+    isInputRtl: rtl && lineHasArabic,
+  });
 };
 
 const drawParagraph = (
@@ -1053,19 +961,16 @@ const drawParagraph = (
   },
 ) => {
   const { rtl, lineHeight = 5.5 } = options;
-  
-  // Only localize digits when UI is RTL
-  let value = rtl ? localizeDigits(text ?? "", true) : (text ?? "");
-  
-  const lines = pdf.splitTextToSize(value, width);
+  const base = text ?? "";
+  const localized = rtl ? localizeDigits(base, true) : base;
+  const lines = pdf.splitTextToSize(localized, width);
   let cursorY = y;
 
   lines.forEach((line: string) => {
-    // Check each line individually for Arabic content
     const lineHasArabic = isArabicLine(line);
     drawText(pdf, line, x, cursorY, {
       ...options,
-      rtl: lineHasArabic && rtl, // Only treat as RTL if it has Arabic and RTL mode is on
+      rtl: rtl && lineHasArabic,
     });
     cursorY += lineHeight;
   });
@@ -1539,10 +1444,6 @@ const downloadAsPDF = async (responses: any[]) => {
   try {
     const rtl = isRTL.value;
     const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-    
-    // Register the Amiri font before using it
-    await ensureAmiri(pdf);
-    
     pdf.setFont("Amiri", "normal");
     const locale = rtl ? 'ar-SA' : 'en-US';
     const numberFormatter = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
@@ -1595,26 +1496,28 @@ const downloadAsPDF = async (responses: any[]) => {
 
     const ensureSpace = (height: number) => {
       if (yPosition + height > pageHeight - margin) {
-                pdf.setFont('Amiri', 'normal');
         pdf.addPage();
+        pdf.setFont('Amiri', 'normal');
         yPosition = margin;
       }
     };
 
     pdf.setFillColor(pdfColors.primary);
     pdf.roundedRect(margin, yPosition, contentWidth, 30, 4, 4, 'F');
+    const reportTitleRtl = isArabicLine(strings.reportTitle);
     drawText(pdf, strings.reportTitle, pageWidth / 2, yPosition + 12, {
-      rtl,
+      rtl: reportTitleRtl,
       size: 18,
       weight: 'bold',
       color: pdfColors.white,
       align: 'center',
     });
     const subtitle = rtl
-      ? `${exportTimestamp} :تاريخ التصدير | ${localizedCount} :عدد الاستجابات`
+      ? `عدد الاستجابات: ${localizedCount} | تاريخ التصدير: ${exportTimestamp}`
       : `Responses: ${localizedCount} | Exported on: ${exportTimestamp}`;
+    const subtitleRtl = isArabicLine(subtitle);
     drawText(pdf, subtitle, pageWidth / 2, yPosition + 23, {
-      rtl,
+      rtl: subtitleRtl,
       size: 11,
       color: pdfColors.white,
       align: 'center',
@@ -1632,57 +1535,69 @@ const downloadAsPDF = async (responses: any[]) => {
       const heading = rtl
         ? (submittedAt ? `${submittedAt} - ${responseOrder} ${headingPrefix}` : `${responseOrder} ${headingPrefix}`)
         : (submittedAt ? `${headingPrefix} ${responseOrder} - ${submittedAt}` : `${headingPrefix} ${responseOrder}`);
-      drawText(pdf, heading, rtl ? pageWidth - margin - 6 : margin + 6, yPosition + 8, {
-        rtl,
+      const headingRtl = isArabicLine(heading);
+      const headingContent = rtl && !headingRtl ? asLTR(heading) : heading;
+      const headingX = headingRtl ? pageWidth - margin - 6 : margin + 6;
+      drawText(pdf, headingContent, headingX, yPosition + 8, {
+        rtl: headingRtl,
         size: 13,
         weight: 'bold',
         color: pdfColors.primary,
       });
       yPosition += 18;
 
-      // Prepare respondent email with LTR protection if it's an email
-      const respondentValue = response?.respondent?.email 
-        ? protectLTRSegments(response.respondent.email)
-        : strings.anonymousRespondent;
-
-      const infoRows: Array<[string, string]> = [
-        [strings.respondent, respondentValue],
-        [
-          strings.respondentType,
-          response?.respondent?.type === 'authenticated'
-            ? strings.registeredUser
-            : strings.anonymousUser,
-        ],
-        [strings.status, response?.is_complete ? strings.completed : strings.incomplete],
-        [
-          strings.completionRate,
-          `${formatWithDigits(getCompletionPercentage(response), numberFormatter, rtl)}%`,
-        ],
+      const infoRows = [
+        {
+          label: strings.respondent,
+          value: response?.respondent?.email || strings.anonymousRespondent,
+        },
+        {
+          label: strings.respondentType,
+          value:
+            response?.respondent?.type === 'authenticated'
+              ? strings.registeredUser
+              : strings.anonymousUser,
+        },
+        {
+          label: strings.status,
+          value: response?.is_complete ? strings.completed : strings.incomplete,
+        },
+        {
+          label: strings.completionRate,
+          value: `${formatWithDigits(getCompletionPercentage(response), numberFormatter, rtl)}%`,
+        },
       ];
 
-      infoRows.forEach(([label, value]) => {
+      infoRows.forEach(({ label, value }) => {
         ensureSpace(10);
-        // Compose the full line - in RTL, the format should be: value :label
-        const fullLine = rtl ? `${value} :${label}` : `${label}: ${value}`;
+        const rawValue = typeof value === 'string' ? value : String(value ?? '');
+        const valueHasArabic = isArabicLine(rawValue);
+        const labelHasArabic = isArabicLine(label);
+        const lineRtl = rtl && valueHasArabic;
+        const labelSegment =
+          rtl && !lineRtl && labelHasArabic ? `${RLM}${label}` : label;
+        const separator = rtl && !lineRtl ? `${LRM}: ` : ': ';
+        const fullLine = `${labelSegment}${separator}${rawValue}`.trim();
+        const anchorX = lineRtl ? pageWidth - margin : margin;
         yPosition = drawParagraph(
           pdf,
           fullLine,
-          rtl ? pageWidth - margin : margin,
+          anchorX,
           yPosition,
           contentWidth,
           {
-            rtl,
+            rtl: lineRtl,
             size: 11,
             color: pdfColors.subtitle,
             lineHeight: 6,
-            align: rtl ? 'right' : 'left',
           },
         ) + 2;
       });
 
       ensureSpace(12);
-      drawText(pdf, strings.answersTitle, rtl ? pageWidth - margin : margin, yPosition + 8, {
-        rtl,
+      const answersTitleRtl = isArabicLine(strings.answersTitle);
+      drawText(pdf, strings.answersTitle, answersTitleRtl ? pageWidth - margin : margin, yPosition + 8, {
+        rtl: answersTitleRtl,
         size: 12,
         weight: 'bold',
         color: pdfColors.primary,
@@ -1693,18 +1608,18 @@ const downloadAsPDF = async (responses: any[]) => {
 
       if (answers.length === 0) {
         ensureSpace(12);
+        const noAnswersRtl = rtl && isArabicLine(strings.noAnswersAvailable);
         yPosition = drawParagraph(
           pdf,
           strings.noAnswersAvailable,
-          rtl ? pageWidth - margin : margin,
+          noAnswersRtl ? pageWidth - margin : margin,
           yPosition,
           contentWidth,
           {
-            rtl,
+            rtl: noAnswersRtl,
             size: 11,
             color: pdfColors.subtitle,
             lineHeight: 6,
-            align: rtl ? 'right' : 'left',
           },
         ) + 6;
       } else {
@@ -1716,13 +1631,17 @@ const downloadAsPDF = async (responses: any[]) => {
             numberFormatter,
             rtl,
           );
+          const questionHeading = rtl
+            ? `${strings.questionLabel} ${displayOrder}`
+            : `${strings.questionLabel} ${displayOrder}`;
+          const questionHeadingRtl = rtl && isArabicLine(questionHeading);
           drawText(
             pdf,
-            rtl ? `${displayOrder} ${strings.questionLabel}` : `${strings.questionLabel} ${displayOrder}`,
-            rtl ? pageWidth - margin : margin,
+            questionHeading,
+            questionHeadingRtl ? pageWidth - margin : margin,
             yPosition + 5,
             {
-              rtl,
+              rtl: questionHeadingRtl,
               size: 11,
               weight: 'bold',
               color: pdfColors.secondary,
@@ -1731,56 +1650,57 @@ const downloadAsPDF = async (responses: any[]) => {
           yPosition += 10;
 
           const questionText = answer?.question_text || strings.noQuestionText;
+          const questionTextRtl = rtl && isArabicLine(questionText);
           yPosition = drawParagraph(
             pdf,
             questionText,
-            rtl ? pageWidth - margin : margin,
+            questionTextRtl ? pageWidth - margin : margin,
             yPosition,
             contentWidth,
             {
-              rtl,
+              rtl: questionTextRtl,
               size: 11,
               color: pdfColors.secondary,
               lineHeight: 5.5,
-              align: rtl ? 'right' : 'left',
             },
           ) + 2;
 
-          const questionTypeLabel = getQuestionTypeLabel(answer?.question_type);
-          const questionType = rtl 
-            ? `${questionTypeLabel} :${strings.questionType}`
-            : `${strings.questionType}: ${questionTypeLabel}`;
+          const questionTypeLabel = `${strings.questionType}: ${getQuestionTypeLabel(
+            answer?.question_type,
+          )}`;
+          const questionTypeRtl = rtl && isArabicLine(questionTypeLabel);
           yPosition = drawParagraph(
             pdf,
-            questionType,
-            rtl ? pageWidth - margin : margin,
+            questionTypeLabel,
+            questionTypeRtl ? pageWidth - margin : margin,
             yPosition,
             contentWidth,
             {
-              rtl,
+              rtl: questionTypeRtl,
               size: 9.5,
               color: pdfColors.subtitle,
               lineHeight: 5.2,
-              align: rtl ? 'right' : 'left',
             },
           ) + 4;
 
-          const answerValue = formatAnswerForCSV(answer) || strings.noAnswer;
+          const answerValueRaw = formatAnswerForCSV(answer) || strings.noAnswer;
+          const answerValue = protectLTRSegments(answerValueRaw);
+          const answerValueHasArabic = isArabicLine(answerValueRaw);
+          const answerValueRtl = rtl && answerValueHasArabic;
           ensureSpace(16);
           pdf.setFillColor(pdfColors.light);
           pdf.roundedRect(margin, yPosition, contentWidth, 12, 2, 2, 'F');
           yPosition = drawParagraph(
             pdf,
             answerValue,
-            rtl ? pageWidth - margin - 4 : margin + 4,
+            answerValueRtl ? pageWidth - margin - 4 : margin + 4,
             yPosition + 5,
             contentWidth - 8,
             {
-              rtl,
+              rtl: answerValueRtl,
               size: 11,
               color: pdfColors.secondary,
               lineHeight: 5.5,
-              align: rtl ? 'right' : 'left',
             },
           ) + 6;
         });
@@ -1805,8 +1725,9 @@ const downloadAsPDF = async (responses: any[]) => {
       const label = rtl 
         ? `${totalPagesNum} ${strings.ofIndicator} ${pageNum} ${strings.pageIndicator}`
         : `${strings.pageIndicator} ${pageNum} ${strings.ofIndicator} ${totalPagesNum}`;
+      const footerRtl = rtl && isArabicLine(label);
       drawText(pdf, label, pageWidth / 2, pageHeight - 12, {
-        rtl,
+        rtl: footerRtl,
         size: 9,
         color: pdfColors.subtitle,
         align: 'center',

@@ -7,6 +7,7 @@ const props = defineProps<{
   userRole?: string | null
   /** v-model */
   modelValue?: boolean
+  mobileOverlay?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -81,15 +82,21 @@ const toggleTheme = () => emit('toggleTheme')
 /** UI states for control buttons */
 const isNight = computed(() => props.theme === 'night')
 const isCollapsed = computed(() => internalCollapsed.value)
+const isMobileOverlay = computed(() => props.mobileOverlay === true)
 
 /** Dynamic logo: swap when collapsed */
-// const logoSrc = computed(() => isCollapsed.value ? '/logomobile.png' : '/public/logo.png')
 const logoSrc = computed(() => isCollapsed.value ? '/moblogoadjd.png' : '/public/ADJDlogo.png')
 </script>
 
 <template>
   <aside
-    :class="[$style.sidebar, internalCollapsed ? $style.collapsed : '', theme === 'night' ? $style.night : '']"
+    :class="[
+      $style.sidebar,
+      internalCollapsed ? $style.collapsed : '',
+      theme === 'night' ? $style.night : '',
+      isMobileOverlay ? $style.mobile : '',
+      isMobileOverlay && !internalCollapsed ? $style.mobileOpen : '',
+    ]"
     role="navigation"
     aria-label="Sidebar"
   >
@@ -162,7 +169,8 @@ const logoSrc = computed(() => isCollapsed.value ? '/moblogoadjd.png' : '/public
   position: fixed;
   inset-block: 0;
   inset-inline-start: 0;
-  inline-size: var(--sb-width);
+  inline-size: min(var(--sb-width), 100vw);
+  max-inline-size: 100vw;
   block-size: 100vh;
   background:#ffffff;
   /* border-inline-end:1px solid rgba(15,23,42,.08); */
@@ -171,9 +179,12 @@ const logoSrc = computed(() => isCollapsed.value ? '/moblogoadjd.png' : '/public
   flex-direction:column;
   gap:10px;
   padding:10px 25px;
-  transition:inline-size .25s ease, background .25s ease, border-color .25s ease;
+  transition:inline-size .25s ease, background .25s ease, border-color .25s ease, transform .25s ease;
   direction: rtl;
   z-index: 999;
+  box-sizing: border-box;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 
   --active-bg: #B78A41;
   --active-hover-bg: linear-gradient(135deg, #B78A41, #A17D23);
@@ -196,7 +207,22 @@ const logoSrc = computed(() => isCollapsed.value ? '/moblogoadjd.png' : '/public
   --active-disc-color: #ffffff;
   --active-disc-shadow: 0 10px 22px rgba(183,138,65,.40);
 }
-.collapsed{ inline-size: var(--sb-width-collapsed); }
+.collapsed{ inline-size: min(var(--sb-width-collapsed), 100vw); }
+
+.mobile{
+  inline-size: var(--sb-mobile-width, 60vw);
+  max-inline-size: var(--sb-mobile-width, 60vw);
+  transform: translateX(var(--sb-mobile-slide, -110%));
+  opacity: 0;
+  pointer-events: none;
+  transition: transform .25s ease, opacity .2s ease;
+  z-index: 1150;
+}
+.mobileOpen{
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
 
 /* =========================================================
    ACTIVE LINK — DAY THEME
@@ -656,6 +682,37 @@ const logoSrc = computed(() => isCollapsed.value ? '/moblogoadjd.png' : '/public
   --rail-gap: 14px;         /* vertical gap between discs */
   --rail-disc: 50px;        /* disc size (icons) */
   --rail-ctrl: 50px;        /* control & logout disc size */
+}
+
+@media (max-width: 1024px) {
+  .sidebar{
+    padding-inline: 18px;
+    padding-block: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar{
+    padding-inline: 16px;
+    padding-block: 16px;
+    gap: 14px;
+  }
+  .menuCard{
+    padding:8px 12px;
+    gap:8px;
+  }
+  .controlsArea{
+    gap:12px;
+  }
+  .controlsGroup{
+    gap:10px;
+  }
+  .controlItem{
+    padding:6px 16px;
+  }
+  .logoutItem{
+    padding:6px 18px;
+  }
 }
 
 .collapsed.sidebar{

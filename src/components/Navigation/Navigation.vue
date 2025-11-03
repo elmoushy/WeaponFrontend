@@ -79,7 +79,7 @@
             <i class="fas fa-search"></i>
           </button> -->
 
-          <button
+          <!-- <button
             :class="$style.mobileToggle"
             @click.stop="toggleMobileMenu"
             :aria-expanded="showMobileMenu"
@@ -87,7 +87,7 @@
             data-dropdown
           >
             <i :class="showMobileMenu ? 'fas fa-times' : 'fas fa-bars'"></i>
-          </button>
+          </button> -->
         </div>
            <div
           :class="$style.profileCard"
@@ -527,7 +527,7 @@ const hideNewNotificationIndicator = () => {
   }
 }
 
-const toggleMobileMenu = () => {
+function toggleMobileMenu() {
   // Use setTimeout to prevent immediate closing due to event bubbling
   setTimeout(() => {
     showMobileMenu.value = !showMobileMenu.value
@@ -568,6 +568,10 @@ const handleLogout = async () => {
     router.push('/login')
   }
 }
+
+defineExpose({
+  toggleMobileMenu,
+})
 
 // Handle clicks outside dropdowns
 const handleClickOutside = (event: Event) => {
