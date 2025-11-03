@@ -378,7 +378,9 @@ const getQuestionTypeIcon = (type: string) => {
   return icons[type] || 'fas fa-question'
 }
 
+// Used in template for refresh button
 const refreshAnalytics = () => emit('refresh')
+void refreshAnalytics // Tell TypeScript this is used in template
 
 const onQuestionDetailsClick = async (question: any) => {
   console.log('🔵 Question Details Click:', question)

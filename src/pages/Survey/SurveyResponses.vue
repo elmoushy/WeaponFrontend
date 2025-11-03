@@ -894,8 +894,8 @@ const pdfColors = {
 };
 
 // Unicode control characters for bidirectional text
-const LRM = "\u200E"; // Left-to-Right Mark
-const RLM = "\u200F"; // Right-to-Left Mark
+// const LRM = "\u200E"; // Left-to-Right Mark (unused)
+// const RLM = "\u200F"; // Right-to-Left Mark (unused)
 const RLI = "\u2067"; // Right-to-Left Isolate
 const PDI = "\u2069"; // Pop Directional Isolate
 
@@ -976,8 +976,8 @@ function protectLTRSegments(s: string): string {
     .replace(/\b[0-9][0-9A-Za-z\-_.:/]*\b/g, m => `${RLI}${m}${PDI}`);
 }
 
-// Helper to wrap text with RLI/PDI
-const asLTR = (s: string) => `${RLI}${s}${PDI}`;
+// Helper to wrap text with RLI/PDI (unused)
+// const asLTR = (s: string) => `${RLI}${s}${PDI}`;
 
 const localizeDigits = (value: string, rtl: boolean) =>
   rtl ? value.replace(/[0-9]/g, (digit) => ARABIC_DIGIT_MAP[digit] ?? digit) : value;
@@ -2289,14 +2289,15 @@ const latestResponseMeta = computed(() => {
   };
 });
 
-const completionRateMetric = computed(() => {
-  const total = responses.value.length;
-  if (!total) return 0;
-  const completed = responses.value.filter(
-    (response) => response.is_complete,
-  ).length;
-  return Math.round((completed / total) * 100);
-});
+// Completion rate metric (currently unused but may be needed for future metrics display)
+// const completionRateMetric = computed(() => {
+//   const total = responses.value.length;
+//   if (!total) return 0;
+//   const completed = responses.value.filter(
+//     (response) => response.is_complete,
+//   ).length;
+//   return Math.round((completed / total) * 100);
+// });
 
 const overviewCards = computed(() => {
   const totalResponsesCount =

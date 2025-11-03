@@ -257,7 +257,7 @@ const bulkDelete = useBulkDelete()
 
 // Computed properties
 const currentTheme = computed(() => store.currentTheme)
-const isRTL = computed(() => store.currentLanguage === 'ar')
+// const isRTL = computed(() => store.currentLanguage === 'ar') // Unused - RTL is handled by store
 const t = computed(() => store.t)
 
 // Destructure user management composable

@@ -168,25 +168,29 @@ const maxValue = computed(() => {
   return Math.max(...flatValues, 1) // Ensure minimum of 1 to avoid division by zero
 })
 
-// Calculate min value for legend
-const minValue = computed(() => {
-  const flatValues = props.heatmapData.matrix.flat().filter(v => v > 0)
-  return flatValues.length > 0 ? Math.min(...flatValues) : 0
-})
+// Calculate min value for legend (currently unused but may be needed for future legend implementation)
+// const minValue = computed(() => {
+//   const flatValues = props.heatmapData.matrix.flat().filter(v => v > 0)
+//   return flatValues.length > 0 ? Math.min(...flatValues) : 0
+// })
 
-// Find peak hour
+// Find peak hour (used in template)
 const peakHour = computed(() => {
   const maxHourValue = Math.max(...props.heatmapData.totals_by_hour)
   const hourIndex = props.heatmapData.totals_by_hour.indexOf(maxHourValue)
   return formatHour(hourIndex)
 })
 
-// Find peak day
+// Find peak day (used in template)
 const peakDay = computed(() => {
   const maxDayValue = Math.max(...props.heatmapData.totals_by_day)
   const dayIndex = props.heatmapData.totals_by_day.indexOf(maxDayValue)
   return dayNames.value[dayIndex]
 })
+
+// Tell TypeScript these are used in template
+void peakHour
+void peakDay
 
 // Format hour for display
 const formatHour = (hour: number): string => {
