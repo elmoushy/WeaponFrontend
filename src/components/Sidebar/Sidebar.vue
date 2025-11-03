@@ -173,9 +173,27 @@ const logoSrc = computed(() => isCollapsed.value ? '/logomobile.png' : '/public/
   transition:inline-size .25s ease, background .25s ease, border-color .25s ease;
   direction: rtl;
   z-index: 999;
+
+  --active-bg: #B78A41;
+  --active-hover-bg: linear-gradient(135deg, #B78A41, #A17D23);
+  --active-color: #ffffff;
+  --active-icon-color: #ffffff;
+  --active-shadow: 0 8px 18px rgba(183,138,65,.28);
+  --active-disc-bg: #A17D23;
+  --active-disc-color: #ffffff;
+  --active-disc-shadow: 0 8px 18px rgba(161,125,35,.35);
 }
+
 .night{
   background:#181a1f;
+  --active-bg: linear-gradient(135deg, rgba(161,125,35,.28), rgba(183,138,65,.20));
+  --active-hover-bg: linear-gradient(135deg, rgba(161,125,35,.34), rgba(183,138,65,.26));
+  --active-color: #F8FAFC;
+  --active-icon-color: #ffffff;
+  --active-shadow: 0 10px 22px rgba(183,138,65,.32);
+  --active-disc-bg: linear-gradient(135deg,#B78A41,#A17D23);
+  --active-disc-color: #ffffff;
+  --active-disc-shadow: 0 10px 22px rgba(183,138,65,.40);
 }
 .collapsed{ inline-size: var(--sb-width-collapsed); }
 
@@ -187,15 +205,15 @@ const logoSrc = computed(() => isCollapsed.value ? '/logomobile.png' : '/public/
 .item.active,
 .item[aria-current="page"],
 .item.router-link-active {
-  background: #B78A41;           /* gold fill */
-  color: #fff;                    /* text */
+  background: var(--active-bg);
+  color: var(--active-color);
 }
 
 /* Icon inside an active row */
 .item.active .itemIcon,
 .item[aria-current="page"] .itemIcon,
 .item.router-link-active .itemIcon {
-  color: #fff;
+  color: var(--active-icon-color);
 }
 
 /* Hover/focus on an active row (keep it “active”, just elevate) */
@@ -205,43 +223,15 @@ const logoSrc = computed(() => isCollapsed.value ? '/logomobile.png' : '/public/
 .item[aria-current="page"]:focus-visible,
 .item.router-link-active:hover,
 .item.router-link-active:focus-visible {
-  background: linear-gradient(135deg, #B78A41, #A17D23);
-  color: #fff;
+  background: var(--active-hover-bg);
+  color: var(--active-color);
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(183,138,65,.28);
+  box-shadow: var(--active-shadow);
 }
 
 /* =========================================================
    ACTIVE LINK — NIGHT THEME
    ========================================================= */
-
-/* Subtle gold-tinted fill for dark */
-.night .item.active,
-.night .item[aria-current="page"],
-.night .item.router-link-active {
-  background: linear-gradient(135deg, rgba(161,125,35,.28), rgba(183,138,65,.20));
-  color: #F8FAFC;
-}
-
-/* Icon stays bright on dark */
-.night .item.active .itemIcon,
-.night .item[aria-current="page"] .itemIcon,
-.night .item.router-link-active .itemIcon {
-  color: #fff;
-}
-
-/* Hover/focus on an active row in night */
-.night .item.active:hover,
-.night .item.active:focus-visible,
-.night .item[aria-current="page"]:hover,
-.night .item[aria-current="page"]:focus-visible,
-.night .item.router-link-active:hover,
-.night .item.router-link-active:focus-visible {
-  background: linear-gradient(135deg, rgba(161,125,35,.34), rgba(183,138,65,.26));
-  color: #fff;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(183,138,65,.32);
-}
 
 /* =========================================================
    COLLAPSED RAIL — keep the disc golden & lift on hover
@@ -254,14 +244,9 @@ const logoSrc = computed(() => isCollapsed.value ? '/logomobile.png' : '/public/
 .collapsed .item.active:hover .itemIcon,
 .collapsed .item.active:focus-visible .itemIcon {
   transform: translateY(-1px);
-  box-shadow: 0 12px 24px rgba(161,125,35,.40);
-}
-
-/* Night + collapsed: slightly brighter lift */
-.night.collapsed .item.active:hover .itemIcon,
-.night.collapsed .item.active:focus-visible .itemIcon {
-  filter: brightness(1.05);
-  box-shadow: 0 14px 26px rgba(183,138,65,.45);
+  background: var(--active-disc-bg);
+  color: var(--active-disc-color);
+  box-shadow: var(--active-disc-shadow);
 }
 
 /* =========================================================
@@ -386,11 +371,11 @@ const logoSrc = computed(() => isCollapsed.value ? '/logomobile.png' : '/public/
   box-shadow:0 6px 16px rgba(161,125,35,.35);
 }
 .active{
-  background:#B78A41;
-  color:white;
+  background: var(--active-bg);
+  color: var(--active-color);
 }
 .active .itemIcon{
-  color:white;
+  color: var(--active-icon-color);
 }
 
 .controlsArea{
@@ -528,33 +513,6 @@ const logoSrc = computed(() => isCollapsed.value ? '/logomobile.png' : '/public/
 .collapsed .logoutLabel{
   display:none;
 }
-
-
-
-.night .active{
-  /* subtle gold-tinted fill that works on dark bg */
-  background: linear-gradient(135deg, rgba(161,125,35,.28), rgba(183,138,65,.20));
-  color: #f8fafc;                    /* readable text on dark */
-  /* box-shadow: 0 12px 24px rgba(183,138,65,.22); */
-}
-
-/* Active icon inside the active item in night */
-.night .active .itemIcon{
-  color:#ffffff;                     /* make the icon pop */
-}
-
-/* Optional: nicer hover on an active item in night */
-.night .menuCard .active:hover{
-  background: linear-gradient(135deg, rgba(161,125,35,.32), rgba(183,138,65,.26));
-}
-
-/* If you use badges inside active rows in night */
-.night .active .badge{
-  background: linear-gradient(135deg,#B78A41,#A17D23);
-  color:#0b0e13;                     /* or #111 if you prefer darker text */
-}
-/* here cola */
-
 /* ================================
    COLLAPSED RAIL — centered circles
    ================================ */
@@ -611,16 +569,9 @@ const logoSrc = computed(() => isCollapsed.value ? '/logomobile.png' : '/public/
 
 /* ACTIVE = filled gold circle with white icon */
 .collapsed .active .itemIcon{
-  background: #A17D23;
-  color: #ffffff;
-  box-shadow: 0 8px 18px rgba(161,125,35,.35);
-}
-
-/* Night active (a bit brighter) */
-.night.collapsed .active .itemIcon{
-  background: linear-gradient(135deg,#B78A41,#A17D23);
-  color:#fff;
-  box-shadow: 0 10px 22px rgba(183,138,65,.40);
+  background: var(--active-disc-bg);
+  color: var(--active-disc-color);
+  box-shadow: var(--active-disc-shadow);
 }
 
 /* Hide texts/badges in rail (you already had this but keep for safety) */
@@ -733,6 +684,7 @@ const logoSrc = computed(() => isCollapsed.value ? '/logomobile.png' : '/public/
   background: #EFF4FA;
   color: #0f172a;
   box-shadow: none;
+  transition: background .2s ease, color .2s ease, box-shadow .2s ease;
 }
 .night.collapsed .itemIcon{
   background: rgba(255,255,255,.06);
@@ -741,12 +693,9 @@ const logoSrc = computed(() => isCollapsed.value ? '/logomobile.png' : '/public/
 
 /* Active disc */
 .collapsed .active .itemIcon{
-  background: #A17D23;
-  color: #fff;
-  box-shadow: 0 8px 18px rgba(161,125,35,.35);
-}
-.night.collapsed .active .itemIcon{
-  background: linear-gradient(135deg,#B78A41,#A17D23);
+  background: var(--active-disc-bg);
+  color: var(--active-disc-color);
+  box-shadow: var(--active-disc-shadow);
 }
 
 /* Hide labels/badges in rail */

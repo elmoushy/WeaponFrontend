@@ -8,7 +8,7 @@
             <div :class="$style.sectionHerto">
               <h1>{{ t('survey.title') }}</h1>
             </div>
-          </div>
+        </div>
 
           <div :class="$style.heroActions">
             <!-- Create Survey -->

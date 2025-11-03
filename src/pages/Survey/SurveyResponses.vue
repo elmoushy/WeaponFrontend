@@ -819,8 +819,7 @@ import { useAppStore } from "../../stores/useAppStore";
 import { apiClient } from "../../services/jwtAuthService";
 import Swal from "sweetalert2";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import { ArabicShaper } from "arabic-persian-reshaper";
+import amiriUrl from "../../lib/fonts/Amiri.ttf?url";
 
 // Analytics Components
 import SurveyAnalytics from "../../components/Analytics/SurveyAnalytics.vue";
@@ -847,17 +846,31 @@ const store = useAppStore();
 const currentTheme = computed(() => store.currentTheme);
 const isRTL = computed(() => store.currentLanguage === "ar");
 const t = computed(() => store.t);
+let amiriRegistered = false;
 
-const ARABIC_FONT_NAME = "TajawalPDF";
-const ARABIC_FONT_FILES = {
-  normal: "Tajawal-Regular.ttf",
-  bold: "Tajawal-Bold.ttf",
-} as const;
-const LATIN_FONT_NAME = "helvetica";
-const ARABIC_TEXT_REGEX = /[\u0600-\u06FF]/;
-const SHAPED_ARABIC_REGEX = /[\uFB50-\uFDFF\uFE70-\uFEFF]/;
-const ARABIC_DIGITS_REGEX = /[\u0660-\u0669\u06F0-\u06F9]/;
-const LATIN_TEXT_REGEX = /[A-Za-z]/;
+async function ensureAmiri(pdf: jsPDF) {
+  if (amiriRegistered) return;
+
+  const buf = await fetch(amiriUrl).then(r => r.arrayBuffer());
+  
+  // Convert ArrayBuffer to base64 in chunks to avoid stack overflow
+  const uint8Array = new Uint8Array(buf);
+  let binaryString = '';
+  const chunkSize = 8192; // Process 8KB at a time
+  
+  for (let i = 0; i < uint8Array.length; i += chunkSize) {
+    const chunk = uint8Array.subarray(i, i + chunkSize);
+    binaryString += String.fromCharCode.apply(null, Array.from(chunk));
+  }
+  
+  const base64 = btoa(binaryString);
+
+  pdf.addFileToVFS("Amiri.ttf", base64);
+  pdf.addFont("Amiri.ttf", "Amiri", "normal"); // we only have the normal weight
+  amiriRegistered = true;
+}
+
+
 const ARABIC_DIGIT_MAP: Record<string, string> = {
   "0": "٠",
   "1": "١",
@@ -871,163 +884,192 @@ const ARABIC_DIGIT_MAP: Record<string, string> = {
   "9": "٩",
 };
 
-let cachedArabicFonts: { normal: string; bold: string } | null = null;
-
-const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
-  let binary = "";
-  const bytes = new Uint8Array(buffer);
-  const chunkSize = 0x8000;
-
-  for (let i = 0; i < bytes.length; i += chunkSize) {
-    const chunk = bytes.subarray(i, i + chunkSize);
-    binary += String.fromCharCode(...chunk);
-  }
-
-  return btoa(binary);
+const pdfColors = {
+  primary: "#A17D23",
+  secondary: "#181B25",
+  subtitle: "#4A5565",
+  border: "#E5E7EB",
+  light: "#F5F7FA",
+  white: "#FFFFFF",
 };
 
-const ensurePdfFonts = async (pdfInstance: jsPDF) => {
-  if (!cachedArabicFonts) {
-    const [regularResponse, boldResponse] = await Promise.all([
-      fetch(`/fonts/${ARABIC_FONT_FILES.normal}`),
-      fetch(`/fonts/${ARABIC_FONT_FILES.bold}`),
-    ]);
+// Unicode control characters for bidirectional text
+const LRM = "\u200E"; // Left-to-Right Mark
+const RLM = "\u200F"; // Right-to-Left Mark
+const RLI = "\u2067"; // Right-to-Left Isolate
+const PDI = "\u2069"; // Pop Directional Isolate
 
-    if (!regularResponse.ok || !boldResponse.ok) {
-      throw new Error("Failed to load PDF fonts for Arabic content");
-    }
+// Check if a string contains Arabic characters
+function isArabicLine(s: string): boolean {
+  return /[\u0600-\u06FF]/.test(String(s || ""));
+}
 
-    const [regularBuffer, boldBuffer] = await Promise.all([
-      regularResponse.arrayBuffer(),
-      boldResponse.arrayBuffer(),
-    ]);
-
-    cachedArabicFonts = {
-      normal: arrayBufferToBase64(regularBuffer),
-      bold: arrayBufferToBase64(boldBuffer),
-    };
-  }
-
-  pdfInstance.addFileToVFS(
-    ARABIC_FONT_FILES.normal,
-    cachedArabicFonts.normal,
-  );
-  pdfInstance.addFont(ARABIC_FONT_FILES.normal, ARABIC_FONT_NAME, "normal");
-  pdfInstance.addFileToVFS(ARABIC_FONT_FILES.bold, cachedArabicFonts.bold);
-  pdfInstance.addFont(ARABIC_FONT_FILES.bold, ARABIC_FONT_NAME, "bold");
-};
-
-const convertToArabicDigits = (value: string) =>
-  value.replace(/[0-9]/g, (digit) => ARABIC_DIGIT_MAP[digit] ?? digit);
-
-const hasArabicGlyphs = (value: string) =>
-  ARABIC_TEXT_REGEX.test(value) ||
-  SHAPED_ARABIC_REGEX.test(value) ||
-  ARABIC_DIGITS_REGEX.test(value);
-
-const prepareTextForPdf = (value: string, rtlContext: boolean) => {
-  if (!value) return "";
-
-  let text = value;
-  const containsArabic = hasArabicGlyphs(text);
-
-  if (rtlContext && containsArabic) {
-    text = convertToArabicDigits(text);
-  }
-
-  if (containsArabic) {
-    text = ArabicShaper.convertArabic(text);
-  }
-
-  return text;
-};
-
-type PdfFontStyle = "normal" | "bold" | "italic";
-
-const setPdfFontForContent = (
-  pdfInstance: jsPDF,
-  containsArabic: boolean,
-  style: PdfFontStyle = "normal",
-) => {
-  if (containsArabic) {
-    const normalizedStyle = style === "bold" ? "bold" : "normal";
-    pdfInstance.setFont(ARABIC_FONT_NAME, normalizedStyle);
-  } else {
-    if (style === "bold") {
-      pdfInstance.setFont(LATIN_FONT_NAME, "bold");
-    } else if (style === "italic") {
-      pdfInstance.setFont(LATIN_FONT_NAME, "italic");
+// Reverse Arabic text for proper display in PDF
+function reverseArabicText(text: string): string {
+  if (!text) return "";
+  
+  // Define character types
+  const isArabicChar = (char: string) => /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(char);
+  const isLatinChar = (char: string) => /[A-Za-z]/.test(char);
+  const isDigit = (char: string) => /[0-9\u0660-\u0669]/.test(char); // Latin and Arabic digits
+  const isPunctuation = (char: string) => /[.,;:!?،؛؟\-_/\\()[\]{}'"<>«»]/.test(char);
+  const isSpace = (char: string) => /\s/.test(char);
+  
+  // Tokenize the text into segments
+  const tokens: Array<{ text: string; type: 'arabic' | 'latin' | 'number' | 'punct' | 'space' }> = [];
+  let currentText = "";
+  let currentType: 'arabic' | 'latin' | 'number' | 'punct' | 'space' | null = null;
+  
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    let charType: 'arabic' | 'latin' | 'number' | 'punct' | 'space';
+    
+    if (isSpace(char)) {
+      charType = 'space';
+    } else if (isArabicChar(char)) {
+      charType = 'arabic';
+    } else if (isLatinChar(char)) {
+      charType = 'latin';
+    } else if (isDigit(char)) {
+      charType = 'number';
+    } else if (isPunctuation(char)) {
+      charType = 'punct';
     } else {
-      pdfInstance.setFont(LATIN_FONT_NAME, "normal");
+      charType = 'punct'; // Default for other characters
+    }
+    
+    // Group consecutive characters of the same type
+    if (currentType === charType && charType !== 'space' && charType !== 'punct') {
+      currentText += char;
+    } else {
+      if (currentText) {
+        tokens.push({ text: currentText, type: currentType! });
+      }
+      currentText = char;
+      currentType = charType;
     }
   }
-};
+  
+  if (currentText) {
+    tokens.push({ text: currentText, type: currentType! });
+  }
+  
+  // Reverse the order of tokens, but keep Latin/number sequences in their original order
+  const reversedTokens = tokens.reverse();
+  
+  // Build the final string
+  return reversedTokens.map(token => {
+    // Keep numbers and Latin text in their original internal order
+    if (token.type === 'number' || token.type === 'latin') {
+      return token.text;
+    }
+    return token.text;
+  }).join("");
+}
 
-const normalizePdfContent = (
-  content: string | string[],
-  rtlContext: boolean,
+// Protect LTR segments (emails, URLs, numbers) with RLI/PDI
+function protectLTRSegments(s: string): string {
+  if (!s) return "";
+  return String(s)
+    .replace(/([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g, m => `${RLI}${m}${PDI}`)
+    .replace(/(https?:\/\/\S+|www\.\S+)/g, m => `${RLI}${m}${PDI}`)
+    .replace(/\b[0-9][0-9A-Za-z\-_.:/]*\b/g, m => `${RLI}${m}${PDI}`);
+}
+
+// Helper to wrap text with RLI/PDI
+const asLTR = (s: string) => `${RLI}${s}${PDI}`;
+
+const localizeDigits = (value: string, rtl: boolean) =>
+  rtl ? value.replace(/[0-9]/g, (digit) => ARABIC_DIGIT_MAP[digit] ?? digit) : value;
+
+const formatWithDigits = (
+  value: number | string,
+  formatter: Intl.NumberFormat,
+  rtl: boolean,
 ) => {
-  const flattened = Array.isArray(content) ? content : [content ?? ""];
+  if (typeof value === "number") {
+    return localizeDigits(formatter.format(value), rtl);
+  }
 
-  const normalized = flattened.map((part) => {
-    const prepared = prepareTextForPdf(part, rtlContext);
-    const containsArabic =
-      hasArabicGlyphs(part) || hasArabicGlyphs(prepared);
-    const containsLatin = LATIN_TEXT_REGEX.test(part);
+  const numeric = Number(value);
+  if (!Number.isNaN(numeric)) {
+    return localizeDigits(formatter.format(numeric), rtl);
+  }
 
-    return {
-      text: prepared,
-      containsArabic,
-      containsLatin,
-    };
-  });
-
-  return {
-    lines: normalized.map((item) => item.text),
-    containsArabic: normalized.some((item) => item.containsArabic),
-    containsLatin: normalized.some((item) => item.containsLatin),
-  };
+  return localizeDigits(String(value ?? ""), rtl);
 };
 
-const drawPdfText = (
-  pdfInstance: jsPDF,
-  content: string | string[],
+const drawText = (
+  pdf: jsPDF,
+  text: string,
   x: number,
   y: number,
   options: {
-    style?: PdfFontStyle;
+    rtl: boolean;
+    size?: number;
+    weight?: "normal" | "bold";
+    color?: string;
     align?: "left" | "right" | "center";
-    maxWidth?: number;
-    rtl?: boolean;
-  } = {},
+  },
 ) => {
-  const rtlContext = options.rtl ?? false;
-  const { lines, containsArabic, containsLatin } = normalizePdfContent(
-    content,
-    rtlContext,
-  );
-
-  setPdfFontForContent(pdfInstance, containsArabic, options.style);
-
-  const defaultAlign =
-    containsArabic && !containsLatin
-      ? rtlContext
-        ? "right"
-        : "left"
-      : "left";
-
-  const align = options.align ?? defaultAlign;
-  const textOptions: Record<string, any> = { align };
-
-  if (containsArabic) {
-    textOptions.isInputRtl = true;
+  const { rtl, size = 12, weight = "normal", color = pdfColors.secondary } = options;
+  const align = options.align ?? (rtl ? "right" : "left");
+  
+  // Only localize digits when UI is RTL
+  let value = rtl ? localizeDigits(text ?? "", true) : (text ?? "");
+  
+  // Check if the text contains Arabic
+  const hasArabic = isArabicLine(value);
+  
+  // Reverse Arabic text for proper display in PDF
+  if (hasArabic && rtl) {
+    value = reverseArabicText(value);
   }
+  
+  const amiriWeights = (pdf.getFontList()?.Amiri as string[]) || [];
+  const chosenWeight = amiriWeights.includes(weight) ? weight : "normal";
 
-  if (options.maxWidth !== undefined) {
-    pdfInstance.text(lines, x, y, textOptions, options.maxWidth);
-  } else {
-    pdfInstance.text(lines, x, y, textOptions);
-  }
+  pdf.setFont("Amiri", chosenWeight);
+  pdf.setFontSize(size);
+  pdf.setTextColor(color);
+  // Don't use isInputRtl flag as we're manually reversing the text
+  pdf.text(value, x, y, { align });
+};
+
+const drawParagraph = (
+  pdf: jsPDF,
+  text: string,
+  x: number,
+  y: number,
+  width: number,
+  options: {
+    rtl: boolean;
+    size?: number;
+    weight?: "normal" | "bold";
+    color?: string;
+    lineHeight?: number;
+    align?: "left" | "right" | "center";
+  },
+) => {
+  const { rtl, lineHeight = 5.5 } = options;
+  
+  // Only localize digits when UI is RTL
+  let value = rtl ? localizeDigits(text ?? "", true) : (text ?? "");
+  
+  const lines = pdf.splitTextToSize(value, width);
+  let cursorY = y;
+
+  lines.forEach((line: string) => {
+    // Check each line individually for Arabic content
+    const lineHasArabic = isArabicLine(line);
+    drawText(pdf, line, x, cursorY, {
+      ...options,
+      rtl: lineHasArabic && rtl, // Only treat as RTL if it has Arabic and RTL mode is on
+    });
+    cursorY += lineHeight;
+  });
+
+  return cursorY;
 };
 
 
@@ -1494,365 +1536,287 @@ const downloadAsExcel = async (responses: any[]) => {
 // Download as PDF with website theme colors
 const downloadAsPDF = async (responses: any[]) => {
   try {
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "mm",
-      format: "a4",
-    });
+    const rtl = isRTL.value;
+    const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+    
+    // Register the Amiri font before using it
+    await ensureAmiri(pdf);
+    
+    pdf.setFont("Amiri", "normal");
+    const locale = rtl ? 'ar-SA' : 'en-US';
+    const numberFormatter = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
 
-    await ensurePdfFonts(pdf);
-
-    const isCurrentRTL = isRTL.value;
-    const locale = isCurrentRTL ? "ar-SA" : "en-US";
-    const numberFormatter = new Intl.NumberFormat(locale);
-    const formatNumber = (value: number) => numberFormatter.format(value);
-
-    const formatDateForPdf = (dateString: string) => {
-      if (!dateString) return "";
-      const date = new Date(dateString);
-      if (Number.isNaN(date.getTime())) return "";
-      return date.toLocaleString(locale, {
-        calendar: "gregory",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
+    const formatDateForPdf = (value?: string) => {
+      if (!value) return '';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      const formatted = date.toLocaleString(locale, {
+        calendar: 'gregory',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
       });
+      return rtl ? localizeDigits(formatted, true) : formatted;
     };
-
-    const exportTimestamp = formatDateForPdf(new Date().toISOString());
 
     const strings = {
-      reportTitle: isCurrentRTL
-        ? "تقرير استجابات الاستبيان"
-        : "Survey Responses Report",
-      reportSubtitle: isCurrentRTL
-        ? `عدد الاستجابات: ${formatNumber(responses.length)} | تاريخ التصدير: ${exportTimestamp}`
-        : `Responses: ${formatNumber(responses.length)} | Exported on: ${exportTimestamp}`,
-      responseHeading: (order: string, date: string) =>
-        isCurrentRTL
-          ? `الاستجابة رقم ${order}${date ? ` - ${date}` : ""}`
-          : `Response #${order}${date ? ` - ${date}` : ""}`,
-      respondentLabel: isCurrentRTL ? "المستجيب" : "Respondent",
-      respondentTypeLabel: isCurrentRTL ? "نوع المستجيب" : "Respondent type",
-      statusLabel: isCurrentRTL ? "الحالة" : "Status",
-      completionRateLabel: isCurrentRTL ? "نسبة الإكمال" : "Completion rate",
-      answersTitle: isCurrentRTL ? "الإجابات" : "Answers",
-      questionHeading: (order: string) =>
-        isCurrentRTL ? `السؤال ${order}` : `Question ${order}`,
-      questionTextLabel: isCurrentRTL ? "نص السؤال" : "Question text",
-      questionTypeLabel: isCurrentRTL ? "نوع السؤال" : "Question type",
-      answerLabel: isCurrentRTL ? "الإجابة" : "Answer",
-      anonymousRespondent: isCurrentRTL ? "مستجيب مجهول" : "Anonymous respondent",
-      registeredUser: isCurrentRTL ? "مستخدم مسجل" : "Registered user",
-      anonymousUser: isCurrentRTL ? "مستخدم مجهول" : "Anonymous user",
-      completed: isCurrentRTL ? "مكتملة" : "Completed",
-      incomplete: isCurrentRTL ? "غير مكتملة" : "Incomplete",
-      noAnswer: isCurrentRTL ? "لا توجد إجابة" : "No answer provided",
-      missingQuestionText: isCurrentRTL ? "لا يوجد نص للسؤال" : "No question text",
-      pageIndicator: (current: string, total: string) =>
-        isCurrentRTL ? `صفحة ${current} من ${total}` : `Page ${current} of ${total}`,
+      reportTitle: rtl ? 'تقرير استجابات الاستبيان' : 'Survey Responses Report',
+      answersTitle: rtl ? 'الإجابات' : 'Answers',
+      respondent: rtl ? 'المستجيب' : 'Respondent',
+      respondentType: rtl ? 'نوع المستجيب' : 'Respondent type',
+      status: rtl ? 'الحالة' : 'Status',
+      completionRate: rtl ? 'نسبة الإكمال' : 'Completion rate',
+      anonymousRespondent: rtl ? 'مستجيب مجهول' : 'Anonymous respondent',
+      registeredUser: rtl ? 'مستخدم مسجل' : 'Registered user',
+      anonymousUser: rtl ? 'مستخدم مجهول' : 'Anonymous user',
+      completed: rtl ? 'مكتملة' : 'Completed',
+      incomplete: rtl ? 'غير مكتملة' : 'Incomplete',
+      questionLabel: rtl ? 'السؤال' : 'Question',
+      questionType: rtl ? 'نوع السؤال' : 'Question type',
+      noQuestionText: rtl ? 'لا يوجد نص للسؤال' : 'No question text',
+      noAnswer: rtl ? 'لا توجد إجابة' : 'No answer provided',
+      noAnswersAvailable: rtl ? 'لا توجد إجابات متاحة' : 'No answers available',
+      pageIndicator: rtl ? 'صفحة' : 'Page',
+      ofIndicator: rtl ? 'من' : 'of',
     };
 
-    const colors = {
-      primary: "#A17D23",
-      secondary: "#181B25",
-      lightGray: "#F5F7FA",
-      border: "#E5E7EB",
-      text: "#4A5565",
-      white: "#FFFFFF",
-    };
+    const localizedCount = formatWithDigits(responses.length, numberFormatter, rtl);
+    const exportTimestamp = formatDateForPdf(new Date().toISOString());
 
-    if (typeof (pdf as any).setR2L === "function") {
-      (pdf as any).setR2L(isCurrentRTL);
-    }
-    pdf.setLanguage(isCurrentRTL ? "ar" : "en");
-
-    let yPosition = 20;
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 15;
+    const margin = 18;
     const contentWidth = pageWidth - margin * 2;
+    let yPosition = margin;
 
-    const checkPageBreak = (neededSpace: number) => {
-      if (yPosition + neededSpace > pageHeight - margin) {
+    const ensureSpace = (height: number) => {
+      if (yPosition + height > pageHeight - margin) {
+                pdf.setFont('Amiri', 'normal');
         pdf.addPage();
-        if (typeof (pdf as any).setR2L === "function") {
-          (pdf as any).setR2L(isCurrentRTL);
-        }
         yPosition = margin;
-        pdf.setTextColor(colors.secondary);
-        return true;
       }
-      return false;
     };
 
-    pdf.setFillColor(colors.primary);
-    pdf.rect(margin, yPosition, contentWidth, 36, "F");
-
-    drawPdfText(pdf, strings.reportTitle, pageWidth / 2, yPosition + 15, {
-      style: "bold",
-      align: "center",
-      rtl: isCurrentRTL,
+    pdf.setFillColor(pdfColors.primary);
+    pdf.roundedRect(margin, yPosition, contentWidth, 30, 4, 4, 'F');
+    drawText(pdf, strings.reportTitle, pageWidth / 2, yPosition + 12, {
+      rtl,
+      size: 18,
+      weight: 'bold',
+      color: pdfColors.white,
+      align: 'center',
     });
-
-    drawPdfText(pdf, strings.reportSubtitle, pageWidth / 2, yPosition + 28, {
-      align: "center",
-      rtl: isCurrentRTL,
+    const subtitle = rtl
+      ? `${exportTimestamp} :تاريخ التصدير | ${localizedCount} :عدد الاستجابات`
+      : `Responses: ${localizedCount} | Exported on: ${exportTimestamp}`;
+    drawText(pdf, subtitle, pageWidth / 2, yPosition + 23, {
+      rtl,
+      size: 11,
+      color: pdfColors.white,
+      align: 'center',
     });
-
-    yPosition += 48;
+    yPosition += 42;
 
     responses.forEach((response, index) => {
-      const localizedOrder = formatNumber(index + 1);
-      const submittedAt = formatDateForPdf(response.submitted_at);
+      ensureSpace(24);
 
-      checkPageBreak(60);
-
-      pdf.setFillColor(colors.lightGray);
-      pdf.roundedRect(margin, yPosition, contentWidth, 12, 2, 2, "F");
-
-      const headingX = isCurrentRTL ? pageWidth - margin - 6 : margin + 6;
-      drawPdfText(
-        pdf,
-        strings.responseHeading(localizedOrder, submittedAt),
-        headingX,
-        yPosition + 8,
-        {
-          style: "bold",
-          rtl: isCurrentRTL,
-          align: isCurrentRTL ? "right" : "left",
-        },
-      );
-
+      pdf.setFillColor(pdfColors.light);
+      pdf.roundedRect(margin, yPosition, contentWidth, 12, 3, 3, 'F');
+      const responseOrder = formatWithDigits(index + 1, numberFormatter, rtl);
+      const submittedAt = formatDateForPdf(response?.submitted_at);
+      const headingPrefix = rtl ? 'الاستجابة رقم' : 'Response #';
+      const heading = rtl
+        ? (submittedAt ? `${submittedAt} - ${responseOrder} ${headingPrefix}` : `${responseOrder} ${headingPrefix}`)
+        : (submittedAt ? `${headingPrefix} ${responseOrder} - ${submittedAt}` : `${headingPrefix} ${responseOrder}`);
+      drawText(pdf, heading, rtl ? pageWidth - margin - 6 : margin + 6, yPosition + 8, {
+        rtl,
+        size: 13,
+        weight: 'bold',
+        color: pdfColors.primary,
+      });
       yPosition += 18;
 
-      const isComplete = response.is_complete;
-      const respondentName =
-        response.respondent?.email || strings.anonymousRespondent;
-      const respondentType =
-        response.respondent?.type === "authenticated"
-          ? strings.registeredUser
-          : strings.anonymousUser;
-      const completionRate = `${formatNumber(
-        getCompletionPercentage(response),
-      )}%`;
+      // Prepare respondent email with LTR protection if it's an email
+      const respondentValue = response?.respondent?.email 
+        ? protectLTRSegments(response.respondent.email)
+        : strings.anonymousRespondent;
 
-      const infoRows = [
-        [strings.respondentLabel, respondentName],
-        [strings.respondentTypeLabel, respondentType],
-        [strings.statusLabel, isComplete ? strings.completed : strings.incomplete],
-        [strings.completionRateLabel, completionRate],
-      ].map(([label, value]) => [
-        normalizePdfContent(label, isCurrentRTL).lines.join("\n"),
-        normalizePdfContent(value, isCurrentRTL).lines.join("\n"),
-      ]);
+      const infoRows: Array<[string, string]> = [
+        [strings.respondent, respondentValue],
+        [
+          strings.respondentType,
+          response?.respondent?.type === 'authenticated'
+            ? strings.registeredUser
+            : strings.anonymousUser,
+        ],
+        [strings.status, response?.is_complete ? strings.completed : strings.incomplete],
+        [
+          strings.completionRate,
+          `${formatWithDigits(getCompletionPercentage(response), numberFormatter, rtl)}%`,
+        ],
+      ];
 
-      autoTable(pdf, {
-        startY: yPosition,
-        head: [],
-        body: infoRows,
-        theme: "grid",
-        styles: {
-          font: ARABIC_FONT_NAME,
-          fontSize: 10,
-          cellPadding: 4,
-          textColor: colors.secondary,
-          lineColor: colors.border,
-          lineWidth: 0.1,
-          halign: isCurrentRTL ? "right" : "left",
-        },
-        columnStyles: {
-          0: {
-            fillColor: colors.lightGray,
-            fontStyle: "bold",
-            textColor: colors.primary,
-            cellWidth: 55,
-            halign: isCurrentRTL ? "right" : "left",
-            font: ARABIC_FONT_NAME,
+      infoRows.forEach(([label, value]) => {
+        ensureSpace(10);
+        // Compose the full line - in RTL, the format should be: value :label
+        const fullLine = rtl ? `${value} :${label}` : `${label}: ${value}`;
+        yPosition = drawParagraph(
+          pdf,
+          fullLine,
+          rtl ? pageWidth - margin : margin,
+          yPosition,
+          contentWidth,
+          {
+            rtl,
+            size: 11,
+            color: pdfColors.subtitle,
+            lineHeight: 6,
+            align: rtl ? 'right' : 'left',
           },
-          1: {
-            fillColor: colors.white,
-            cellWidth: contentWidth - 55,
-            halign: isCurrentRTL ? "right" : "left",
-            font: ARABIC_FONT_NAME,
-          },
-        },
-        margin: { left: margin, right: margin },
-        didParseCell: (data) => {
-          const cellText = data.cell.text?.[0] ?? "";
-          const containsArabic = hasArabicGlyphs(cellText);
-          data.cell.styles.font = containsArabic
-            ? ARABIC_FONT_NAME
-            : LATIN_FONT_NAME;
-          if (!containsArabic) {
-            data.cell.styles.halign = "left";
-          }
-        },
-        didDrawPage: (data) => {
-          if (data?.cursor) {
-            yPosition = data.cursor.y;
-          }
-        },
+        ) + 2;
       });
 
-      yPosition = (pdf as any).lastAutoTable.finalY + 12;
-      checkPageBreak(30);
-
-      const accentX = isCurrentRTL ? pageWidth - margin - 4 : margin;
-      pdf.setFillColor(colors.primary);
-      pdf.rect(accentX, yPosition, 4, 9, "F");
-
-      const answersTitleX = isCurrentRTL ? accentX - 6 : margin + 8;
-      drawPdfText(pdf, strings.answersTitle, answersTitleX, yPosition + 6, {
-        style: "bold",
-        rtl: isCurrentRTL,
-        align: isCurrentRTL ? "right" : "left",
+      ensureSpace(12);
+      drawText(pdf, strings.answersTitle, rtl ? pageWidth - margin : margin, yPosition + 8, {
+        rtl,
+        size: 12,
+        weight: 'bold',
+        color: pdfColors.primary,
       });
-
       yPosition += 16;
 
-      response.answers?.forEach((answer: any, answerIndex: number) => {
-        checkPageBreak(40);
+      const answers = Array.isArray(response?.answers) ? response.answers : [];
 
-        const questionOrder = answer.question_order
-          ? formatNumber(answer.question_order)
-          : formatNumber(answerIndex + 1);
-        const questionType = getQuestionTypeLabel(answer.question_type);
-
-        const blockX = isCurrentRTL ? pageWidth - margin - 6 : margin + 6;
-
-        drawPdfText(pdf, strings.questionHeading(questionOrder), blockX, yPosition + 5, {
-          style: "bold",
-          rtl: isCurrentRTL,
-          align: isCurrentRTL ? "right" : "left",
-        });
-
-        yPosition += 10;
-
-        const questionContent = normalizePdfContent(
-          answer.question_text || strings.missingQuestionText,
-          isCurrentRTL,
-        );
-        const questionAlign = questionContent.containsArabic
-          ? isCurrentRTL
-            ? "right"
-            : "left"
-          : "left";
-
-        drawPdfText(pdf, questionContent.lines, blockX, yPosition + 4, {
-          rtl: questionContent.containsArabic,
-          align: questionAlign,
-          maxWidth: contentWidth - 12,
-        });
-
-        const questionHeight = Math.max(
-          questionContent.lines.length * 5 + 6,
-          12,
-        );
-        yPosition += questionHeight;
-
-        const questionTypeText = `${strings.questionTypeLabel}: ${questionType}`;
-        const questionTypeContent = normalizePdfContent(
-          questionTypeText,
-          isCurrentRTL,
-        );
-
-        drawPdfText(
+      if (answers.length === 0) {
+        ensureSpace(12);
+        yPosition = drawParagraph(
           pdf,
-          questionTypeContent.lines,
-          blockX,
-          yPosition + 4,
-          {
-            style: "italic",
-            rtl: questionTypeContent.containsArabic,
-            align: questionTypeContent.containsArabic
-              ? isCurrentRTL
-                ? "right"
-                : "left"
-              : "left",
-          },
-        );
-
-        yPosition += 12;
-        checkPageBreak(26);
-
-        const formattedAnswer = formatAnswerForCSV(answer) || strings.noAnswer;
-        const answerContent = normalizePdfContent(
-          formattedAnswer,
-          isCurrentRTL,
-        );
-
-        const answerHeight = Math.max(
-          answerContent.lines.length * 5 + 6,
-          18,
-        );
-
-        pdf.setFillColor(colors.lightGray);
-        pdf.roundedRect(
-          margin + 3,
+          strings.noAnswersAvailable,
+          rtl ? pageWidth - margin : margin,
           yPosition,
-          contentWidth - 6,
-          answerHeight,
-          1,
-          1,
-          "F",
-        );
-
-        const answerAlign = answerContent.containsArabic
-          ? isCurrentRTL
-            ? "right"
-            : "left"
-          : "left";
-
-        drawPdfText(
-          pdf,
-          answerContent.lines,
-          blockX,
-          yPosition + 6,
+          contentWidth,
           {
-            rtl: answerContent.containsArabic,
-            align: answerAlign,
-            maxWidth: contentWidth - 14,
+            rtl,
+            size: 11,
+            color: pdfColors.subtitle,
+            lineHeight: 6,
+            align: rtl ? 'right' : 'left',
           },
-        );
+        ) + 6;
+      } else {
+        answers.forEach((answer: any, answerIndex: number) => {
+          ensureSpace(24);
+          if (!answer) return;
+          const displayOrder = formatWithDigits(
+            answer?.question_order ?? answerIndex + 1,
+            numberFormatter,
+            rtl,
+          );
+          drawText(
+            pdf,
+            rtl ? `${displayOrder} ${strings.questionLabel}` : `${strings.questionLabel} ${displayOrder}`,
+            rtl ? pageWidth - margin : margin,
+            yPosition + 5,
+            {
+              rtl,
+              size: 11,
+              weight: 'bold',
+              color: pdfColors.secondary,
+            },
+          );
+          yPosition += 10;
 
-        yPosition += answerHeight + 12;
-      });
+          const questionText = answer?.question_text || strings.noQuestionText;
+          yPosition = drawParagraph(
+            pdf,
+            questionText,
+            rtl ? pageWidth - margin : margin,
+            yPosition,
+            contentWidth,
+            {
+              rtl,
+              size: 11,
+              color: pdfColors.secondary,
+              lineHeight: 5.5,
+              align: rtl ? 'right' : 'left',
+            },
+          ) + 2;
+
+          const questionTypeLabel = getQuestionTypeLabel(answer?.question_type);
+          const questionType = rtl 
+            ? `${questionTypeLabel} :${strings.questionType}`
+            : `${strings.questionType}: ${questionTypeLabel}`;
+          yPosition = drawParagraph(
+            pdf,
+            questionType,
+            rtl ? pageWidth - margin : margin,
+            yPosition,
+            contentWidth,
+            {
+              rtl,
+              size: 9.5,
+              color: pdfColors.subtitle,
+              lineHeight: 5.2,
+              align: rtl ? 'right' : 'left',
+            },
+          ) + 4;
+
+          const answerValue = formatAnswerForCSV(answer) || strings.noAnswer;
+          ensureSpace(16);
+          pdf.setFillColor(pdfColors.light);
+          pdf.roundedRect(margin, yPosition, contentWidth, 12, 2, 2, 'F');
+          yPosition = drawParagraph(
+            pdf,
+            answerValue,
+            rtl ? pageWidth - margin - 4 : margin + 4,
+            yPosition + 5,
+            contentWidth - 8,
+            {
+              rtl,
+              size: 11,
+              color: pdfColors.secondary,
+              lineHeight: 5.5,
+              align: rtl ? 'right' : 'left',
+            },
+          ) + 6;
+        });
+      }
+
+      yPosition += 6;
 
       if (index < responses.length - 1) {
-        checkPageBreak(12);
-        pdf.setDrawColor(colors.border);
-        pdf.setLineWidth(0.3);
+        ensureSpace(8);
+        pdf.setDrawColor(pdfColors.border);
+        pdf.setLineWidth(0.2);
         pdf.line(margin, yPosition, pageWidth - margin, yPosition);
-        yPosition += 12;
+        yPosition += 10;
       }
     });
 
-    const pageCount = (pdf as any).internal.getNumberOfPages();
-    const localizedPageCount = formatNumber(pageCount);
-    for (let i = 1; i <= pageCount; i++) {
+    const totalPages = (pdf as any).internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
       pdf.setPage(i);
-      drawPdfText(
-        pdf,
-        strings.pageIndicator(formatNumber(i), localizedPageCount),
-        pageWidth / 2,
-        pageHeight - 10,
-        {
-          align: "center",
-          rtl: isCurrentRTL,
-        },
-      );
+      const pageNum = formatWithDigits(i, numberFormatter, rtl);
+      const totalPagesNum = formatWithDigits(totalPages, numberFormatter, rtl);
+      const label = rtl 
+        ? `${totalPagesNum} ${strings.ofIndicator} ${pageNum} ${strings.pageIndicator}`
+        : `${strings.pageIndicator} ${pageNum} ${strings.ofIndicator} ${totalPagesNum}`;
+      drawText(pdf, label, pageWidth / 2, pageHeight - 12, {
+        rtl,
+        size: 9,
+        color: pdfColors.subtitle,
+        align: 'center',
+      });
     }
 
-    const fileName = `${
-      isCurrentRTL ? "استجابات_الاستبيان" : "survey_responses"
-    }_${surveyId.value}_${Date.now()}.pdf`;
-    pdf.save(fileName);
+    const blob = pdf.output('blob');
+    const fileName = `${rtl ? 'استجابات_الاستبيان' : 'survey_responses'}_${surveyId.value}_${Date.now()}.pdf`;
+    downloadFile(blob, fileName);
   } catch (error) {
-    console.error("PDF generation error:", error);
+    console.error('PDF generation error:', error);
     throw error;
   }
 };

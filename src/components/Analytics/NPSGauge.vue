@@ -172,19 +172,29 @@ const detractorLabel = computed(() => {
   return isRTL.value ? `المنتقدون (${r})` : `Detractors (${r})`
 })
 
-const colors = {
-  promoters: '#4CAF50',
-  passives: '#FFC107',
-  detractors: '#D24A3D' // slightly deeper red for contrast
-}
+const colors = computed(() => {
+  if (currentTheme.value === 'night') {
+    return {
+      promoters: '#4ade80',
+      passives: '#facc15',
+      detractors: '#f87171'
+    }
+  }
+  return {
+    promoters: '#4CAF50',
+    passives: '#FFC107',
+    detractors: '#D24A3D'
+  }
+})
 
 const gaugeColor = computed(() => {
+  const palette = colors.value
   const s = npsScore.value
-  if (s >= 50) return colors.promoters
-  if (s >= 30) return '#8BC34A'
-  if (s >= 10) return colors.passives
-  if (s >= -10) return '#FF9800'
-  return colors.detractors
+  if (s >= 50) return palette.promoters
+  if (s >= 30) return currentTheme.value === 'night' ? '#6ee7b7' : '#8BC34A'
+  if (s >= 10) return palette.passives
+  if (s >= -10) return currentTheme.value === 'night' ? '#fbbf24' : '#FF9800'
+  return palette.detractors
 })
 
 /**
@@ -224,54 +234,277 @@ function getLabelPosition(startPct: number, endPct: number): { x: number; y: num
   return { x, y }
 }
 </script>
-
 <style module>
-.npsGauge{width:100%;height:100%;padding:24px}
-.npsGauge.compact{padding:16px}
+.npsGauge {
+  --panel-bg: #ffffff;
+  --panel-border: #e5e7eb;
+  --panel-muted: #f3f4f6;
+  --track-bg: #f3f4f6;
+  --text-primary: #1f2937;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+  --arc-bg: #e5e7eb;
+  --legend-chip: rgba(17, 24, 39, 0.06);
+  --legend-border: rgba(17, 24, 39, 0.08);
+  --shadow-soft: 0 18px 35px rgba(15, 23, 42, 0.12);
 
-.state{min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
-.loadingSpinner{width:32px;height:32px;border:3px solid var(--border);border-top:3px solid var(--brand);border-radius:50%;animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.stateText{color:var(--muted);font-size:14px;margin:0}
-.emptyIcon{font-size:42px;color:var(--muted);opacity:.5}
+  width: 100%;
+  height: 100%;
+  padding: 24px;
+  color: var(--text-secondary);
+  background: transparent;
+}
 
-.split{display:flex;gap:24px}
+.npsGauge.compact {
+  padding: 16px;
+}
 
-.panelHeader{margin-bottom:8px}
-.panelTitle{margin:0;font-size:15px;color:var(--ink);font-weight:700}
+.npsGauge[data-theme="night"] {
+  /* --panel-bg: #111827; */
+  --panel-border: rgba(37, 34, 34, 0.9);
+    --panel-bg: rgba(37, 34, 34, 0.9);
 
-.left{display:flex; width: 50%; flex-direction:column;gap:16px;border:1px solid var(--border);border-radius:12px;padding:16px;background:var(--surface)}
-.row{display:grid;grid-template-columns:96px 1fr auto;align-items:center;gap:12px}
-.meta{display:flex;gap:8px;white-space:nowrap}
-.metaPct{font-weight:700}
-.metaCount{color:var(--muted)}
-.track{height:36px;background:var(--surface-variant);border-radius:18px;overflow:hidden;position:relative;box-shadow:inset 0 1px 3px rgba(0,0,0,.06)}
-.fill{height:100%;display:flex;align-items:center;justify-content:flex-end;padding-inline:10px;font-weight:700;color:#fff;transition:width .6s cubic-bezier(.4,0,.2,1)}
-.inBar{font-size:13px;text-shadow:0 1px 2px rgba(0,0,0,.25)}
-.labelWrap{display:flex;align-items:center;gap:8px;white-space:nowrap}
-.label{color:var(--ink);font-size:14px}
-.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+  --panel-muted: #1f2937;
+  --track-bg: #1f2937;
+  --text-primary: #f8fafc;
+  --text-secondary: #e2e8f0;
+  --text-muted: #94a3b8;
+  --arc-bg: #1f2937;
+  --legend-chip: rgba(148, 163, 184, 0.12);
+  --legend-border: rgba(148, 163, 184, 0.22);
+  --shadow-soft: 0 24px 48px rgba(0, 0, 0, 0.45);
+}
 
-.right{border:1px solid var(--border);width: 50%; border-radius:12px;padding:16px;background:var(--surface);display:flex;flex-direction:column;gap:8px}
-.gaugeWrap{position:relative;display:flex;align-items:center;justify-content:center;padding:8px 8px 0}
-.bgArc{fill:none;stroke:var(--surface-variant);stroke-width:16;stroke-linecap:round}
-.arc{fill:none;stroke-width:16;stroke-linecap:round}
-.arcLabel{font-size:13px;font-weight:700;text-anchor:middle;dominant-baseline:middle}
-.scoreBlock{position:absolute;inset:auto 0 18% 0;margin:auto;text-align:center}
-.scoreNum{font-size:44px;font-weight:800;line-height:1}
-.scoreSub{font-size:12px;color:var(--muted);margin-top:4px}
-.scoreTotal{font-size:11px;color:var(--muted);margin-top:2px;opacity:0.8}
+.state {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
 
-.legend{display:flex;gap:24px;list-style:none;padding:8px 8px 0;margin:0;color:var(--ink)}
-.legend li{display:flex;align-items:center;gap:8px;font-size:14px}
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--panel-border);
+  border-top: 3px solid var(--arc-bg);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
 
-/* RTL tweaks */
-:global([dir="rtl"]) .row{grid-template-columns:auto 1fr 96px}
-:global([dir="rtl"]) .fill{justify-content:flex-start}
-:global([dir="rtl"]) .inBar{margin-inline-start:10px}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
-/* Dark */
-.npsGauge[data-theme="night"] .left,
-.npsGauge[data-theme="night"] .right{background:#111827;border-color:#1f2937}
-.npsGauge[data-theme="night"] .track{background:#1f2937}
+.stateText {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin: 0;
+}
+
+.emptyIcon {
+  font-size: 42px;
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.split {
+  display: flex;
+  gap: 24px;
+}
+
+.panelHeader {
+  margin-bottom: 8px;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.left,
+.right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  padding: 16px;
+  background: var(--panel-bg);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 96px 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.meta {
+  display: flex;
+  gap: 8px;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+
+.metaPct {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.metaCount {
+  color: var(--text-muted);
+}
+
+.track {
+  height: 36px;
+  background: var(--track-bg);
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+}
+
+.fill {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-inline: 10px;
+  font-weight: 700;
+  color: #fff;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.inBar {
+  font-size: 13px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.labelWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.label {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 2px var(--panel-bg);
+}
+
+.gaugeWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 8px 0;
+}
+
+.bgArc {
+  fill: none;
+  stroke: var(--arc-bg);
+  stroke-width: 16;
+  stroke-linecap: round;
+}
+
+.arc {
+  fill: none;
+  stroke-width: 16;
+  stroke-linecap: round;
+}
+
+.arcLabel {
+  font-size: 13px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.scoreBlock {
+  position: absolute;
+  inset: auto 0 18% 0;
+  margin: auto;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.scoreNum {
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.scoreSub,
+.scoreTotal {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.scoreTotal {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.legend {
+  display: flex;
+  gap: 24px;
+  list-style: none;
+  padding: 8px 8px 0;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  background: transparent;
+}
+
+:global([dir='rtl']) .row {
+  grid-template-columns: auto 1fr 96px;
+}
+
+:global([dir='rtl']) .fill {
+  justify-content: flex-start;
+}
+
+:global([dir='rtl']) .inBar {
+  margin-inline-start: 10px;
+}
+
+@media (max-width: 1024px) {
+  .split {
+    flex-direction: column;
+  }
+
+  .left,
+  .right {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .legend {
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+}
 </style>

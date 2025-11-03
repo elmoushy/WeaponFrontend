@@ -271,10 +271,7 @@ const getColorForIntensity = (intensity: number): string => {
 // Get cell background style
 const getCellStyle = (value: number) => {
   if (value === 0) {
-    return {
-      background: currentTheme.value === 'night' ? '#0f1419' : '#f5f7fa',
-      border: '1px solid ' + (currentTheme.value === 'night' ? '#1a2332' : '#e1e4e8')
-    }
+    return {}
   }
   
   const intensity = value / maxValue.value
@@ -330,11 +327,73 @@ const hideTooltip = () => {
 <style module>
 /* Wrapper */
 .heatmapWrapper {
+  /* Light theme tokens */
+  --brand: #a17d23;
+  --surface: #ffffff;
+  --surface-alt: rgba(255, 255, 255, 0.82);
+  --surface-muted: rgba(161, 125, 35, 0.06);
+  --surface-raised: rgba(255, 255, 255, 0.92);
+  --border: rgba(161, 125, 35, 0.18);
+  --border-strong: rgba(161, 125, 35, 0.32);
+  --text-primary: #231f20;
+  --text-secondary: #4d4d4f;
+  --text-subtle: rgba(72, 78, 94, 0.75);
+  --muted: #4d4d4f;
+  --ink: #231f20;
+  --cell-empty-bg: #f5f7fa;
+  --cell-empty-border: rgba(161, 125, 35, 0.16);
+  --cell-glow: rgba(161, 125, 35, 0.35);
+  --grid-track: rgba(0, 0, 0, 0.05);
+  --scrollbar-track: rgba(0, 0, 0, 0.05);
+  --scrollbar-thumb: linear-gradient(135deg, rgba(161, 125, 35, 0.9), rgba(183, 138, 65, 0.9));
+  --tooltip-surface: #ffffff;
+  --tooltip-border: rgba(161, 125, 35, 0.15);
+  --tooltip-text: #231f20;
+  --tooltip-footer-bg: rgba(161, 125, 35, 0.08);
+  --ring-muted: rgba(161, 125, 35, 0.15);
+  --ring-strong: rgba(161, 125, 35, 0.35);
+  --shadow-soft: rgba(15, 23, 42, 0.05);
+  --shadow-strong: rgba(15, 23, 42, 0.12);
+  --highlight: #ffd700;
+
   width: 100%;
   padding: 2rem;
   position: relative;
   background: var(--surface);
   border-radius: 16px;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  box-shadow: 0 18px 40px var(--shadow-soft);
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.heatmapWrapper[data-theme="night"] {
+  --surface: rgba(27, 26, 24, 0.95);
+  --surface-alt: rgba(38, 34, 31, 0.88);
+  --surface-muted: rgba(94, 78, 63, 0.18);
+  --surface-raised: rgba(32, 29, 25, 0.92);
+  --border: rgba(229, 232, 225, 0.14);
+  --border-strong: rgba(229, 232, 225, 0.24);
+  --text-primary: #f5f3ee;
+  --text-secondary: rgba(229, 232, 225, 0.82);
+  --text-subtle: rgba(229, 232, 225, 0.65);
+  --muted: rgba(229, 232, 225, 0.7);
+  --ink: #f5f3ee;
+  --cell-empty-bg: rgba(34, 31, 29, 0.92);
+  --cell-empty-border: rgba(229, 232, 225, 0.12);
+  --cell-glow: rgba(247, 208, 117, 0.4);
+  --grid-track: rgba(229, 232, 225, 0.08);
+  --scrollbar-track: rgba(229, 232, 225, 0.07);
+  --scrollbar-thumb: linear-gradient(135deg, rgba(183, 138, 65, 0.8), rgba(161, 125, 35, 0.8));
+  --tooltip-surface: rgba(32, 29, 25, 0.98);
+  --tooltip-border: rgba(229, 232, 225, 0.18);
+  --tooltip-text: #f5f3ee;
+  --tooltip-footer-bg: rgba(229, 232, 225, 0.08);
+  --ring-muted: rgba(229, 232, 225, 0.2);
+  --ring-strong: rgba(229, 232, 225, 0.35);
+  --shadow-soft: rgba(0, 0, 0, 0.45);
+  --shadow-strong: rgba(0, 0, 0, 0.6);
+  --highlight: #ffe58a;
 }
 
 /* Loading State */
@@ -351,7 +410,7 @@ const hideTooltip = () => {
 .loadingSpinner {
   width: 60px;
   height: 60px;
-  border: 4px solid rgba(161, 125, 35, 0.1);
+  border: 4px solid var(--ring-muted);
   border-top-color: var(--brand);
   border-radius: 50%;
   animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
@@ -384,7 +443,7 @@ const hideTooltip = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(161, 125, 35, 0.1), rgba(161, 125, 35, 0.05));
+  background: linear-gradient(135deg, var(--surface-muted), rgba(161, 125, 35, 0.08));
   border-radius: 50%;
   margin-bottom: 1.5rem;
 }
@@ -422,17 +481,17 @@ const hideTooltip = () => {
   align-items: center;
   gap: 1rem;
   padding: 1.25rem 1.5rem;
-  background: linear-gradient(135deg, var(--surface-variant) 0%, var(--surface) 100%);
+  background: linear-gradient(135deg, var(--surface-alt) 0%, var(--surface) 100%);
   border: 1px solid var(--border);
   border-radius: 12px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px var(--shadow-soft);
 }
 
 .statCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  border-color: var(--brand);
+  box-shadow: 0 8px 20px var(--shadow-strong);
+  border-color: var(--border-strong);
 }
 
 .statCard i {
@@ -482,15 +541,10 @@ const hideTooltip = () => {
   flex-direction: column;
   gap: 0.5rem;
   padding: 1.5rem;
-  /* background: var(--surface-variant); */
+  background: var(--surface-alt);
   border-radius: 12px;
-  /* border: 1px solid var(--border); */
+  border: 1px solid var(--border);
   overflow-x: auto;
-}
-
-.heatmapWrapper[data-theme="night"] .gridContainer {
-  background: #0f1419;
-  border-color: #1a2332;
 }
 
 /* Time Labels (Top) */
@@ -513,15 +567,10 @@ const hideTooltip = () => {
   justify-content: center;
   font-size: 0.7rem;
   font-weight: 700;
-  color: var(--ink);
-  opacity: 0.7;
+  color: var(--text-subtle);
+  opacity: 0.85;
   text-align: center;
 }
-
-.heatmapWrapper[data-theme="night"] .timeLabel {
-  color: #a0aec0;
-}
-
 /* Grid Body */
 .gridBody {
   display: flex;
@@ -549,20 +598,17 @@ const hideTooltip = () => {
 .dayName {
   font-size: 0.8rem;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--text-primary);
 }
 
 .dayTotal {
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--brand);
-  background: rgba(161, 125, 35, 0.1);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
   padding: 0.2rem 0.5rem;
   border-radius: 8px;
-}
-
-.heatmapWrapper[data-theme="night"] .dayName {
-  color: #e0e0e0;
 }
 
 /* Cells Row */
@@ -578,6 +624,8 @@ const hideTooltip = () => {
   height: 32px;
   position: relative;
   border-radius: 6px;
+  background: var(--cell-empty-bg);
+  border: 1px solid var(--cell-empty-border);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
 }
@@ -585,6 +633,8 @@ const hideTooltip = () => {
 .cell:hover {
   transform: scale(1.15);
   z-index: 10;
+  border-color: var(--border-strong);
+  box-shadow: 0 8px 18px var(--cell-glow);
 }
 
 .cellInner {
@@ -618,20 +668,16 @@ const hideTooltip = () => {
 .tooltip {
   position: absolute;
   transform: translate(-50%, -100%);
-  background: var(--ink);
-  color: white;
+  background: var(--tooltip-surface);
+  color: var(--tooltip-text);
   padding: 0;
   border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--tooltip-border);
+  box-shadow: 0 12px 28px var(--shadow-soft);
   pointer-events: none;
   z-index: 1000;
   min-width: 180px;
   overflow: hidden;
-}
-
-.heatmapWrapper[data-theme="night"] .tooltip {
-  background: #1a2332;
-  border: 1px solid #2d3f5f;
 }
 
 .tooltipHeader {
@@ -642,6 +688,7 @@ const hideTooltip = () => {
   background: linear-gradient(135deg, var(--brand) 0%, #9a7335 100%);
   font-size: 0.8rem;
   font-weight: 600;
+  color: #ffffff;
 }
 
 .tooltipHeader i {
@@ -660,15 +707,11 @@ const hideTooltip = () => {
   font-size: 2rem;
   font-weight: 800;
   line-height: 1;
-  background: linear-gradient(135deg, #FFD700, var(--brand));
+  background: linear-gradient(135deg, var(--highlight), var(--brand));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-.heatmapWrapper[data-theme="night"] .tooltipValue {
-  color: #FFD700;
-  -webkit-text-fill-color: #FFD700;
+  color: var(--highlight);
 }
 
 .tooltipLabel {
@@ -678,15 +721,11 @@ const hideTooltip = () => {
 
 .tooltipFooter {
   padding: 0.5rem 1rem;
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--tooltip-footer-bg);
   text-align: center;
   font-size: 0.7rem;
   font-weight: 600;
-  opacity: 0.9;
-}
-
-.heatmapWrapper[data-theme="night"] .tooltipFooter {
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--tooltip-text);
 }
 
 /* Tooltip Transition */
@@ -707,18 +746,18 @@ const hideTooltip = () => {
 }
 
 .gridContainer::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--scrollbar-track);
   border-radius: 5px;
 }
 
 .gridContainer::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, var(--brand), #9a7335);
+  background: var(--scrollbar-thumb);
   border-radius: 5px;
   transition: background 0.3s ease;
 }
 
 .gridContainer::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #9a7335, var(--brand));
+  background: var(--scrollbar-thumb);
 }
 
 /* Responsive Design */
@@ -819,24 +858,6 @@ const hideTooltip = () => {
   .statCard {
     padding: 1rem;
   }
-}
-
-/* Dark Theme Enhancements */
-.heatmapWrapper[data-theme="night"] {
-  background: #1a2332;
-}
-
-.heatmapWrapper[data-theme="night"] .statCard {
-  background: linear-gradient(135deg, #0f1419 0%, #1a2332 100%);
-  border-color: #2d3f5f;
-}
-
-.heatmapWrapper[data-theme="night"] .statValue {
-  color: #f7fafc;
-}
-
-.heatmapWrapper[data-theme="night"] .emptyTitle {
-  color: #f7fafc;
 }
 
 /* RTL Support */
