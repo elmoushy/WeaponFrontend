@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Navigation from './components/Navigation/Navigation.vue'
 import Sidebar from './components/Sidebar/Sidebar.vue'
@@ -19,17 +19,22 @@ const sidebarTheme = computed<'day' | 'night'>(() =>
 )
 const toggleTheme = () => store.toggleTheme()
 
-const { user } = useSimpleAuth()
+const { user, logout } = useSimpleAuth()
 const userRole = computed(() => user.value?.role ?? null)
 
 const sidebarCollapsed = ref(false)
 const isRTL = computed(() => document?.dir === 'rtl')
+const autoCollapsedForMobile = ref(false)
 
 /* ===== Responsive width logic ===== */
 const vw = ref<number>(typeof window !== 'undefined' ? window.innerWidth : 1440)
 const onResize = () => { vw.value = window.innerWidth }
 onMounted(() => window.addEventListener('resize', onResize, { passive: true }))
 onUnmounted(() => window.removeEventListener('resize', onResize))
+
+const handleLogout = async () => {
+  await logout()
+}
 
 /** Expanded width ~ clamp(260px, 22vw, 360px) */
 const expandedWidth = computed(() => {
@@ -61,6 +66,21 @@ const contentOffsetStyle = computed(() => {
   const px = `${sidebarWidth.value}px`
   return isRTL.value ? { marginRight: px } : { marginLeft: px }
 })
+
+watch(
+  vw,
+  (width) => {
+    const isMobile = width <= 1024
+    if (isMobile && !autoCollapsedForMobile.value) {
+      sidebarCollapsed.value = true
+      autoCollapsedForMobile.value = true
+    } else if (!isMobile && autoCollapsedForMobile.value) {
+      sidebarCollapsed.value = false
+      autoCollapsedForMobile.value = false
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -72,7 +92,7 @@ const contentOffsetStyle = computed(() => {
       :user-role="userRole"
       :style="sidebarStyleVars"    
       @toggleTheme="toggleTheme"
-      @logout="$router.push('/login')"
+      @logout="handleLogout"
     />
 
     <main :style="contentOffsetStyle" class="app-main">
