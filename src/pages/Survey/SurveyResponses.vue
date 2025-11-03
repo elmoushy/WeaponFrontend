@@ -592,7 +592,8 @@
                 </div>
               </div>
 
-              <div
+              <!-- PDF export - Hidden for next release -->
+              <!-- <div
                 :class="[
                   $style.formatOption,
                   { [$style.selected]: selectedFormat === 'pdf' },
@@ -606,7 +607,7 @@
                   <h4 :class="$style.formatTitle">PDF</h4>
                   <p :class="$style.formatDesc">تقرير منسق وجاهز للطباعة</p>
                 </div>
-              </div>
+              </div> -->
 
               <div
                 :class="[
