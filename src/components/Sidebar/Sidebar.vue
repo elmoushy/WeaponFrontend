@@ -83,7 +83,8 @@ const isNight = computed(() => props.theme === 'night')
 const isCollapsed = computed(() => internalCollapsed.value)
 
 /** Dynamic logo: swap when collapsed */
-const logoSrc = computed(() => isCollapsed.value ? '/logomobile.png' : '/public/logo.png')
+// const logoSrc = computed(() => isCollapsed.value ? '/logomobile.png' : '/public/logo.png')
+const logoSrc = computed(() => isCollapsed.value ? '/moblogoadjd.png' : '/public/ADJDlogo.png')
 </script>
 
 <template>
