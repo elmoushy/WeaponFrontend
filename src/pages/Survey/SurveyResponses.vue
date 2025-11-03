@@ -818,6 +818,9 @@ import { useRoute, useRouter } from "vue-router";
 import { useAppStore } from "../../stores/useAppStore";
 import { apiClient } from "../../services/jwtAuthService";
 import Swal from "sweetalert2";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { ArabicShaper } from "arabic-persian-reshaper";
 
 // Analytics Components
 import SurveyAnalytics from "../../components/Analytics/SurveyAnalytics.vue";
@@ -844,6 +847,188 @@ const store = useAppStore();
 const currentTheme = computed(() => store.currentTheme);
 const isRTL = computed(() => store.currentLanguage === "ar");
 const t = computed(() => store.t);
+
+const ARABIC_FONT_NAME = "TajawalPDF";
+const ARABIC_FONT_FILES = {
+  normal: "Tajawal-Regular.ttf",
+  bold: "Tajawal-Bold.ttf",
+} as const;
+const LATIN_FONT_NAME = "helvetica";
+const ARABIC_TEXT_REGEX = /[\u0600-\u06FF]/;
+const SHAPED_ARABIC_REGEX = /[\uFB50-\uFDFF\uFE70-\uFEFF]/;
+const ARABIC_DIGITS_REGEX = /[\u0660-\u0669\u06F0-\u06F9]/;
+const LATIN_TEXT_REGEX = /[A-Za-z]/;
+const ARABIC_DIGIT_MAP: Record<string, string> = {
+  "0": "٠",
+  "1": "١",
+  "2": "٢",
+  "3": "٣",
+  "4": "٤",
+  "5": "٥",
+  "6": "٦",
+  "7": "٧",
+  "8": "٨",
+  "9": "٩",
+};
+
+let cachedArabicFonts: { normal: string; bold: string } | null = null;
+
+const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 0x8000;
+
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, i + chunkSize);
+    binary += String.fromCharCode(...chunk);
+  }
+
+  return btoa(binary);
+};
+
+const ensurePdfFonts = async (pdfInstance: jsPDF) => {
+  if (!cachedArabicFonts) {
+    const [regularResponse, boldResponse] = await Promise.all([
+      fetch(`/fonts/${ARABIC_FONT_FILES.normal}`),
+      fetch(`/fonts/${ARABIC_FONT_FILES.bold}`),
+    ]);
+
+    if (!regularResponse.ok || !boldResponse.ok) {
+      throw new Error("Failed to load PDF fonts for Arabic content");
+    }
+
+    const [regularBuffer, boldBuffer] = await Promise.all([
+      regularResponse.arrayBuffer(),
+      boldResponse.arrayBuffer(),
+    ]);
+
+    cachedArabicFonts = {
+      normal: arrayBufferToBase64(regularBuffer),
+      bold: arrayBufferToBase64(boldBuffer),
+    };
+  }
+
+  pdfInstance.addFileToVFS(
+    ARABIC_FONT_FILES.normal,
+    cachedArabicFonts.normal,
+  );
+  pdfInstance.addFont(ARABIC_FONT_FILES.normal, ARABIC_FONT_NAME, "normal");
+  pdfInstance.addFileToVFS(ARABIC_FONT_FILES.bold, cachedArabicFonts.bold);
+  pdfInstance.addFont(ARABIC_FONT_FILES.bold, ARABIC_FONT_NAME, "bold");
+};
+
+const convertToArabicDigits = (value: string) =>
+  value.replace(/[0-9]/g, (digit) => ARABIC_DIGIT_MAP[digit] ?? digit);
+
+const hasArabicGlyphs = (value: string) =>
+  ARABIC_TEXT_REGEX.test(value) ||
+  SHAPED_ARABIC_REGEX.test(value) ||
+  ARABIC_DIGITS_REGEX.test(value);
+
+const prepareTextForPdf = (value: string, rtlContext: boolean) => {
+  if (!value) return "";
+
+  let text = value;
+  const containsArabic = hasArabicGlyphs(text);
+
+  if (rtlContext && containsArabic) {
+    text = convertToArabicDigits(text);
+  }
+
+  if (containsArabic) {
+    text = ArabicShaper.convertArabic(text);
+  }
+
+  return text;
+};
+
+type PdfFontStyle = "normal" | "bold" | "italic";
+
+const setPdfFontForContent = (
+  pdfInstance: jsPDF,
+  containsArabic: boolean,
+  style: PdfFontStyle = "normal",
+) => {
+  if (containsArabic) {
+    const normalizedStyle = style === "bold" ? "bold" : "normal";
+    pdfInstance.setFont(ARABIC_FONT_NAME, normalizedStyle);
+  } else {
+    if (style === "bold") {
+      pdfInstance.setFont(LATIN_FONT_NAME, "bold");
+    } else if (style === "italic") {
+      pdfInstance.setFont(LATIN_FONT_NAME, "italic");
+    } else {
+      pdfInstance.setFont(LATIN_FONT_NAME, "normal");
+    }
+  }
+};
+
+const normalizePdfContent = (
+  content: string | string[],
+  rtlContext: boolean,
+) => {
+  const flattened = Array.isArray(content) ? content : [content ?? ""];
+
+  const normalized = flattened.map((part) => {
+    const prepared = prepareTextForPdf(part, rtlContext);
+    const containsArabic =
+      hasArabicGlyphs(part) || hasArabicGlyphs(prepared);
+    const containsLatin = LATIN_TEXT_REGEX.test(part);
+
+    return {
+      text: prepared,
+      containsArabic,
+      containsLatin,
+    };
+  });
+
+  return {
+    lines: normalized.map((item) => item.text),
+    containsArabic: normalized.some((item) => item.containsArabic),
+    containsLatin: normalized.some((item) => item.containsLatin),
+  };
+};
+
+const drawPdfText = (
+  pdfInstance: jsPDF,
+  content: string | string[],
+  x: number,
+  y: number,
+  options: {
+    style?: PdfFontStyle;
+    align?: "left" | "right" | "center";
+    maxWidth?: number;
+    rtl?: boolean;
+  } = {},
+) => {
+  const rtlContext = options.rtl ?? false;
+  const { lines, containsArabic, containsLatin } = normalizePdfContent(
+    content,
+    rtlContext,
+  );
+
+  setPdfFontForContent(pdfInstance, containsArabic, options.style);
+
+  const defaultAlign =
+    containsArabic && !containsLatin
+      ? rtlContext
+        ? "right"
+        : "left"
+      : "left";
+
+  const align = options.align ?? defaultAlign;
+  const textOptions: Record<string, any> = { align };
+
+  if (containsArabic) {
+    textOptions.isInputRtl = true;
+  }
+
+  if (options.maxWidth !== undefined) {
+    pdfInstance.text(lines, x, y, textOptions, options.maxWidth);
+  } else {
+    pdfInstance.text(lines, x, y, textOptions);
+  }
+};
 
 
 const expanded = ref<Set<string | number>>(new Set());
@@ -1306,254 +1491,366 @@ const downloadAsExcel = async (responses: any[]) => {
   downloadFile(blob, `استجابات_الاستبيان_${surveyId.value}.xls`);
 };
 
-// Download as PDF using browser's print-to-PDF feature
+// Download as PDF with website theme colors
 const downloadAsPDF = async (responses: any[]) => {
   try {
-    const timestamp = new Date().toLocaleDateString("ar-SA", {
-      calendar: "gregory",
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
     });
 
-    // Generate HTML content with proper Arabic styling
-    let htmlContent = `
-          <!DOCTYPE html>
-          <html lang="ar" dir="rtl">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>تقرير استجابات الاستبيان</title>
-            <style>
-              * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-              }
-              
-              body {
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                direction: rtl;
-                text-align: right;
-                line-height: 1.6;
-                padding: 20mm;
-                color: #333;
-                background: white;
-              }
-              
-              .header {
-                text-align: center;
-                border-bottom: 3px solid #2563eb;
-                padding-bottom: 15px;
-                margin-bottom: 30px;
-              }
-              
-              .header h1 {
-                color: #1e40af;
-                font-size: 28pt;
-                margin: 10px 0;
-                font-weight: bold;
-              }
-              
-              .header p {
-                color: #666;
-                font-size: 14pt;
-                margin: 5px 0;
-              }
-              
-              .response-section {
-                margin-bottom: 30px;
-                padding: 15px;
-                border: 1px solid #e2e8f0;
-                background: #f8fafc;
-                page-break-inside: avoid;
-                border-radius: 8px;
-              }
-              
-              .response-title {
-                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-                color: white;
-                padding: 12px 15px;
-                font-size: 16pt;
-                font-weight: bold;
-                margin: -15px -15px 15px -15px;
-                border-radius: 8px 8px 0 0;
-              }
-              
-              .info-table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-bottom: 15px;
-                background: white;
-                border-radius: 4px;
-                overflow: hidden;
-              }
-              
-              .info-table tr:nth-child(even) {
-                background: #f9fafb;
-              }
-              
-              .info-table td {
-                padding: 10px 15px;
-                border: 1px solid #e5e7eb;
-                font-size: 12pt;
-              }
-              
-              .info-table td:first-child {
-                background: #f1f5f9;
-                font-weight: bold;
-                width: 30%;
-                color: #1e40af;
-              }
-              
-              .answers-title {
-                color: #1e40af;
-                font-size: 14pt;
-                font-weight: bold;
-                margin: 20px 0 15px 0;
-                padding-right: 10px;
-                border-right: 4px solid #3b82f6;
-              }
-              
-              .question-block {
-                margin: 15px 0;
-                padding: 15px;
-                background: white;
-                border-right: 4px solid #60a5fa;
-                border-radius: 4px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-              }
-              
-              .question-text {
-                color: #1e40af;
-                font-weight: bold;
-                margin-bottom: 8px;
-                font-size: 13pt;
-                line-height: 1.5;
-              }
-              
-              .question-meta {
-                font-size: 11pt;
-                color: #64748b;
-                margin-bottom: 10px;
-                font-style: italic;
-              }
-              
-              .answer-text {
-                background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-                padding: 12px 15px;
-                border-radius: 6px;
-                font-size: 12pt;
-                border: 1px solid #e2e8f0;
-                white-space: pre-wrap;
-                word-wrap: break-word;
-              }
-              
-              @media print {
-                body {
-                  padding: 15mm;
-                }
-                
-                .response-section {
-                  page-break-inside: avoid;
-                }
-                
-                .question-block {
-                  page-break-inside: avoid;
-                }
-              }
-              
-              @page {
-                size: A4;
-                margin: 15mm;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <h1>تقرير استجابات الاستبيان</h1>
-              <p>عدد الاستجابات: ${responses.length} | تاريخ التصدير: ${timestamp}</p>
-            </div>
-        `;
+    await ensurePdfFonts(pdf);
 
-    // Add each response
+    const isCurrentRTL = isRTL.value;
+    const locale = isCurrentRTL ? "ar-SA" : "en-US";
+    const numberFormatter = new Intl.NumberFormat(locale);
+    const formatNumber = (value: number) => numberFormatter.format(value);
+
+    const formatDateForPdf = (dateString: string) => {
+      if (!dateString) return "";
+      const date = new Date(dateString);
+      if (Number.isNaN(date.getTime())) return "";
+      return date.toLocaleString(locale, {
+        calendar: "gregory",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+    };
+
+    const exportTimestamp = formatDateForPdf(new Date().toISOString());
+
+    const strings = {
+      reportTitle: isCurrentRTL
+        ? "تقرير استجابات الاستبيان"
+        : "Survey Responses Report",
+      reportSubtitle: isCurrentRTL
+        ? `عدد الاستجابات: ${formatNumber(responses.length)} | تاريخ التصدير: ${exportTimestamp}`
+        : `Responses: ${formatNumber(responses.length)} | Exported on: ${exportTimestamp}`,
+      responseHeading: (order: string, date: string) =>
+        isCurrentRTL
+          ? `الاستجابة رقم ${order}${date ? ` - ${date}` : ""}`
+          : `Response #${order}${date ? ` - ${date}` : ""}`,
+      respondentLabel: isCurrentRTL ? "المستجيب" : "Respondent",
+      respondentTypeLabel: isCurrentRTL ? "نوع المستجيب" : "Respondent type",
+      statusLabel: isCurrentRTL ? "الحالة" : "Status",
+      completionRateLabel: isCurrentRTL ? "نسبة الإكمال" : "Completion rate",
+      answersTitle: isCurrentRTL ? "الإجابات" : "Answers",
+      questionHeading: (order: string) =>
+        isCurrentRTL ? `السؤال ${order}` : `Question ${order}`,
+      questionTextLabel: isCurrentRTL ? "نص السؤال" : "Question text",
+      questionTypeLabel: isCurrentRTL ? "نوع السؤال" : "Question type",
+      answerLabel: isCurrentRTL ? "الإجابة" : "Answer",
+      anonymousRespondent: isCurrentRTL ? "مستجيب مجهول" : "Anonymous respondent",
+      registeredUser: isCurrentRTL ? "مستخدم مسجل" : "Registered user",
+      anonymousUser: isCurrentRTL ? "مستخدم مجهول" : "Anonymous user",
+      completed: isCurrentRTL ? "مكتملة" : "Completed",
+      incomplete: isCurrentRTL ? "غير مكتملة" : "Incomplete",
+      noAnswer: isCurrentRTL ? "لا توجد إجابة" : "No answer provided",
+      missingQuestionText: isCurrentRTL ? "لا يوجد نص للسؤال" : "No question text",
+      pageIndicator: (current: string, total: string) =>
+        isCurrentRTL ? `صفحة ${current} من ${total}` : `Page ${current} of ${total}`,
+    };
+
+    const colors = {
+      primary: "#A17D23",
+      secondary: "#181B25",
+      lightGray: "#F5F7FA",
+      border: "#E5E7EB",
+      text: "#4A5565",
+      white: "#FFFFFF",
+    };
+
+    if (typeof (pdf as any).setR2L === "function") {
+      (pdf as any).setR2L(isCurrentRTL);
+    }
+    pdf.setLanguage(isCurrentRTL ? "ar" : "en");
+
+    let yPosition = 20;
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 15;
+    const contentWidth = pageWidth - margin * 2;
+
+    const checkPageBreak = (neededSpace: number) => {
+      if (yPosition + neededSpace > pageHeight - margin) {
+        pdf.addPage();
+        if (typeof (pdf as any).setR2L === "function") {
+          (pdf as any).setR2L(isCurrentRTL);
+        }
+        yPosition = margin;
+        pdf.setTextColor(colors.secondary);
+        return true;
+      }
+      return false;
+    };
+
+    pdf.setFillColor(colors.primary);
+    pdf.rect(margin, yPosition, contentWidth, 36, "F");
+
+    drawPdfText(pdf, strings.reportTitle, pageWidth / 2, yPosition + 15, {
+      style: "bold",
+      align: "center",
+      rtl: isCurrentRTL,
+    });
+
+    drawPdfText(pdf, strings.reportSubtitle, pageWidth / 2, yPosition + 28, {
+      align: "center",
+      rtl: isCurrentRTL,
+    });
+
+    yPosition += 48;
+
     responses.forEach((response, index) => {
-      const isComplete = response.is_complete ? "مكتملة" : "غير مكتملة";
-      const respondentName = response.respondent?.email || "مستجيب مجهول";
+      const localizedOrder = formatNumber(index + 1);
+      const submittedAt = formatDateForPdf(response.submitted_at);
+
+      checkPageBreak(60);
+
+      pdf.setFillColor(colors.lightGray);
+      pdf.roundedRect(margin, yPosition, contentWidth, 12, 2, 2, "F");
+
+      const headingX = isCurrentRTL ? pageWidth - margin - 6 : margin + 6;
+      drawPdfText(
+        pdf,
+        strings.responseHeading(localizedOrder, submittedAt),
+        headingX,
+        yPosition + 8,
+        {
+          style: "bold",
+          rtl: isCurrentRTL,
+          align: isCurrentRTL ? "right" : "left",
+        },
+      );
+
+      yPosition += 18;
+
+      const isComplete = response.is_complete;
+      const respondentName =
+        response.respondent?.email || strings.anonymousRespondent;
       const respondentType =
         response.respondent?.type === "authenticated"
-          ? "مستخدم مسجل"
-          : "مستخدم مجهول";
+          ? strings.registeredUser
+          : strings.anonymousUser;
+      const completionRate = `${formatNumber(
+        getCompletionPercentage(response),
+      )}%`;
 
-      htmlContent += `
-            <div class="response-section">
-              <div class="response-title">
-                الاستجابة رقم ${index + 1} - ${formatDateForCSV(response.submitted_at)}
-              </div>
-              
-              <table class="info-table">
-                <tr>
-                  <td>المستجيب</td>
-                  <td>${respondentName}</td>
-                </tr>
-                <tr>
-                  <td>نوع المستجيب</td>
-                  <td>${respondentType}</td>
-                </tr>
-                <tr>
-                  <td>الحالة</td>
-                  <td>${isComplete}</td>
-                </tr>
-                <tr>
-                  <td>نسبة الإكمال</td>
-                  <td>${getCompletionPercentage(response)}%</td>
-                </tr>
-              </table>
-              
-              <h4 class="answers-title">الإجابات</h4>
-          `;
+      const infoRows = [
+        [strings.respondentLabel, respondentName],
+        [strings.respondentTypeLabel, respondentType],
+        [strings.statusLabel, isComplete ? strings.completed : strings.incomplete],
+        [strings.completionRateLabel, completionRate],
+      ].map(([label, value]) => [
+        normalizePdfContent(label, isCurrentRTL).lines.join("\n"),
+        normalizePdfContent(value, isCurrentRTL).lines.join("\n"),
+      ]);
 
-      // Add each answer
-      response.answers?.forEach((answer: any) => {
-        const questionType = getQuestionTypeLabel(answer.question_type);
-        const answerText = formatAnswerForCSV(answer);
-
-        htmlContent += `
-              <div class="question-block">
-                <div class="question-text">
-                  السؤال ${answer.question_order}: ${answer.question_text}
-                </div>
-                <div class="question-meta">
-                  نوع السؤال: ${questionType}
-                </div>
-                <div class="answer-text">${answerText}</div>
-              </div>
-            `;
+      autoTable(pdf, {
+        startY: yPosition,
+        head: [],
+        body: infoRows,
+        theme: "grid",
+        styles: {
+          font: ARABIC_FONT_NAME,
+          fontSize: 10,
+          cellPadding: 4,
+          textColor: colors.secondary,
+          lineColor: colors.border,
+          lineWidth: 0.1,
+          halign: isCurrentRTL ? "right" : "left",
+        },
+        columnStyles: {
+          0: {
+            fillColor: colors.lightGray,
+            fontStyle: "bold",
+            textColor: colors.primary,
+            cellWidth: 55,
+            halign: isCurrentRTL ? "right" : "left",
+            font: ARABIC_FONT_NAME,
+          },
+          1: {
+            fillColor: colors.white,
+            cellWidth: contentWidth - 55,
+            halign: isCurrentRTL ? "right" : "left",
+            font: ARABIC_FONT_NAME,
+          },
+        },
+        margin: { left: margin, right: margin },
+        didParseCell: (data) => {
+          const cellText = data.cell.text?.[0] ?? "";
+          const containsArabic = hasArabicGlyphs(cellText);
+          data.cell.styles.font = containsArabic
+            ? ARABIC_FONT_NAME
+            : LATIN_FONT_NAME;
+          if (!containsArabic) {
+            data.cell.styles.halign = "left";
+          }
+        },
+        didDrawPage: (data) => {
+          if (data?.cursor) {
+            yPosition = data.cursor.y;
+          }
+        },
       });
 
-      htmlContent += `</div>`;
+      yPosition = (pdf as any).lastAutoTable.finalY + 12;
+      checkPageBreak(30);
+
+      const accentX = isCurrentRTL ? pageWidth - margin - 4 : margin;
+      pdf.setFillColor(colors.primary);
+      pdf.rect(accentX, yPosition, 4, 9, "F");
+
+      const answersTitleX = isCurrentRTL ? accentX - 6 : margin + 8;
+      drawPdfText(pdf, strings.answersTitle, answersTitleX, yPosition + 6, {
+        style: "bold",
+        rtl: isCurrentRTL,
+        align: isCurrentRTL ? "right" : "left",
+      });
+
+      yPosition += 16;
+
+      response.answers?.forEach((answer: any, answerIndex: number) => {
+        checkPageBreak(40);
+
+        const questionOrder = answer.question_order
+          ? formatNumber(answer.question_order)
+          : formatNumber(answerIndex + 1);
+        const questionType = getQuestionTypeLabel(answer.question_type);
+
+        const blockX = isCurrentRTL ? pageWidth - margin - 6 : margin + 6;
+
+        drawPdfText(pdf, strings.questionHeading(questionOrder), blockX, yPosition + 5, {
+          style: "bold",
+          rtl: isCurrentRTL,
+          align: isCurrentRTL ? "right" : "left",
+        });
+
+        yPosition += 10;
+
+        const questionContent = normalizePdfContent(
+          answer.question_text || strings.missingQuestionText,
+          isCurrentRTL,
+        );
+        const questionAlign = questionContent.containsArabic
+          ? isCurrentRTL
+            ? "right"
+            : "left"
+          : "left";
+
+        drawPdfText(pdf, questionContent.lines, blockX, yPosition + 4, {
+          rtl: questionContent.containsArabic,
+          align: questionAlign,
+          maxWidth: contentWidth - 12,
+        });
+
+        const questionHeight = Math.max(
+          questionContent.lines.length * 5 + 6,
+          12,
+        );
+        yPosition += questionHeight;
+
+        const questionTypeText = `${strings.questionTypeLabel}: ${questionType}`;
+        const questionTypeContent = normalizePdfContent(
+          questionTypeText,
+          isCurrentRTL,
+        );
+
+        drawPdfText(
+          pdf,
+          questionTypeContent.lines,
+          blockX,
+          yPosition + 4,
+          {
+            style: "italic",
+            rtl: questionTypeContent.containsArabic,
+            align: questionTypeContent.containsArabic
+              ? isCurrentRTL
+                ? "right"
+                : "left"
+              : "left",
+          },
+        );
+
+        yPosition += 12;
+        checkPageBreak(26);
+
+        const formattedAnswer = formatAnswerForCSV(answer) || strings.noAnswer;
+        const answerContent = normalizePdfContent(
+          formattedAnswer,
+          isCurrentRTL,
+        );
+
+        const answerHeight = Math.max(
+          answerContent.lines.length * 5 + 6,
+          18,
+        );
+
+        pdf.setFillColor(colors.lightGray);
+        pdf.roundedRect(
+          margin + 3,
+          yPosition,
+          contentWidth - 6,
+          answerHeight,
+          1,
+          1,
+          "F",
+        );
+
+        const answerAlign = answerContent.containsArabic
+          ? isCurrentRTL
+            ? "right"
+            : "left"
+          : "left";
+
+        drawPdfText(
+          pdf,
+          answerContent.lines,
+          blockX,
+          yPosition + 6,
+          {
+            rtl: answerContent.containsArabic,
+            align: answerAlign,
+            maxWidth: contentWidth - 14,
+          },
+        );
+
+        yPosition += answerHeight + 12;
+      });
+
+      if (index < responses.length - 1) {
+        checkPageBreak(12);
+        pdf.setDrawColor(colors.border);
+        pdf.setLineWidth(0.3);
+        pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+        yPosition += 12;
+      }
     });
 
-    htmlContent += `
-          </body>
-          </html>
-        `;
-
-    // Open in new window and trigger print dialog which allows "Save as PDF"
-    const printWindow = window.open("", "_blank");
-    if (printWindow) {
-      printWindow.document.write(htmlContent);
-      printWindow.document.close();
-
-      // Wait for content to load, then trigger print
-      printWindow.onload = () => {
-        setTimeout(() => {
-          printWindow.print();
-          // Note: Window will close automatically after print/save
-        }, 250);
-      };
-    } else {
-      throw new Error(
-        "Failed to open print window. Please allow popups for this site.",
+    const pageCount = (pdf as any).internal.getNumberOfPages();
+    const localizedPageCount = formatNumber(pageCount);
+    for (let i = 1; i <= pageCount; i++) {
+      pdf.setPage(i);
+      drawPdfText(
+        pdf,
+        strings.pageIndicator(formatNumber(i), localizedPageCount),
+        pageWidth / 2,
+        pageHeight - 10,
+        {
+          align: "center",
+          rtl: isCurrentRTL,
+        },
       );
     }
+
+    const fileName = `${
+      isCurrentRTL ? "استجابات_الاستبيان" : "survey_responses"
+    }_${surveyId.value}_${Date.now()}.pdf`;
+    pdf.save(fileName);
   } catch (error) {
     console.error("PDF generation error:", error);
     throw error;
