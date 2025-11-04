@@ -240,7 +240,7 @@
 
             <div :class="$style.cardActions">
               <button
-                v-if="survey.status === 'draft'"
+                v-if="survey.status === 'draft' || (survey.status === 'submitted' && survey.response_count === 0)"
                 :class="[$style.actionButton, $style.primaryAction]"
                 @click.stop="submitDraftSurvey(survey.id)"
                 :title="isRTL ? 'إرسال الاستطلاع' : 'Submit Survey'"
@@ -250,7 +250,7 @@
               </button>
 
               <button
-                v-if="survey.status === 'submitted' || survey.status === 'active'"
+                v-if="(survey.status === 'submitted' || survey.status === 'active') && survey.response_count > 0"
                 :class="[$style.actionButton, $style.outlinedAction]"
                 @click.stop="viewResponses(survey.id)"
                 :title="t('survey.card.viewResponses')"

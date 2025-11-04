@@ -1190,7 +1190,21 @@ const handleSave = async () => {
     const contactMethod = selectedAccess.value === 'PUBLIC' && !perDeviceAccessEnabled.value ? selectedContactMethod.value : undefined
     const surveyId = String(props.survey.id) // Ensure ID is string
     
+    // First, update the survey access settings
     await surveyService.updateSurveyAccess(surveyId, accessLevel, contactMethod, perDeviceAccessEnabled.value)
+    
+    // If this is a submission flow (draft -> submitted), also call the submit endpoint
+    if (props.isSubmissionFlow && props.survey.status === 'draft') {
+      await surveyService.submitSurvey(surveyId)
+      setStatusMessage(
+        currentLanguage.value === 'ar' 
+          ? 'تم إرسال الاستطلاع بنجاح' 
+          : 'Survey submitted successfully',
+        'success'
+      )
+    } else {
+      setStatusMessage('Survey access updated successfully', 'success')
+    }
     
     // Handle private access sharing if needed
     if (selectedAccess.value === 'PRIVATE' && selectedUsers.value.length > 0) {
@@ -1207,8 +1221,6 @@ const handleSave = async () => {
       // For now, we just save the groups selection to the visibility
       // Logging removed for production)
     }
-
-    setStatusMessage('Survey access updated successfully', 'success')
     
     // Show information about token invalidation if visibility changed from PUBLIC
     if (props.survey.visibility === 'PUBLIC' && selectedAccess.value !== 'PUBLIC') {
