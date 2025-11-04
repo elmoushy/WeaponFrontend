@@ -40,6 +40,7 @@ const navGroups = computed<NavGroup[]>(() => {
         { name: 'surveys-overview',path:"/surveys", icon: 'fas fa-list-check', label: 'الاستطلاعات' },
     { name: 'manage-surveys', path: '/control/surveys', icon: 'fas fa-table-cells-large', label: 'إدارة الاستطلاعات' },
     { name: 'manage-users', path: '/control/users', icon: 'fas fa-user-group', label: 'إدارة المستخدمين', requiresRole: 'admin' },
+    { name: 'messaging', path: 'http://localhost/home.php', icon: 'fas fa-comments', label: 'التراسل' },
   ]
 
   const support: NavItem[] = [
@@ -74,6 +75,11 @@ onUnmounted(() => document.removeEventListener('keydown', onKey))
 /** actions */
 const handleNav = (item: NavItem) => {
   if (!item.path || item.path === '#') return
+  // Handle external URLs
+  if (item.path.startsWith('http://') || item.path.startsWith('https://')) {
+    window.location.href = item.path
+    return
+  }
   router.push(item.path)
 }
 const emitLogout = () => emit('logout')
