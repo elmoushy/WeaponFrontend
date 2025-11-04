@@ -11,6 +11,9 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 // Import Bootstrap JavaScript
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 
+// Import Bootstrap Icons
+import 'bootstrap-icons/font/bootstrap-icons.css'
+
 // Import Font Awesome
 import '@fortawesome/fontawesome-free/css/all.min.css'
 
@@ -27,21 +30,23 @@ if (import.meta.env.DEV) {
   import('./utils/testPongNotifications')
 }
 
-// Load Google Fonts
-const loadFonts = () => {
-  const link = document.createElement('link')
-  link.href =
-    "https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Noto+Kufi+Arabic:wght@100..900&display=swap";
-  link.rel = 'stylesheet'
-  document.head.appendChild(link)
-}
+// Load Google Fonts - COMMENTED OUT FOR CORS COMPLIANCE
+// If you need Arabic fonts (Cairo, Noto Kufi Arabic), consider self-hosting them
+// or installing them as npm packages to avoid CORS issues
+// const loadFonts = () => {
+//   const link = document.createElement('link')
+//   link.href =
+//     "https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Noto+Kufi+Arabic:wght@100..900&display=swap";
+//   link.rel = 'stylesheet'
+//   document.head.appendChild(link)
+// }
 
 // Initialize app
 const app = createApp(App)
 const pinia = createPinia()
 
 // Load fonts
-loadFonts()
+// loadFonts() // COMMENTED OUT FOR CORS COMPLIANCE
 
 // Initialize AOS
 AOS.init({
