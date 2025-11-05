@@ -208,44 +208,39 @@ class SurveyService {
     surveyId: string,
     surveyData: SurveyUpdateRequest
   ): Promise<ApiResponse<Survey>> {
-    try {
-      // Validate survey ID
-      if (!surveyId || surveyId === 'undefined' || surveyId === 'null') {
-        throw new Error('Survey ID is required and cannot be undefined')
+    // Validate survey ID
+    if (!surveyId || surveyId === 'undefined' || surveyId === 'null') {
+      throw new Error('Survey ID is required and cannot be undefined')
+    }
+    
+    // If access_level is provided, map it to visibility
+    const updateData = { ...surveyData }
+    if ('access_level' in updateData) {
+      const accessLevel = (updateData as any).access_level
+      switch (accessLevel) {
+        case 'public':
+          updateData.visibility = 'PUBLIC'
+          break
+        case 'authenticated':
+          updateData.visibility = 'AUTH'
+          break
+        case 'private':
+          updateData.visibility = 'PRIVATE'
+          break
       }
-      
-      // If access_level is provided, map it to visibility
-      const updateData = { ...surveyData }
-      if ('access_level' in updateData) {
-        const accessLevel = (updateData as any).access_level
-        switch (accessLevel) {
-          case 'public':
-            updateData.visibility = 'PUBLIC'
-            break
-          case 'authenticated':
-            updateData.visibility = 'AUTH'
-            break
-          case 'private':
-            updateData.visibility = 'PRIVATE'
-            break
-        }
-        delete (updateData as any).access_level
-      }
+      delete (updateData as any).access_level
+    }
 
-      const response = await apiClient.patch(`/surveys/surveys/${surveyId}/`, updateData)
-      
-      if (response.data.status === 'success') {
-        return {
-          data: response.data.data,
-          message: response.data.message,
-          status: response.data.status
-        }
-      } else {
-        throw new Error(response.data.message || 'Failed to update survey')
+    const response = await apiClient.patch(`/surveys/surveys/${surveyId}/`, updateData)
+    
+    if (response.data.status === 'success') {
+      return {
+        data: response.data.data,
+        message: response.data.message,
+        status: response.data.status
       }
-    } catch (error) {
-      // Logging removed for production
-      throw error
+    } else {
+      throw new Error(response.data.message || 'Failed to update survey')
     }
   }
 
@@ -322,29 +317,24 @@ class SurveyService {
     surveyId: string,
     _options: PublicLinkRequest = {}
   ): Promise<ApiResponse<PublicLinkResponse>> {
-    try {
-      const response = await apiClient.get(`/surveys/surveys/${surveyId}/public-link/`)
+    const response = await apiClient.get(`/surveys/surveys/${surveyId}/public-link/`)
+    
+    if (response.data.status === 'success') {
+      // Construct the full frontend URL since backend only returns token
+      const frontendBaseUrl = import.meta.env.VITE_FRONTEND_BASE_URL || window.location.origin
+      const fullLink = `${frontendBaseUrl}/survey/public/${response.data.data.token}`
       
-      if (response.data.status === 'success') {
-        // Construct the full frontend URL since backend only returns token
-        const frontendBaseUrl = import.meta.env.VITE_FRONTEND_BASE_URL || window.location.origin
-        const fullLink = `${frontendBaseUrl}/survey/public/${response.data.data.token}`
-        
-        return {
-          data: {
-            link: fullLink,
-            token: response.data.data.token,
-            expires_at: response.data.data.expires_at
-          },
-          message: response.data.message,
-          status: response.data.status
-        }
-      } else {
-        throw new Error(response.data.message || 'Failed to generate public link')
+      return {
+        data: {
+          link: fullLink,
+          token: response.data.data.token,
+          expires_at: response.data.data.expires_at
+        },
+        message: response.data.message,
+        status: response.data.status
       }
-    } catch (error) {
-      // Logging removed for production
-      throw error
+    } else {
+      throw new Error(response.data.message || 'Failed to generate public link')
     }
   }
 
@@ -387,50 +377,40 @@ class SurveyService {
   }
 
   async revokePublicLink(surveyId: string): Promise<ApiResponse<{ message: string }>> {
-    try {
-      const response = await apiClient.delete(`/surveys/surveys/${surveyId}/public-link/`)
-      
-      if (response.data.status === 'success') {
-        return {
-          data: { message: response.data.message },
-          message: response.data.message,
-          status: response.data.status
-        }
-      } else {
-        throw new Error(response.data.message || 'Failed to revoke public link')
+    const response = await apiClient.delete(`/surveys/surveys/${surveyId}/public-link/`)
+    
+    if (response.data.status === 'success') {
+      return {
+        data: { message: response.data.message },
+        message: response.data.message,
+        status: response.data.status
       }
-    } catch (error) {
-      // Logging removed for production
-      throw error
+    } else {
+      throw new Error(response.data.message || 'Failed to revoke public link')
     }
   }
 
   // Get current link (unified method for both password-protected and public links)
   async getCurrentLink(surveyId: string): Promise<CurrentLinkResponse> {
-    try {
-      const response = await apiClient.get(`/surveys/surveys/${surveyId}/current-link/`)
+    const response = await apiClient.get(`/surveys/surveys/${surveyId}/current-link/`)
+    
+    if (response.data.status === 'success') {
+      // Construct the full frontend URL since backend only returns token
+      const frontendBaseUrl = import.meta.env.VITE_FRONTEND_BASE_URL || window.location.origin
       
-      if (response.data.status === 'success') {
-        // Construct the full frontend URL since backend only returns token
-        const frontendBaseUrl = import.meta.env.VITE_FRONTEND_BASE_URL || window.location.origin
-        
-        // Add the full link to the response data
-        const responseData = {
-          ...response.data.data,
-          link: `${frontendBaseUrl}/survey/public/${response.data.data.token}`
-        }
-        
-        return {
-          status: response.data.status,
-          message: response.data.message,
-          data: responseData
-        }
-      } else {
-        throw new Error(response.data.message || 'Failed to get current link')
+      // Add the full link to the response data
+      const responseData = {
+        ...response.data.data,
+        link: `${frontendBaseUrl}/survey/public/${response.data.data.token}`
       }
-    } catch (error) {
-      // Logging removed for production
-      throw error
+      
+      return {
+        status: response.data.status,
+        message: response.data.message,
+        data: responseData
+      }
+    } else {
+      throw new Error(response.data.message || 'Failed to get current link')
     }
   }
 
@@ -439,53 +419,48 @@ class SurveyService {
     surveyId: string,
     options: PasswordProtectedLinkRequest = {}
   ): Promise<ApiResponse<PasswordProtectedLinkResponse>> {
-    try {
-      const requestData: any = {
-        days_to_expire: options.days_to_expire || 30
-      }
+    const requestData: any = {
+      days_to_expire: options.days_to_expire || 30
+    }
 
-      // Add optional email/phone restrictions
-      if (options.email) {
-        requestData.email = options.email
-      }
-      if (options.phone) {
-        requestData.phone = options.phone
-      }
-      // Add new array-based restrictions
-      if (options.restricted_email && options.restricted_email.length > 0) {
-        requestData.restricted_email = options.restricted_email
-      }
-      if (options.restricted_phone && options.restricted_phone.length > 0) {
-        requestData.restricted_phone = options.restricted_phone
-      }
+    // Add optional email/phone restrictions
+    if (options.email) {
+      requestData.email = options.email
+    }
+    if (options.phone) {
+      requestData.phone = options.phone
+    }
+    // Add new array-based restrictions
+    if (options.restricted_email && options.restricted_email.length > 0) {
+      requestData.restricted_email = options.restricted_email
+    }
+    if (options.restricted_phone && options.restricted_phone.length > 0) {
+      requestData.restricted_phone = options.restricted_phone
+    }
 
-      const response = await apiClient.post(`/surveys/surveys/${surveyId}/generate-password-link/`, requestData)
+    const response = await apiClient.post(`/surveys/surveys/${surveyId}/generate-password-link/`, requestData)
+    
+    if (response.data.status === 'success') {
+      // Construct the full frontend URL since backend only returns token
+      const frontendBaseUrl = import.meta.env.VITE_FRONTEND_BASE_URL || window.location.origin
+      const fullLink = `${frontendBaseUrl}/survey/password/${response.data.data.token}`
       
-      if (response.data.status === 'success') {
-        // Construct the full frontend URL since backend only returns token
-        const frontendBaseUrl = import.meta.env.VITE_FRONTEND_BASE_URL || window.location.origin
-        const fullLink = `${frontendBaseUrl}/survey/password/${response.data.data.token}`
-        
-        return {
-          data: {
-            token: response.data.data.token,
-            password: response.data.data.password,
-            expires_at: response.data.data.expires_at,
-            is_password_protected: response.data.data.is_password_protected,
-            is_contact_restricted: response.data.data.is_contact_restricted,
-            restricted_email: response.data.data.restricted_email,
-            restricted_phone: response.data.data.restricted_phone,
-            link: fullLink
-          },
-          message: response.data.message,
-          status: response.data.status
-        }
-      } else {
-        throw new Error(response.data.message || 'Failed to generate password-protected link')
+      return {
+        data: {
+          token: response.data.data.token,
+          password: response.data.data.password,
+          expires_at: response.data.data.expires_at,
+          is_password_protected: response.data.data.is_password_protected,
+          is_contact_restricted: response.data.data.is_contact_restricted,
+          restricted_email: response.data.data.restricted_email,
+          restricted_phone: response.data.data.restricted_phone,
+          link: fullLink
+        },
+        message: response.data.message,
+        status: response.data.status
       }
-    } catch (error) {
-      // Logging removed for production
-      throw error
+    } else {
+      throw new Error(response.data.message || 'Failed to generate password-protected link')
     }
   }
 
@@ -494,33 +469,28 @@ class SurveyService {
     token: string,
     accessData: PasswordProtectedSurveyAccess
   ): Promise<ApiResponse<Survey>> {
-    try {
-      const response = await apiClient.post(
-        `/surveys/password-surveys/${surveyId}/`,
-        {
-          password: accessData.password,
-          email: accessData.email,
-          phone: accessData.phone
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+    const response = await apiClient.post(
+      `/surveys/password-surveys/${surveyId}/`,
+      {
+        password: accessData.password,
+        email: accessData.email,
+        phone: accessData.phone
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-      )
-      
-      if (response.data.status === 'success') {
-        return {
-          data: response.data.survey_details,
-          message: response.data.message,
-          status: response.data.status
-        }
-      } else {
-        throw new Error(response.data.message || 'Failed to access password-protected survey')
       }
-    } catch (error) {
-      // Logging removed for production
-      throw error
+    )
+    
+    if (response.data.status === 'success') {
+      return {
+        data: response.data.survey_details,
+        message: response.data.message,
+        status: response.data.status
+      }
+    } else {
+      throw new Error(response.data.message || 'Failed to access password-protected survey')
     }
   }
 
@@ -529,30 +499,25 @@ class SurveyService {
     token: string,
     accessData: PasswordProtectedSurveyAccess
   ): Promise<ApiResponse<PasswordProtectedAccessValidation>> {
-    try {
-      // Try a simpler approach: use token in the URL path itself
-      // This follows the pattern: /surveys/password-access/{token}/
-      const response = await apiClient.post(
-        `/surveys/password-access/${token}/`,
-        {
-          password: accessData.password,
-          email: accessData.email,
-          phone: accessData.phone
-        }
-      )
-      
-      if (response.data.status === 'success') {
-        return {
-          data: response.data.data,
-          message: response.data.message,
-          status: response.data.status
-        }
-      } else {
-        throw new Error(response.data.message || 'Failed to access password-protected survey')
+    // Try a simpler approach: use token in the URL path itself
+    // This follows the pattern: /surveys/password-access/{token}/
+    const response = await apiClient.post(
+      `/surveys/password-access/${token}/`,
+      {
+        password: accessData.password,
+        email: accessData.email,
+        phone: accessData.phone
       }
-    } catch (error) {
-      // Logging removed for production
-      throw error
+    )
+    
+    if (response.data.status === 'success') {
+      return {
+        data: response.data.data,
+        message: response.data.message,
+        status: response.data.status
+      }
+    } else {
+      throw new Error(response.data.message || 'Failed to access password-protected survey')
     }
   }
 
@@ -562,110 +527,91 @@ class SurveyService {
     authToken: string,
     password: string
   ): Promise<ApiResponse<Survey>> {
-    try {
-      const response = await apiClient.post(`/surveys/password-surveys/${surveyId}/`, {
-        password: password
-      }, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
-      })
-      
-      if (response.data.status === 'success') {
-        return {
-          data: response.data.data,
-          message: response.data.message,
-          status: response.data.status
-        }
-      } else {
-        throw new Error(response.data.message || 'Failed to fetch password-protected survey')
+    const response = await apiClient.post(`/surveys/password-surveys/${surveyId}/`, {
+      password: password
+    }, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`
       }
-    } catch (error) {
-      throw error
+    })
+    
+    if (response.data.status === 'success') {
+      return {
+        data: response.data.data,
+        message: response.data.message,
+        status: response.data.status
+      }
+    } else {
+      throw new Error(response.data.message || 'Failed to fetch password-protected survey')
     }
   }
 
   async submitPasswordProtectedResponse(
     submissionData: PasswordProtectedResponseSubmission
   ): Promise<ApiResponse<PasswordProtectedResponseResult>> {
-    try {
-      const response = await apiClient.post('/surveys/password-responses/', submissionData)
-      
-      if (response.data.status === 'success') {
-        return {
-          data: {
-            response_id: response.data.data.response_id,
-            survey_id: response.data.data.survey_id,
-            submitted_at: response.data.data.submitted_at,
-            answers_count: response.data.data.answers_count,
-            access_method: 'password_token'
-          },
-          message: response.data.message,
-          status: response.data.status
-        }
-      } else {
-        throw new Error(response.data.message || 'Failed to submit password-protected response')
+    const response = await apiClient.post('/surveys/password-responses/', submissionData)
+    
+    if (response.data.status === 'success') {
+      return {
+        data: {
+          response_id: response.data.data.response_id,
+          survey_id: response.data.data.survey_id,
+          submitted_at: response.data.data.submitted_at,
+          answers_count: response.data.data.answers_count,
+          access_method: 'password_token'
+        },
+        message: response.data.message,
+        status: response.data.status
       }
-    } catch (error) {
-      // Logging removed for production
-      throw error
+    } else {
+      throw new Error(response.data.message || 'Failed to submit password-protected response')
     }
   }
 
   // User Search and Management
   async searchUsers(query: string): Promise<ApiResponse<UserSearchResponse>> {
-    try {
-      if (query.length < 2) {
-        return {
-          data: {
-            users: [],
-            total: 0
-          },
-          message: 'Query too short',
-          status: 'success'
-        }
+    if (query.length < 2) {
+      return {
+        data: {
+          users: [],
+          total: 0
+        },
+        message: 'Query too short',
+        status: 'success'
       }
-      
-      const response = await apiClient.get('/surveys/users/search/', {
-        params: { query }
-      })
-      
-      if (response.data.status === 'success') {
-        return {
-          data: {
-            users: response.data.data.users || [],
-            total: response.data.data.users?.length || 0
-          },
-          message: response.data.message,
-          status: response.data.status
-        }
-      } else {
-        throw new Error(response.data.message || 'Failed to search users')
+    }
+    
+    const response = await apiClient.get('/surveys/users/search/', {
+      params: { query }
+    })
+    
+    if (response.data.status === 'success') {
+      return {
+        data: {
+          users: response.data.data.users || [],
+          total: response.data.data.users?.length || 0
+        },
+        message: response.data.message,
+        status: response.data.status
       }
-    } catch (error) {
-      // Logging removed for production
-      throw error
+    } else {
+      throw new Error(response.data.message || 'Failed to search users')
     }
   }
 
   // Get admin groups for survey sharing
   async getMyAdminGroups(): Promise<ApiResponse<AdminGroupsResponse>> {
-    try {
-      const response = await apiClient.get('/surveys/my-admin-groups/')
-      
-      // Check for both 'success' and 'status' fields for compatibility
-      if (response.data.success || response.data.status === 'success') {
-        return {
-          data: response.data.data,
-          message: response.data.message,
-          status: 'success'
-        }
-      } else {
-        throw new Error(response.data.message || 'Failed to get admin groups')
+    const response = await apiClient.get('/surveys/my-admin-groups/')
+    
+    // Check for both 'success' and 'status' fields for compatibility
+    if (response.data.success || response.data.status === 'success') {
+      return {
+        data: response.data.data,
+        message: response.data.message,
+        status: 'success'
       }
-    } catch (error) {
-      // Logging removed for production
-      throw error
+    } else {
+      throw new Error(response.data.message || 'Failed to get admin groups')
     }
   }
 
@@ -681,24 +627,19 @@ class SurveyService {
     surveyId: string,
     shareData: ShareRequest
   ): Promise<ApiResponse<ShareResponse>> {
-    try {
-      const response = await apiClient.post(`/surveys/surveys/${surveyId}/share/`, shareData)
-      
-      if (response.data.status === 'success') {
-        return {
-          data: {
-            shared_users: response.data.data.shared_users,
-            total_shared: response.data.data.total_shared
-          },
-          message: response.data.message,
-          status: response.data.status
-        }
-      } else {
-        throw new Error(response.data.message || 'Failed to share survey')
+    const response = await apiClient.post(`/surveys/surveys/${surveyId}/share/`, shareData)
+    
+    if (response.data.status === 'success') {
+      return {
+        data: {
+          shared_users: response.data.data.shared_users,
+          total_shared: response.data.data.total_shared
+        },
+        message: response.data.message,
+        status: response.data.status
       }
-    } catch (error) {
-      // Logging removed for production
-      throw error
+    } else {
+      throw new Error(response.data.message || 'Failed to share survey')
     }
   }
 
@@ -719,26 +660,21 @@ class SurveyService {
   async validateAccess(
     token: string
   ): Promise<ApiResponse<AccessResponse>> {
-    try {
-      const params = { token }
-      // Use the new endpoint that doesn't require surveyId when using token
-      const response = await apiClient.get('/surveys/surveys/access/', { params })
-      
-      if (response.data.status === 'success') {
-        return {
-          data: {
-            has_access: response.data.data.has_access,
-            survey: response.data.data.survey
-          },
-          message: response.data.message,
-          status: response.data.status
-        }
-      } else {
-        throw new Error(response.data.message || 'Failed to validate access')
+    const params = { token }
+    // Use the new endpoint that doesn't require surveyId when using token
+    const response = await apiClient.get('/surveys/surveys/access/', { params })
+    
+    if (response.data.status === 'success') {
+      return {
+        data: {
+          has_access: response.data.data.has_access,
+          survey: response.data.data.survey
+        },
+        message: response.data.message,
+        status: response.data.status
       }
-    } catch (error) {
-      // Logging removed for production
-      throw error
+    } else {
+      throw new Error(response.data.message || 'Failed to validate access')
     }
   }
 
@@ -954,9 +890,7 @@ class SurveyService {
         message: 'Analytics retrieved successfully',
         data: analyticsData
       }
-    } catch (error: any) {
-      // Logging removed for production
-      
+    } catch {
       // Return a fallback analytics object if there's an error
       return {
         status: 'success',
@@ -1170,38 +1104,25 @@ class SurveyService {
 
     const endpoint = `my-shared${params.toString() ? `?${params.toString()}` : ''}`
     
-    try {
-      const response = await apiClient.get(`${this.baseURL}${endpoint}`)
-      // Debug log
-      
-      // Check if it's a paginated response from Django
-      if (response.data && 'count' in response.data && 'results' in response.data) {
-        return response.data as PaginatedApiResponse<SharedSurvey>
-      }
-      
-      // Check if it's the wrapped API response structure
-      if (response.data && 'status' in response.data && response.data.status === 'success') {
-        return response.data as ApiResponse<SharedSurveysResponse>
-      }
-      
-      // If it's the data directly, wrap it in the expected structure
-      return {
-        status: 'success',
-        message: 'Shared surveys retrieved successfully',
-        data: response.data
-      } as ApiResponse<SharedSurveysResponse>
-    } catch (error: any) {
-      // Logging removed for production
-      
-      // Handle specific error cases
-      if (error.response?.status === 401) {
-        throw new Error('Authentication required to access shared surveys')
-      } else if (error.response?.status === 403) {
-        throw new Error('You do not have permission to access shared surveys')
-      }
-      
-      throw new Error(error.response?.data?.message || error.message || 'Failed to retrieve shared surveys')
+    const response = await apiClient.get(`${this.baseURL}${endpoint}`)
+    // Debug log
+    
+    // Check if it's a paginated response from Django
+    if (response.data && 'count' in response.data && 'results' in response.data) {
+      return response.data as PaginatedApiResponse<SharedSurvey>
     }
+    
+    // Check if it's the wrapped API response structure
+    if (response.data && 'status' in response.data && response.data.status === 'success') {
+      return response.data as ApiResponse<SharedSurveysResponse>
+    }
+    
+    // If it's the data directly, wrap it in the expected structure
+    return {
+      status: 'success',
+      message: 'Shared surveys retrieved successfully',
+      data: response.data
+    } as ApiResponse<SharedSurveysResponse>
   }
 
   // Authenticated Survey Access Methods

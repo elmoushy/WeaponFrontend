@@ -124,18 +124,24 @@
         <div
           v-for="(question, index) in surveyData.questions"
           :key="question.tempId"
-          :class="[$style.questionCard, { [$style.dragging]: draggedQuestionIndex === index }]"
-          draggable="true"
-          @dragstart="handleDragStart(index, $event)"
-          @dragend="handleDragEnd"
-          @dragover="handleDragOver($event)"
-          @drop="handleDrop(index, $event)"
+          :class="[$style.questionCard, { 
+            [$style.dragging]: draggedQuestionIndex === index,
+            [$style.dragOver]: dragOverIndex === index
+          }]"
+          @dragover="handleQuestionDragOver(index, $event)"
+          @dragleave="handleQuestionDragLeave"
+          @drop="handleQuestionDrop(index, $event)"
         >
           <!-- Question Header -->
           <div :class="$style.questionHeader">
             <div :class="$style.questionNumber">{{ index + 1 }}</div>
-            <div :class="$style.questionDragHandle">
-              <i class="fas fa-grip-vertical"></i>
+            <div
+              :class="$style.questionDragHandle"
+              draggable="true"
+              @dragstart="handleDragStart(index, $event)"
+              @dragend="handleDragEnd"
+            >
+              <i class="fas fa-grip-vertical" style="pointer-events: none;"></i>
             </div>
           </div>
 
@@ -434,7 +440,7 @@
           </div>
 
           <!-- Question Actions -->
-          <div :class="$style.questionActions">`
+          <div :class="$style.questionActions">
             <button
               :class="$style.actionButton"
               @click="duplicateQuestion(index)"
@@ -489,10 +495,10 @@
               @dragstart="handlePaletteDragStart('text', $event)"
               @click="handlePaletteClick('text')"
             >
-              <div :class="$style.paletteIcon">
+              <div :class="$style.paletteIcon" style="pointer-events: none;">
                 <i class="fas fa-font"></i>
               </div>
-              <div :class="$style.paletteContent">
+              <div :class="$style.paletteContent" style="pointer-events: none;">
                 <h4>{{ isRTL ? 'نص قصير' : 'Short Text' }}</h4>
                 <p>{{ isRTL ? 'إجابة نصية قصيرة' : 'Single line text' }}</p>
               </div>
@@ -505,10 +511,10 @@
               @dragstart="handlePaletteDragStart('textarea', $event)"
               @click="handlePaletteClick('textarea')"
             >
-              <div :class="$style.paletteIcon">
+              <div :class="$style.paletteIcon" style="pointer-events: none;">
                 <i class="fas fa-align-left"></i>
               </div>
-              <div :class="$style.paletteContent">
+              <div :class="$style.paletteContent" style="pointer-events: none;">
                 <h4>{{ isRTL ? 'نص طويل' : 'Long Text' }}</h4>
                 <p>{{ isRTL ? 'نص متعدد الأسطر' : 'Multi-line text' }}</p>
               </div>
@@ -521,10 +527,10 @@
               @dragstart="handlePaletteDragStart('single_choice', $event)"
               @click="handlePaletteClick('single_choice')"
             >
-              <div :class="$style.paletteIcon">
+              <div :class="$style.paletteIcon" style="pointer-events: none;">
                 <i class="far fa-circle"></i>
               </div>
-              <div :class="$style.paletteContent">
+              <div :class="$style.paletteContent" style="pointer-events: none;">
                 <h4>{{ isRTL ? 'اختيار واحد' : 'Single Choice' }}</h4>
                 <p>{{ isRTL ? 'خيار واحد فقط' : 'Select one option' }}</p>
               </div>
@@ -537,10 +543,10 @@
               @dragstart="handlePaletteDragStart('multiple_choice', $event)"
               @click="handlePaletteClick('multiple_choice')"
             >
-              <div :class="$style.paletteIcon">
+              <div :class="$style.paletteIcon" style="pointer-events: none;">
                 <i class="far fa-square"></i>
               </div>
-              <div :class="$style.paletteContent">
+              <div :class="$style.paletteContent" style="pointer-events: none;">
                 <h4>{{ isRTL ? 'اختيار متعدد' : 'Multiple Choice' }}</h4>
                 <p>{{ isRTL ? 'عدة خيارات' : 'Select multiple' }}</p>
               </div>
@@ -553,10 +559,10 @@
               @dragstart="handlePaletteDragStart('rating', $event)"
               @click="handlePaletteClick('rating')"
             >
-              <div :class="$style.paletteIcon">
+              <div :class="$style.paletteIcon" style="pointer-events: none;">
                 <i class="fas fa-star"></i>
               </div>
-              <div :class="$style.paletteContent">
+              <div :class="$style.paletteContent" style="pointer-events: none;">
                 <h4>{{ isRTL ? 'تقييم' : 'Rating' }}</h4>
                 <p>{{ isRTL ? 'تقييم بالنجوم' : 'Star rating' }}</p>
               </div>
@@ -569,10 +575,10 @@
               @dragstart="handlePaletteDragStart('yes_no', $event)"
               @click="handlePaletteClick('yes_no')"
             >
-              <div :class="$style.paletteIcon">
+              <div :class="$style.paletteIcon" style="pointer-events: none;">
                 <i class="fas fa-check-circle"></i>
               </div>
-              <div :class="$style.paletteContent">
+              <div :class="$style.paletteContent" style="pointer-events: none;">
                 <h4>{{ isRTL ? 'نعم/لا' : 'Yes/No' }}</h4>
                 <p>{{ isRTL ? 'سؤال بنعم أو لا' : 'Binary choice' }}</p>
               </div>
@@ -828,6 +834,7 @@ const errors = ref<Record<string, string>>({})
 const activeQuestionIndex = ref<number | null>(null)
 const showPreview = ref(false)
 const draggedQuestionIndex = ref<number | null>(null)
+const dragOverIndex = ref<number | null>(null)
 
 // Scheduling and Settings State
 const showSchedulingModal = ref(false)
@@ -1278,11 +1285,11 @@ const updateQuestionOrders = () => {
   })
 }
 
-// Drag and Drop handlers
+// Drag and Drop handlers - NEW ROBUST IMPLEMENTATION
 const handlePaletteDragStart = (questionType: QuestionType, event: DragEvent) => {
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'copy'
-    event.dataTransfer.setData('questionType', questionType)
+    event.dataTransfer.setData('application/json', JSON.stringify({ type: 'palette', questionType }))
   }
 }
 
@@ -1319,19 +1326,39 @@ const handleDragStart = (index: number, event: DragEvent) => {
   draggedQuestionIndex.value = index
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'move'
-    event.dataTransfer.setData('text/html', index.toString())
+    event.dataTransfer.setData('application/json', JSON.stringify({ type: 'reorder', index }))
+    // Add visual feedback
+    if (event.target instanceof HTMLElement) {
+      event.target.style.opacity = '0.5'
+    }
   }
 }
 
-const handleDragEnd = () => {
+const handleDragEnd = (event: DragEvent) => {
   draggedQuestionIndex.value = null
+  dragOverIndex.value = null
+  // Reset visual feedback
+  if (event.target instanceof HTMLElement) {
+    event.target.style.opacity = '1'
+  }
 }
 
-const handleDragOver = (event: DragEvent) => {
+const handleQuestionDragOver = (index: number, event: DragEvent) => {
   event.preventDefault()
+  event.stopPropagation()
+  
   if (event.dataTransfer) {
-    event.dataTransfer.dropEffect = 'move'
+    const data = event.dataTransfer.types.includes('application/json')
+    if (data) {
+      event.dataTransfer.dropEffect = 'move'
+    }
   }
+  
+  dragOverIndex.value = index
+}
+
+const handleQuestionDragLeave = () => {
+  dragOverIndex.value = null
 }
 
 // Handler for dropping on the questions section (adds to end)
@@ -1345,86 +1372,99 @@ const handleQuestionsSectionDragOver = (event: DragEvent) => {
 const handleQuestionsSectionDrop = (event: DragEvent) => {
   event.preventDefault()
   
-  // Check if it's a new question from palette
-  const questionType = event.dataTransfer?.getData('questionType') as QuestionType | ''
-  
-  if (questionType) {
-    // Adding new question from palette at the end
-    const newQuestion = {
-      tempId: `temp-${Date.now()}`,
-      text: '',
-      question_type: questionType,
-      options: needsOptions(questionType) ? [isRTL.value ? 'خيار 1' : 'Option 1'] : [],
-      is_required: false,
-      order: surveyData.value.questions.length + 1,
-      NPS_Calculate: false,
-      CSAT_Calculate: false,
-      min_scale: 0,
-      max_scale: 5,
-      semantic_tag: 'none' as 'none' | 'nps' | 'csat',
-      options_satisfaction_values: [],
-      validation_type: 'none' as 'none' | 'email' | 'phone' | 'number' | 'url'
+  try {
+    const jsonData = event.dataTransfer?.getData('application/json')
+    if (jsonData) {
+      const data = JSON.parse(jsonData)
+      
+      if (data.type === 'palette' && data.questionType) {
+        // Adding new question from palette at the end
+        const newQuestion = {
+          tempId: `temp-${Date.now()}`,
+          text: '',
+          question_type: data.questionType,
+          options: needsOptions(data.questionType) ? [isRTL.value ? 'خيار 1' : 'Option 1'] : [],
+          is_required: false,
+          order: surveyData.value.questions.length + 1,
+          NPS_Calculate: false,
+          CSAT_Calculate: false,
+          min_scale: 0,
+          max_scale: 5,
+          semantic_tag: 'none' as 'none' | 'nps' | 'csat',
+          options_satisfaction_values: [],
+          validation_type: 'none' as 'none' | 'email' | 'phone' | 'number' | 'url'
+        }
+        
+        // Add to end
+        surveyData.value.questions.push(newQuestion)
+        updateQuestionOrders()
+      }
     }
-    
-    // Add to end
-    surveyData.value.questions.push(newQuestion)
-    updateQuestionOrders()
+  } catch (error) {
+    console.error('Error handling drop:', error)
   }
 }
 
-const handleDrop = (dropIndex: number, event: DragEvent) => {
+const handleQuestionDrop = (dropIndex: number, event: DragEvent) => {
   event.preventDefault()
-  event.stopPropagation() // Prevent event from bubbling to parent
+  event.stopPropagation()
   
-  // Check if it's a new question from palette
-  const questionType = event.dataTransfer?.getData('questionType') as QuestionType | ''
+  dragOverIndex.value = null
   
-  if (questionType) {
-    // Adding new question from palette at specific position
-    const newQuestion = {
-      tempId: `temp-${Date.now()}`,
-      text: '',
-      question_type: questionType,
-      options: needsOptions(questionType) ? [isRTL.value ? 'خيار 1' : 'Option 1'] : [],
-      is_required: false,
-      order: dropIndex + 1,
-      NPS_Calculate: false,
-      CSAT_Calculate: false,
-      min_scale: 0,
-      max_scale: 5,
-      semantic_tag: 'none' as 'none' | 'nps' | 'csat',
-      options_satisfaction_values: [],
-      validation_type: 'none' as 'none' | 'email' | 'phone' | 'number' | 'url'
+  try {
+    const jsonData = event.dataTransfer?.getData('application/json')
+    if (!jsonData) return
+    
+    const data = JSON.parse(jsonData)
+    
+    // Handle palette drop (adding new question)
+    if (data.type === 'palette' && data.questionType) {
+      const newQuestion = {
+        tempId: `temp-${Date.now()}`,
+        text: '',
+        question_type: data.questionType,
+        options: needsOptions(data.questionType) ? [isRTL.value ? 'خيار 1' : 'Option 1'] : [],
+        is_required: false,
+        order: dropIndex + 1,
+        NPS_Calculate: false,
+        CSAT_Calculate: false,
+        min_scale: 0,
+        max_scale: 5,
+        semantic_tag: 'none' as 'none' | 'nps' | 'csat',
+        options_satisfaction_values: [],
+        validation_type: 'none' as 'none' | 'email' | 'phone' | 'number' | 'url'
+      }
+      
+      // Insert at drop position
+      surveyData.value.questions.splice(dropIndex, 0, newQuestion)
+      updateQuestionOrders()
+      return
     }
     
-    // Insert at drop position
-    surveyData.value.questions.splice(dropIndex, 0, newQuestion)
-    updateQuestionOrders()
-    return
+    // Handle reorder (moving existing question)
+    if (data.type === 'reorder' && data.index !== undefined) {
+      const draggedIndex = data.index
+      
+      if (draggedIndex === dropIndex) {
+        return
+      }
+      
+      const questions = [...surveyData.value.questions]
+      const [draggedItem] = questions.splice(draggedIndex, 1)
+      
+      // Adjust drop index if dragging from before to after
+      const adjustedDropIndex = draggedIndex < dropIndex ? dropIndex - 1 : dropIndex
+      
+      questions.splice(adjustedDropIndex, 0, draggedItem)
+      
+      surveyData.value.questions = questions
+      updateQuestionOrders()
+    }
+  } catch (error) {
+    console.error('Error handling question drop:', error)
+  } finally {
+    draggedQuestionIndex.value = null
   }
-  
-  // Existing reorder logic
-  if (draggedQuestionIndex.value === null || draggedQuestionIndex.value === dropIndex) {
-    return
-  }
-
-  const draggedIndex = draggedQuestionIndex.value
-  const questions = [...surveyData.value.questions]
-  
-  // Remove the dragged item
-  const [draggedItem] = questions.splice(draggedIndex, 1)
-  
-  // Insert at new position
-  questions.splice(dropIndex, 0, draggedItem)
-  
-  // Update the questions array
-  surveyData.value.questions = questions
-  
-  // Update order numbers
-  updateQuestionOrders()
-  
-  // Clear dragged index
-  draggedQuestionIndex.value = null
 }
 
 const togglePreview = () => {

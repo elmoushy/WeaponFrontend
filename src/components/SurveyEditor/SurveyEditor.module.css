@@ -601,7 +601,6 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   transition: all 0.2s;
   position: relative;
-  cursor: move;
 }
 
 .editorContainer[data-theme="night"] .questionCard {
@@ -619,6 +618,12 @@
   box-shadow: 0 4px 12px rgba(183, 138, 65, 0.4);
   border-left-color: #B78A41;
   transform: scale(0.98);
+}
+
+.questionCard.dragOver {
+  border-top: 3px solid #B78A41;
+  margin-top: 1rem;
+  box-shadow: 0 4px 12px rgba(183, 138, 65, 0.2);
 }
 
 .questionHeader {
@@ -647,12 +652,17 @@
   justify-content: center;
   padding: 0.5rem;
   color: #80868b;
-  cursor: move;
+  cursor: grab;
   transition: color 0.2s;
+  user-select: none;
 }
 
 .questionDragHandle:hover {
   color: #B78A41;
+}
+
+.questionDragHandle:active {
+  cursor: grabbing;
 }
 
 .questionContent {

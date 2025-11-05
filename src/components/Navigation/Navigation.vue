@@ -136,7 +136,7 @@
                   <i class="fas fa-sign-out-alt"></i>
                 </div>
                 <div :class="$style.linkContent">
-                  <span :class="$style.linkTitle">{{ 'Sign Out' }}</span>
+                  <span :class="$style.linkTitle">{{ 'تسجيل الخروج' }}</span>
                 </div>
               </button>
             </div>
