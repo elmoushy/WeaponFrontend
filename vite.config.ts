@@ -9,10 +9,11 @@ export default defineConfig(async ({ command, isPreview, mode }) => {
   
   // Only import devtools in development mode
   const plugins: any[] = [vue()]
-  if (isDevelopment) {
-    const { default: vueDevTools } = await import('vite-plugin-vue-devtools')
-    plugins.push(vueDevTools())
-  }
+  // Temporarily disabled due to compatibility issues
+  // if (isDevelopment) {
+  //   const { default: vueDevTools } = await import('vite-plugin-vue-devtools')
+  //   plugins.push(vueDevTools())
+  // }
   
   const baseConfig = {
     plugins,
